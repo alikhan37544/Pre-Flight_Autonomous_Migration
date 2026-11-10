@@ -1,0 +1,13 @@
+Preflight-CloudMigration-main.zip
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+data/runs/
+data/*.sqlite
+worktrees/
+
+*.egg-info/
+
+data/.locks/
