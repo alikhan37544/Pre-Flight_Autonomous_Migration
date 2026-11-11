@@ -223,7 +223,7 @@ def test_refactor_does_not_modify_source_and_generates_cloud_configs() -> None:
         assert any(path.startswith("config/appevents/") for path in added)
         assert any(path.startswith("config/secrets/") for path in added)
         assert any(path.startswith("config/codegen/") for path in added)
-        assert any(path.endswith("CloudDataAccess.gs") for path in added)
+        assert any(path.endswith("QueryService.gs") for path in added)
         assert any(path.endswith("Resource.java") for path in added)
         for item in refactor.added_files:
             if item["path"].endswith((".yaml", ".yml")):

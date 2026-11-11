@@ -12,6 +12,7 @@ from app.services.intake import build_manifest, snapshot_hash
 from app.services.packet import verify_packet_artifacts
 from app.services.migrator import MIGRATION_ARTIFACT, run_migration, verify_migration_log
 from app.services.code_migration import run_code_migration
+from app.services.llm import LLMConfig, chat_json
 from app.services.pipeline import execute_run
 from app.services.resilience import SCENARIOS
 from app.services.sarif import sarif_json
@@ -132,14 +133,17 @@ def cmd_verify_packet(args) -> int:
 def cmd_migrate(args) -> int:
     store = _store(args)
     try:
-        state = run_migration(store, args.run_id, feature_id=args.feature, pace=0.0)
+        state = run_migration(
+            store, args.run_id, feature_id=args.feature, pace=0.0,
+            live=getattr(args, "live", False), model=getattr(args, "model", None),
+        )
     except Exception as exc:
         print(f"migration failed: {type(exc).__name__}: {exc}")
         return 1
     print(
         f"{args.run_id}: {state['status']} · {state['summary'].get('generated', 0)}/"
         f"{state['summary'].get('packages', 0)} targets · {state['summary'].get('gates', 0)} gates · "
-        f"verification {state['verification']['status']}"
+        f"verification {state['verification']['status']} · reasoning {state.get('llm', {}).get('status', 'off')}"
     )
     print(f"plan: {state['plan_path']} · report: {state['report_path']} · bundle: {state['bundle']['path']}")
     return 0
@@ -160,6 +164,25 @@ def cmd_verify_migration(args) -> int:
     return 0 if ok else 1
 
 
+def cmd_llm_check(args) -> int:
+    config = LLMConfig.from_env()
+    public = config.public()
+    print(f"mode: {public['mode']} · configured: {public['configured']} · host: {public['base_host'] or '—'}")
+    if not config.configured:
+        print(public["reason"])
+        return 1
+    try:
+        result = chat_json(
+            [{"role": "user", "content": 'Return JSON only: {"ok": true}'}],
+            config=config, model=getattr(args, "model", None), max_tokens=30,
+        )
+    except Exception as exc:
+        print(f"live check failed: {type(exc).__name__}: {exc}")
+        return 1
+    print(f"OK · model {result['model']} · {result['latency_ms']} ms · usage {result['usage'].get('total_tokens', 0)} tokens")
+    return 0
+
+
 def cmd_claims_lint(args) -> int:
     from scripts.claims_lint import main as lint_main
 
@@ -174,6 +197,7 @@ def cmd_codebase(args) -> int:
     result = run_code_migration(
         args.case, settings, max_iterations=args.iterations,
         upgrade_scenario=args.upgrade,
+        live=getattr(args, "live", False), model=getattr(args, "model", None),
     )
     out = Path(args.out) if args.out else REPO / "codebase" / args.case
     out.mkdir(parents=True, exist_ok=True)
@@ -257,11 +281,17 @@ def main(argv: list[str] | None = None) -> int:
     migrate = sub.add_parser("migrate", help="run the autonomous multi-agent migrator")
     migrate.add_argument("run_id")
     migrate.add_argument("--feature", default=None)
+    migrate.add_argument("--live", action="store_true", help="use the configured live reasoning endpoint")
+    migrate.add_argument("--model", default=None, choices=["mimo-v2.6-flash", "mimo-v2.6-pro"])
     migrate.set_defaults(func=cmd_migrate)
 
     verify_migration = sub.add_parser("verify-migration", help="verify the migrator agent log")
     verify_migration.add_argument("run_id")
     verify_migration.set_defaults(func=cmd_verify_migration)
+
+    llm_check = sub.add_parser("llm-check", help="check the optional live reasoning endpoint")
+    llm_check.add_argument("--model", default=None, choices=["mimo-v2.6-flash", "mimo-v2.6-pro"])
+    llm_check.set_defaults(func=cmd_llm_check)
 
     lint = sub.add_parser("claims-lint", help="lint the claims ledger and rule coverage")
     lint.set_defaults(func=cmd_claims_lint)
@@ -273,6 +303,8 @@ def main(argv: list[str] | None = None) -> int:
     codebase.add_argument("--fixtures", default=None)
     codebase.add_argument("--iterations", type=int, default=3)
     codebase.add_argument("--upgrade", default=None, choices=sorted(SCENARIOS))
+    codebase.add_argument("--live", action="store_true", help="use the configured live reasoning endpoint")
+    codebase.add_argument("--model", default=None, choices=["mimo-v2.6-flash", "mimo-v2.6-pro"])
     codebase.set_defaults(func=cmd_codebase)
 
     manifest = sub.add_parser("manifest", help="print a snapshot manifest summary")

@@ -1,187 +1,581 @@
 {% extends "base.html" %}
-{% from "_macros.html" import scroll_region, pluralize %}
+{% from "_macros.html" import scroll_region, pluralize, reader_status, reader_status_class, reality_callout %}
 
 {% block content %}
-{% set state = view.migration %}
-<div class="page-head">
+{% set m = migration %}
+{% set boundary = m.reality_boundary if m and m.reality_boundary else {
+  'what_is_real': 'A deterministic five-agent rehearsal over a read-only synthetic snapshot with evidence-linked drafts and a hash-chained agent log.',
+  'what_is_not_real': 'No Guidewire tenant was contacted, no code was compiled or deployed, no change was approved, and this is not an official Cloud Assurance result.'
+} %}
+<div class="page-head agent-hero">
   <div>
-    <div class="eyebrow">Autonomous draft generation</div>
-    <h1>Multi-agent migrator</h1>
-    <p class="lede">Five specialist agents take a completed review run and autonomously produce a verified,
-    reviewable migration bundle. The orchestrator writes only local draft targets; every change stays pending
-    human approval.</p>
+    <div class="eyebrow">Agent demo · five-agent loop · Multi-agent migrator</div>
+    <h1>Watch the migration crew work</h1>
+    <p class="lede">Scout finds the evidence. Architect drafts the target. Guardian runs the
+    deterministic checks and opens human review gates. Critic runs independent machine checks and
+    tries to break the result. Scribe seals the plan, report, bundle manifest, and hash-chained
+    agent log. Nothing deploys; every change waits for a human.</p>
   </div>
   <div class="head-meta">
-    {% if state %}
-      {% if state.status == 'running' %}
-      <span class="pill pill-status status-running">running</span>
-      {% elif state.status == 'completed_with_gates' %}
-      <span class="pill pill-status status-succeeded">completed · gates open</span>
-      {% else %}
-      <span class="pill pill-status status-{{ state.status }}">{{ state.status }}</span>
-      {% endif %}
+    {% if m %}
+      <span class="pill pill-status {{ reader_status_class(m.status) }}">{{ reader_status(m.status) }}</span>
       <span class="badge badge-neutral">non-deployable draft</span>
+      {% if m.llm and m.llm.mode == 'live' %}
+      <span class="badge badge-live">Reasoning: MiMo {{ m.llm.model }}</span>
+      {% else %}
+      <span class="badge badge-offline"><span class="dot"></span> Reasoning: offline</span>
+      {% endif %}
     {% else %}
     <span class="badge badge-neutral">ready to launch</span>
+    <span class="badge badge-offline"><span class="dot"></span> Reasoning: offline</span>
     {% endif %}
   </div>
 </div>
 
+{{ reality_callout(boundary) }}
+
 <section class="banner banner-info" aria-label="Autonomy boundary">
-  <strong>Bounded autonomy.</strong> Agents can read the snapshot, generate target files, verify their own output,
-  and package the result. They cannot deploy, edit <code>_gen</code> files, approve a change, resolve an assumption,
-  or contact a tenant. {{ state.boundary if state else 'Every generated change remains pending human approval.' }}
+  <strong>Bounded autonomy.</strong> Agents may read the snapshot, generate drafts, verify their
+  own output, and seal a local bundle. They may not deploy, edit <code>_gen</code> files, approve a
+  change, resolve an assumption, or contact a tenant. Guardian is always deterministic.
 </section>
 
-<section class="banner banner-info" aria-label="Codebase lab link">
-  <strong>Code-level refactoring lives in the codebase lab.</strong>
-  The review migrator uses Scribe to seal its feature bundle. The
-  <a href="/codebase">Codebase lab</a> runs Scout, Architect, Guardian, Critic, and Planner in a cyclic
-  code-migration loop with SARIF and upgrade resilience.
-</section>
-
-{% if not state %}
-<section class="panel migration-launch" data-migration-panel data-run-id="{{ run_id }}">
-  <div class="migration-launch-copy">
+{% if not m %}
+<section class="panel demo-launch" data-migration-panel data-run-id="{{ run_id }}" data-migration-status="">
+  <div class="demo-launch-copy">
     <div class="eyebrow">No migration run yet</div>
-    <h2>Launch the crew on this snapshot</h2>
-    <p>The migrator uses the completed review artifacts for this run. It will scope the feature, generate the
-    target draft, convert review findings into gates, adversarially verify every package, and seal a bundle.</p>
-    <ul class="migration-inline-list">
-      <li><strong>Scout</strong> resolves the feature and evidence.</li>
-      <li><strong>Architect</strong> generates target files.</li>
-      <li><strong>Guardian</strong> opens risk gates.</li>
-      <li><strong>Critic</strong> rejects unsafe or ungrounded output.</li>
-      <li><strong>Scribe</strong> seals the plan, report, and bundle manifest.</li>
-    </ul>
+    <h2>Launch the five agents on this review</h2>
+    <p>Scout resolves the feature. Architect writes the target packages. Guardian opens the
+    human gates. Critic runs the independent checks. Scribe seals the result. The offline path
+    is deterministic and needs no API.</p>
+    <ol class="demo-steps">
+      <li><strong>Scout</strong><span>300 files → evidence → 31 links</span></li>
+      <li><strong>Architect</strong><span>12 dispositions → 5 packages</span></li>
+      <li><strong>Guardian</strong><span>3 assumptions + 8 rule groups</span></li>
+      <li><strong>Critic</strong><span>7 independent machine checks</span></li>
+      <li><strong>Scribe</strong><span>sealed plan, report, bundle, log</span></li>
+    </ol>
   </div>
-  <div class="migration-launch-action">
-    <button class="btn btn-primary" type="button" data-migration-start>Run autonomous migration</button>
-    <p class="muted">Runs locally in a few seconds. No upload, no tenant, no LLM API.</p>
+  <div class="demo-launch-action">
+    {% if llm_status.configured %}
+    <fieldset class="live-controls">
+      <legend>Reasoning mode</legend>
+      <label class="check-row"><input type="radio" name="migration-live" value="0" checked> Reasoning: offline (deterministic)</label>
+      <label class="check-row"><input type="radio" name="migration-live" value="1"> Reasoning: MiMo live</label>
+      <label class="field-label" for="migration-model">Live model</label>
+      <select class="input" id="migration-model" data-migration-model>
+        {% for model in llm_status.models %}
+        <option value="{{ model }}" {{ 'selected' if model == llm_status.default_model }}>{{ model }}</option>
+        {% endfor %}
+      </select>
+      <p class="muted live-note"><strong>Live is opt-in.</strong> It sends only synthetic fixture text
+      to the configured endpoint for Scout, Architect, and Critic commentary. Guardian never calls the model.</p>
+    </fieldset>
+    {% else %}
+    <div class="live-controls live-controls-off">
+      <span class="badge badge-offline"><span class="dot"></span> Live reasoning not configured</span>
+      <p class="muted">The demo runs fully offline. Add <code>PREFLIGHT_LLM_BASE_URL</code> and
+      <code>PREFLIGHT_LLM_API_KEY</code> to <code>.env</code> to enable grounded MiMo commentary.</p>
+      <a class="text-link" href="/settings">Open settings</a>
+    </div>
+    {% endif %}
+    <button class="btn btn-primary demo-launch-button" type="button" data-migration-start data-migration-force="0">Run the five agents</button>
+    <p class="muted">Runs locally in a few seconds. Every change remains pending.</p>
   </div>
 </section>
 
 {% else %}
-<section class="panel" data-migration-panel data-run-id="{{ run_id }}" data-migration-status="{{ state.status }}">
+<section class="panel agent-explain" aria-labelledby="explain-heading">
   <div class="panel-head">
     <div>
-      <h2>{{ state.feature_id }} · {{ state.feature_name }}</h2>
-      <p class="muted">{{ state.mode }} · {{ state.started_at }}{% if state.finished_at %} → {{ state.finished_at }}{% endif %}</p>
+      <div class="eyebrow">What am I looking at?</div>
+      <h2 id="explain-heading">{{ m.explain.headline }}</h2>
     </div>
-    <button class="btn btn-small" type="button" data-migration-start data-migration-force="1">
-      {{ 'Run again' if state.status in ['completed', 'completed_with_gates'] else 'Restart' }}
-    </button>
+    <span class="badge badge-neutral">read this first</span>
   </div>
-  <div class="migration-progress">
-    <progress class="progress" data-migration-bar max="100" value="{{ state.progress }}"></progress>
-    <div class="migration-progress-meta">
-      <span data-migration-label>{% if state.current_agent %}Running {{ state.current_agent }}{% else %}{{ state.status }}{% endif %} · {{ state.progress }}%</span>
-      <span class="muted">Agent log: <code>{{ state.audit.events }}</code> events
-        {% if state.audit.verified %}<span class="pill pill-status status-succeeded">verified</span>{% else %}<span class="pill pill-status status-failed">unverified</span>{% endif %}
-      </span>
+  <p class="agent-explain-lede">{{ m.explain.plain_language }}</p>
+  <details class="fold-body explain-fold" data-auto-details open>
+    <summary>Why it matters, what to look at, and the outcome</summary>
+    <div class="explain-grid">
+    <div>
+      <h3>Why it matters</h3>
+      <p>{{ m.explain.why_it_matters }}</p>
+    </div>
+    <div>
+      <h3>What to look at</h3>
+      <ol class="explain-list">
+        {% for item in m.explain.what_to_look_at %}<li>{{ item }}</li>{% endfor %}
+      </ol>
+    </div>
+    <div>
+      <h3>Outcome</h3>
+      <p><strong>{{ m.explain.outcome|replace('completed_with_gates', 'sealed · human gates open')|replace('green_with_human_gates', 'machine-green · human gates open')|replace('revalidation_required', 'revalidation required') }}</strong></p>
+      <p class="muted">{{ m.explain.caveat }}</p>
     </div>
   </div>
-  <div class="summary-strip migration-summary" aria-label="Migration summary">
-    <div class="summary-stat"><span class="summary-value" data-migration-stat="packages">{{ state.summary.get('packages', 0) }}</span><span class="summary-label">work packages</span></div>
-    <div class="summary-stat"><span class="summary-value" data-migration-stat="generated">{{ state.summary.get('generated', 0) }}</span><span class="summary-label">draft targets generated</span></div>
-    <div class="summary-stat"><span class="summary-value" data-migration-stat="gates">{{ state.summary.get('gates', 0) }}</span><span class="summary-label">open gates</span></div>
-    <div class="summary-stat summary-signal"><span class="summary-value" data-migration-stat="high_gates">{{ state.summary.get('high_gates', 0) }}</span><span class="summary-label">high-impact gates</span></div>
-    <div class="summary-stat"><span class="summary-value" data-migration-stat="artifacts">{{ state.summary.get('artifacts', 0) }}</span><span class="summary-label">bundle files</span></div>
+  </details>
+  <details class="glossary-details">
+    <summary>Glossary for a first-time reader ({{ m.glossary|length }} terms)</summary>
+    <dl class="glossary-grid">
+      {% for item in m.glossary %}
+      <div><dt>{{ item.term }}</dt><dd>{{ item.definition }}</dd></div>
+      {% endfor %}
+    </dl>
+  </details>
+</section>
+
+<section class="panel next-actions-panel" aria-labelledby="migration-next-actions">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">Human to-do</div>
+      <h2 id="migration-next-actions">What a human must do next</h2>
+    </div>
+    <span class="badge badge-warning">Nothing is approved</span>
+  </div>
+  <details class="fold-body next-actions-fold" data-auto-details open>
+    <summary>{{ m.next_actions|length }} actions · expand the full human to-do list</summary>
+    <ol class="next-actions-list">
+      {% for action in m.next_actions %}<li>{{ action }}</li>{% endfor %}
+    </ol>
+  </details>
+</section>
+
+<section class="approval-split" aria-label="Machine verification and human approval">
+  <div class="approval-card approval-machine">
+    <span class="approval-label">Machine verification</span>
+    <strong>{{ m.machine_checks.passed }}/{{ m.machine_checks.total }} deterministic checks passed</strong>
+    <p>Critic verdict: {{ m.machine_checks.verdict }}. Machine checks are not approval.</p>
+  </div>
+  <div class="approval-card approval-human">
+    <span class="approval-label">Human approval</span>
+    <strong>{{ m.human_gate_summary.total }} review gates open · {{ m.human_gate_summary.pending_changes }} changes pending</strong>
+    <p>{{ m.human_gate_summary.plain_language }}</p>
   </div>
 </section>
 
-<section class="panel">
-  <div class="panel-head"><h2>Agent crew</h2><span class="muted">deterministic handoffs · no self-approval</span></div>
-  <div class="agent-grid">
-    {% for agent in state.agents %}
-    <article class="agent-card agent-{{ agent.status }}" data-agent="{{ agent.agent_id }}">
-      <div class="agent-top">
-        <span class="agent-index">{{ loop.index }}</span>
-        <span class="agent-state">{{ agent.status }}</span>
-      </div>
-      <h3>{{ agent.name }}</h3>
-      <p class="agent-role">{{ agent.role }}</p>
-      <p class="agent-summary">{{ agent.summary or agent.description }}</p>
-      {% if agent.checks %}
-      <ul class="agent-checks">
-        {% for check in agent.checks[:3] %}
-        <li class="{{ 'ok' if check.ok else 'bad' }}">{{ check.name }}</li>
-        {% endfor %}
-      </ul>
+<section class="panel agent-loop-panel" data-migration-panel data-run-id="{{ run_id }}" data-migration-status="{{ 'running' if m.status == 'running' else 'settled' }}">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">Agent crew</div>
+      <h2>{{ m.feature_id }} · {{ m.feature_name }}</h2>
+      <p class="muted">{{ m.mode }} · {{ m.started_at }}{% if m.finished_at %} → {{ m.finished_at }}{% endif %}</p>
+    </div>
+    <div class="agent-loop-actions">
+      <button class="btn btn-small" type="button" data-agent-replay>Replay loop</button>
+      <button class="btn btn-small" type="button" data-migration-start data-migration-force="1">Run again</button>
+      {% if llm_status.configured %}
+      <span class="live-action">
+        <button class="btn btn-small" type="button" data-migration-start data-migration-force="1" data-migration-live="1" title="Run live with the selected model. Only synthetic fixture text is sent.">Run live · {{ llm_status.default_model }}</button>
+        <span class="live-disclosure">Opt-in · synthetic fixture text only</span>
+      </span>
       {% endif %}
-    </article>
+    </div>
+  </div>
+
+  <div class="migration-progress">
+    <progress class="progress" data-migration-bar max="100" value="{{ m.progress }}"></progress>
+    <div class="migration-progress-meta">
+      <span data-migration-label>{% if m.current_agent %}Running {{ m.current_agent }}{% else %}{{ reader_status(m.status) }}{% endif %} · {{ m.progress }}%</span>
+      <span class="muted">Agent log: <code>{{ m.audit.events }}</code> events
+        {% if m.audit.verified %}<span class="pill pill-status status-succeeded">verified</span>{% else %}<span class="pill pill-status status-failed">unverified</span>{% endif %}
+      </span>
+    </div>
+  </div>
+
+  <div class="agent-cycle" role="group" aria-label="Five-agent cycle">
+    {% for stage in m.stages %}
+    <button class="cycle-stage cycle-{{ stage.agent_id }} {{ 'is-active' if loop.first else '' }} {{ 'is-green' if stage.status == 'done' else ('is-failed' if stage.status == 'failed' else '') }}"
+            type="button" data-agent-step="{{ loop.index0 }}" data-agent="{{ stage.agent_id }}"
+            aria-controls="agent-stage-{{ stage.agent_id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">
+      <span class="cycle-head">
+        <span class="cycle-index">{{ stage.index }}</span>
+        <span class="cycle-role">{% if stage.agent_id == 'guardian' %}Open human review gates{% elif stage.agent_id == 'critic' %}Independent machine checks{% else %}{{ stage.role }}{% endif %}</span>
+      </span>
+      <strong>{{ stage.name }}</strong>
+      <span class="cycle-count">{{ stage.count }} {{ stage.count_label }}</span>
+      <span class="cycle-state">{{ 'complete' if stage.status == 'done' else ('stopped' if stage.status == 'failed' else stage.status) }}</span>
+    </button>
+    {% if not loop.last %}
+    <span class="cycle-arrow" aria-hidden="true">→</span>
+    {% endif %}
+    {% endfor %}
+    <span class="cycle-return" aria-hidden="true">↺ rework to Architect if a machine check fails</span>
+  </div>
+
+  <div class="replay-bar" data-agent-replay-bar>
+    <button class="btn btn-small" type="button" data-replay-play>Play</button>
+    <button class="btn btn-small" type="button" data-replay-prev>Back</button>
+    <button class="btn btn-small" type="button" data-replay-next>Next</button>
+    <button class="btn btn-small btn-ghost" type="button" data-replay-reset>Reset</button>
+    <span class="replay-status" data-replay-status aria-live="polite">Step 1 of 5 · Scout</span>
+  </div>
+
+  <p class="machine-gate-note"><strong>Machine check vs human gate.</strong> Guardian opens human
+  review gates. Critic runs independent machine checks; a Critic pass is not a gate.</p>
+
+  <div class="agent-summary-strip" aria-label="Migration summary">
+    <div class="summary-stat"><span class="summary-value" data-migration-stat="packages">{{ m.summary.get('packages', 0) }}</span><span class="summary-label">work packages</span></div>
+    <div class="summary-stat"><span class="summary-value" data-migration-stat="generated">{{ m.summary.get('generated', 0) }}</span><span class="summary-label">target drafts</span></div>
+    <div class="summary-stat"><span class="summary-value" data-migration-stat="gates">{{ m.summary.get('gates', 0) }}</span><span class="summary-label">human review gates</span></div>
+    <div class="summary-stat summary-signal"><span class="summary-value" data-migration-stat="high_gates">{{ m.summary.get('high_gates', 0) }}</span><span class="summary-label">high impact</span></div>
+    <div class="summary-stat"><span class="summary-value" data-migration-stat="artifacts">{{ m.summary.get('artifacts', 0) }}</span><span class="summary-label">bundle files</span></div>
+  </div>
+</section>
+
+<section class="panel agent-narrative-panel" aria-labelledby="narrative-heading">
+  <div class="panel-head">
+    <h2 id="narrative-heading">What just happened</h2>
+    <span class="muted">the whole handoff in one paragraph</span>
+  </div>
+  <p class="agent-narrative">{{ m.narrative }}</p>
+  <div class="handoff-list">
+    {% for handoff in m.handoffs %}
+    <div class="handoff-item handoff-{{ handoff.kind }}">
+      <span class="handoff-seq">{{ handoff.seq }}</span>
+      <span class="handoff-route"><code>{{ handoff.from }}</code> → <code>{{ handoff.to }}</code></span>
+      <span class="handoff-message">{{ handoff.message }}</span>
+    </div>
     {% endfor %}
   </div>
 </section>
 
-<section class="panel">
-  <div class="panel-head">
-    <h2>Generated packages</h2>
-    <span class="muted">{{ pluralize(state.packages|length, 'target') }} · {{ state.summary.get('generated', 0) }} ready · {{ state.summary.get('blocked', 0) }} blocked</span>
-  </div>
-  {% if state.packages %}
-  {% call scroll_region("Migration work packages, horizontally scrollable if needed") %}
-    <table class="data-table compact migration-table">
-      <caption>Migration work packages, target files, evidence, and approval state.</caption>
-      <thead><tr><th scope="col">ID</th><th scope="col">Target</th><th scope="col">Disposition</th><th scope="col">Status</th><th scope="col">Evidence</th><th scope="col">Gates</th><th scope="col">Approval</th></tr></thead>
-      <tbody>
-        {% for package in state.packages %}
-        <tr>
-          <td><code>{{ package.package_id }}</code></td>
-          <td><code>{{ package.target_path }}</code></td>
-          <td>{{ package.disposition or '—' }}</td>
-          <td>{% if package.status == 'draft_ready' %}<span class="pill pill-status status-succeeded">draft ready</span>{% else %}<span class="pill pill-status status-failed">{{ package.status }}</span>{% endif %}</td>
-          <td>{% for evidence_id in package.evidence_ids %}<code>{{ evidence_id }}</code>{% if not loop.last %} {% endif %}{% endfor %}</td>
-          <td>{% for gate_id in package.gate_ids %}<code>{{ gate_id }}</code>{% if not loop.last %} {% endif %}{% else %}<span class="muted">—</span>{% endfor %}</td>
-          <td>{{ package.approval }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% endcall %}
-  {% else %}
-  <p class="muted">No packages are available yet. The Architect creates one package per explicit change.</p>
-  {% endif %}
-</section>
-
-<div class="grid-2 migration-lower">
-  <section class="panel">
-    <div class="panel-head"><h2>Open gates</h2><span class="muted">human decisions required</span></div>
-    {% if state.gates %}
-    <div class="gate-list">
-      {% for gate in state.gates %}
-      <article class="gate-card gate-{{ gate.severity }}">
-        <div class="gate-head"><code>{{ gate.gate_id }}</code><span class="pill pill-{{ 'danger' if gate.severity == 'high' else 'warning' }}">{{ gate.severity }}</span><span class="muted">{{ gate.kind }}</span></div>
-        <p><strong>{{ gate.title }}</strong></p>
-        <p class="muted">{{ gate.question }}</p>
-        <p class="muted">Owner: {{ gate.owner }} · {{ gate.source_id }}</p>
-      </article>
-      {% endfor %}
+<div class="agent-stage-list" data-agent-stage-list>
+  {% for stage in m.stages %}
+  <section class="panel agent-stage-detail {{ 'is-active' if loop.first else '' }}" id="agent-stage-{{ stage.agent_id }}" tabindex="-1"
+           data-agent-stage="{{ loop.index0 }}" data-agent-name="{{ stage.name }}" {% if not loop.first %}hidden{% endif %}>
+    <div class="panel-head">
+      <div>
+        <div class="eyebrow">Agent {{ stage.index }} of 5</div>
+        <h2>{{ stage.name }} · {% if stage.agent_id == 'guardian' %}Open human review gates{% elif stage.agent_id == 'critic' %}Independent machine checks{% else %}{{ stage.role }}{% endif %}</h2>
+      </div>
+      <div class="stage-meta">
+        <span class="stage-count">{{ stage.count }} {{ stage.count_label }}</span>
+        <span class="pill pill-status {{ 'status-succeeded' if stage.status == 'done' else ('status-failed' if stage.status == 'failed' else 'status-running') }}">{{ 'complete' if stage.status == 'done' else ('stopped' if stage.status == 'failed' else stage.status) }}</span>
+      </div>
     </div>
-    {% else %}
-    <p class="muted">No open gates. Changes still require human approval before release.</p>
-    {% endif %}
-  </section>
 
-  <section class="panel">
-    <div class="panel-head"><h2>Verification and bundle</h2><span class="pill pill-status status-{{ 'succeeded' if state.verification.status == 'passed' else 'failed' }}">{{ state.verification.status }}</span></div>
-    {% if state.verification.checks %}
-    <ul class="verification-list">
-      {% for check in state.verification.checks %}
-      <li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>
-      {% endfor %}
-    </ul>
+    <p class="stage-plain">{{ stage.plain_language }}</p>
+
+    {% if stage.agent_id == 'guardian' %}
+    <div class="status-split">
+      <div class="status-card status-human">
+        <span class="status-card-label">Human review gates</span>
+        <strong>{{ m.human_gate_summary.total }} open human decisions · {{ m.human_gate_summary.high }} high impact</strong>
+        <p>{{ m.human_gate_summary.plain_language }}</p>
+        <ul class="status-facts">
+          <li>{{ m.human_gate_summary.assumption_gates }} assumption gates</li>
+          <li>{{ m.human_gate_summary.rule_groups }} rule groups</li>
+          <li>{{ m.human_gate_summary.unassigned_owners }} unassigned owners</li>
+          <li>{{ m.human_gate_summary.pending_changes }} changes still pending</li>
+        </ul>
+      </div>
+      <div class="status-card status-machine">
+        <span class="status-card-label">Machine checks</span>
+        <strong>{{ m.machine_checks.passed }}/{{ m.machine_checks.total }} deterministic checks passed · verdict {{ m.machine_checks.verdict }}</strong>
+        <p>Machine checks are not human approval. A passing check never closes a human review gate.</p>
+      </div>
+    </div>
+    {% elif stage.agent_id == 'critic' %}
+    <div class="status-split">
+      <div class="status-card status-machine">
+        <span class="status-card-label">Machine checks</span>
+        <strong>{{ m.machine_checks.passed }}/{{ m.machine_checks.total }} deterministic checks passed · verdict {{ m.machine_checks.verdict }}</strong>
+        <p>These checks verify the artifact. They do not approve it and do not close the gates below.</p>
+      </div>
+      <div class="status-card status-human">
+        <span class="status-card-label">Human review gates</span>
+        <strong>{{ m.human_gate_summary.total }} gates still open · {{ m.human_gate_summary.high }} high impact</strong>
+        <p>{{ m.human_gate_summary.plain_language }}</p>
+      </div>
+    </div>
     {% endif %}
-    <dl class="migration-facts">
-      <div><dt>Plan</dt><dd><a href="/api/runs/{{ run_id }}/migration/file?path={{ state.plan_path|urlencode }}">migration-plan.json</a> <code>{{ state.plan_sha256[:12] if state.plan_sha256 else '—' }}</code></dd></div>
-      <div><dt>Report</dt><dd><a href="/api/runs/{{ run_id }}/migration/file?path={{ state.report_path|urlencode }}">MIGRATION-REPORT.md</a> <code>{{ state.report_sha256[:12] if state.report_sha256 else '—' }}</code></dd></div>
-      <div><dt>Bundle</dt><dd>{{ state.bundle.file_count if state.bundle else 0 }} files · <code>{{ state.bundle.sha256[:12] if state.bundle else '—' }}</code></dd></div>
-      <div><dt>Agent log</dt><dd><code>{{ state.audit.path }}</code> · head <code>{{ state.audit.head or '—' }}</code></dd></div>
-    </dl>
+
+    <div class="stage-grid">
+      <div class="stage-column">
+        <h3>Received</h3>
+        <ul class="stage-list">
+          {% for item in stage.received %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+        {% if stage.not_received %}
+        <div class="stage-not-received">
+          <strong>Deliberately not received</strong>
+          <ul>{% for item in stage.not_received %}<li>{{ item }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+      </div>
+      <div class="stage-column">
+        <h3>Work</h3>
+        {% if stage.checks %}
+        <ul class="verification-list compact">
+          {% for check in stage.checks %}
+          <li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">This stage does not expose individual checks.</p>
+        {% endif %}
+      </div>
+      <div class="stage-column">
+        <h3>Produced</h3>
+        <ul class="stage-list">
+          {% for item in stage.produced %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+        <p class="stage-handoff">{{ stage.handoff }}</p>
+      </div>
+    </div>
+
+    {% if stage.agent_id == 'scout' %}
+    <div class="stage-artifact">
+      <div class="panel-head"><h3>Evidence handed to Architect</h3><span class="muted">first {{ m.evidence_preview|length }} of {{ m.summary.get('feature_evidence', 0) }} links</span></div>
+      <p class="scroll-hint" data-scroll-hint hidden>Scroll horizontally to see all columns. <span aria-hidden="true">&rarr;</span></p>
+      <div class="table-scroll" role="region" aria-label="Scout evidence preview" tabindex="0"
+           data-evidence-table data-table-scroll data-run-id="{{ run_id }}">
+        <table class="data-table compact scout-evidence-table">
+          <caption>Scout evidence links with file, locator, and source excerpt.</caption>
+          <thead><tr><th>Evidence</th><th>File</th><th>Locator</th><th>Excerpt</th></tr></thead>
+          <tbody>
+            {% for item in m.evidence_preview %}
+            <tr>
+              <td><a class="evidence-link" href="/api/runs/{{ run_id }}/evidence/{{ item.evidence_id }}" target="_blank" rel="noopener"><code>{{ item.evidence_id }}</code></a></td>
+              <td><code>{{ item.path }}</code></td>
+              <td class="evidence-locator" data-evidence-locator data-evidence-id="{{ item.evidence_id }}">
+                {%- if item.locator is mapping -%}
+                  {%- if item.locator.line %}line {{ item.locator.line }} · {% endif -%}
+                  {%- if item.locator.kind %}{{ item.locator.kind|replace('_', ' ') }} {% endif -%}
+                  {{- item.locator.value or 'recorded' -}}
+                {%- elif item.locator -%}
+                  {{ item.locator }}
+                {%- elif item.line -%}
+                  line {{ item.line }}
+                {%- elif item.pointer -%}
+                  {{ item.pointer }}
+                {%- else -%}
+                  <span class="muted">{{ item.method or 'path only' }}</span>
+                {%- endif -%}
+              </td>
+              <td><code>{{ item.excerpt }}</code></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if stage.agent_id == 'architect' %}
+    <div class="stage-artifact">
+      <div class="panel-head"><h3>Packages generated</h3><span class="muted">every package is evidence-linked and pending</span></div>
+      <p class="scroll-hint" data-scroll-hint hidden>Scroll horizontally to see all columns. <span aria-hidden="true">&rarr;</span></p>
+      <div class="table-scroll" role="region" aria-label="Architect packages" tabindex="0" data-table-scroll>
+        <table class="data-table compact package-table">
+          <caption>Architect work packages with target, disposition, status, evidence, gate, and approval.</caption>
+          <thead><tr><th>ID</th><th>Target</th><th>Disposition</th><th>Status</th><th>Evidence</th><th>Gate</th><th>Approval</th></tr></thead>
+          <tbody>
+            {% for package in m.package_previews %}
+            <tr>
+              <td><code>{{ package.package_id }}</code></td>
+              <td><code>{{ package.target_path }}</code></td>
+              <td>{{ package.disposition or '—' }}</td>
+              <td>{% if package.status == 'draft_ready' %}<span class="pill pill-status status-succeeded">draft ready</span>{% else %}<span class="pill pill-status status-failed">{{ package.status }}</span>{% endif %}</td>
+              <td>{% for evidence_id in package.evidence_ids %}<code>{{ evidence_id }}</code> {% endfor %}</td>
+              <td>{% for gate_id in package.gate_ids %}<code>{{ gate_id }}</code> {% else %}—{% endfor %}</td>
+              <td><span class="badge badge-neutral">{{ package.approval }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="package-preview-grid">
+        {% for package in m.package_previews %}
+        <details class="package-preview">
+          <summary><code>{{ package.package_id }}</code> {{ package.target_path }}</summary>
+          <pre class="artifact-preview">{{ package.preview or 'Preview unavailable for this run.' }}</pre>
+          <a class="text-link" href="/api/runs/{{ run_id }}/migration/file?path={{ ('migration/target/' ~ package.target_path)|urlencode }}">Download target</a>
+        </details>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if stage.agent_id == 'guardian' %}
+    <div class="stage-artifact">
+      <div class="panel-head"><h3>Open gates by type <span class="label-inline">human review gates</span></h3><span class="muted">{{ m.gate_groups.assumptions|length }} assumptions · {{ m.gate_groups.rules|length }} rule groups</span></div>
+      <div class="gate-group-grid">
+        <div>
+          <h4>Assumption gates ({{ m.gate_groups.assumptions|length }})</h4>
+          <div class="gate-list compact" role="region" aria-label="Guardian assumption gates" tabindex="0">
+            {% for gate in m.gate_groups.assumptions %}
+            <article class="gate-card gate-{{ gate.severity }}">
+              <div class="gate-head"><code>{{ gate.gate_id }}</code><span class="pill pill-{{ 'danger' if gate.severity == 'high' else 'warning' }}">{{ gate.severity }}</span></div>
+              <p><strong>{{ gate.title }}</strong></p>
+              <p class="muted">{{ gate.question }}</p>
+              <p class="muted">Owner: {{ gate.owner }}</p>
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          <h4>Rule groups ({{ m.gate_groups.rules|length }})</h4>
+          <p class="scroll-hint" data-scroll-hint hidden>Scroll horizontally to see all columns. <span aria-hidden="true">&rarr;</span></p>
+          <div class="table-scroll" role="region" aria-label="Guardian rule groups" tabindex="0" data-table-scroll>
+            <table class="data-table compact">
+              <caption>Guardian rule groups with finding counts, severity, and linked human gates.</caption>
+              <thead><tr><th>Rule</th><th>Findings</th><th>Severity</th><th>Gate</th></tr></thead>
+              <tbody>
+                {% for group in m.gate_groups.rules %}
+                <tr><td><code>{{ group.rule_id }}</code></td><td>{{ group.count }}</td><td><span class="pill pill-{{ 'danger' if group.severity == 'high' else 'warning' }}">{{ group.severity }}</span></td><td>{% for gate in group.gates %}<code>{{ gate.gate_id }}</code> {% endfor %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if stage.agent_id == 'critic' %}
+    <div class="stage-artifact">
+      <div class="panel-head"><h3>Independent verification <span class="label-inline">machine checks</span></h3><span class="muted">{{ m.machine_checks.passed }}/{{ m.machine_checks.total }} machine checks passed</span></div>
+      <ul class="verification-list">
+        {% for check in (m.machine_checks.checks or m.verification.checks) %}
+        <li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if stage.agent_id == 'scribe' %}
+    {% set seal = namespace(matched=0, append_only=0, changed=0) %}
+    {% for file in m.bundle_files %}
+      {% if file.hash_matches_seal %}{% set seal.matched = seal.matched + 1 %}
+      {% elif file.append_only %}{% set seal.append_only = seal.append_only + 1 %}
+      {% else %}{% set seal.changed = seal.changed + 1 %}{% endif %}
+    {% endfor %}
+    <div class="stage-artifact">
+      <div class="panel-head">
+        <h3>Sealed bundle</h3>
+        <span class="muted">{{ m.bundle_files|length }} sealed content files · manifest kept separate</span>
+      </div>
+
+      <div class="seal-status-row">
+        <div>
+          <span class="seal-label">Seal hash check</span>
+          {% if seal.changed %}
+          <span class="pill pill-status status-failed">{{ seal.changed }} changed since seal</span>
+          {% elif seal.append_only %}
+          <span class="pill pill-status status-running">{{ seal.matched }}/{{ m.bundle_files|length }} match · log appended</span>
+          {% else %}
+          <span class="pill pill-status status-succeeded">all {{ m.bundle_files|length }} hashes match</span>
+          {% endif %}
+        </div>
+        <p class="muted">The 8 sealed content files are 5 target drafts + plan + report + agent log.
+        The bundle manifest is a separate wrapper and is not counted among them.</p>
+      </div>
+
+      <div class="seal-grid">
+        <div class="seal-card"><span class="seal-label">Plan</span><code title="{{ m.plan_sha256 }}">{{ m.plan_sha256[:16] if m.plan_sha256 else '—' }}</code><a class="text-link" href="/api/runs/{{ run_id }}/migration/file?path={{ m.plan_path|urlencode }}">migration-plan.json</a></div>
+        <div class="seal-card"><span class="seal-label">Report</span><code title="{{ m.report_sha256 }}">{{ m.report_sha256[:16] if m.report_sha256 else '—' }}</code><a class="text-link" href="/api/runs/{{ run_id }}/migration/file?path={{ m.report_path|urlencode }}">MIGRATION-REPORT.md</a></div>
+        <div class="seal-card"><span class="seal-label">Bundle manifest</span><code title="{{ m.bundle_manifest.sha256 if m.bundle_manifest else '' }}">{{ m.bundle_manifest.sha256[:16] if m.bundle_manifest and m.bundle_manifest.sha256 else '—' }}</code><span class="muted">wrapper · not a sealed content file</span></div>
+        <div class="seal-card"><span class="seal-label">Agent log</span><code title="{{ m.audit.head }}">{{ m.audit.head[:16] if m.audit.head else '—' }}</code><span class="pill pill-status {{ 'status-succeeded' if m.audit.verified else 'status-failed' }}">{{ 'verified' if m.audit.verified else 'unverified' }}</span></div>
+      </div>
+
+      <details class="bundle-breakdown" open>
+        <summary>Bundle contents ({{ m.bundle_files|length }} sealed content files)</summary>
+        <p class="scroll-hint" data-scroll-hint hidden>Scroll horizontally to see all columns. <span aria-hidden="true">&rarr;</span></p>
+        <div class="table-scroll" role="region" aria-label="Sealed bundle content files" tabindex="0" data-table-scroll>
+          <table class="data-table compact bundle-table">
+            <caption>Sealed bundle content files with role, path, size, sealed hash, and seal check.</caption>
+            <thead><tr><th>Role</th><th>File</th><th>Bytes</th><th>Sealed SHA-256</th><th>Seal check</th></tr></thead>
+            <tbody>
+              {% for file in m.bundle_files %}
+              <tr>
+                <td><span class="role-tag">{{ file.role }}</span></td>
+                <td><code class="bundle-path" title="{{ file.path }}">{{ file.path }}</code></td>
+                <td>{{ file.bytes if file.bytes is not none else '—' }}</td>
+                <td><code title="{{ file.sha256 }}">{{ file.sha256[:16] }}</code></td>
+                <td>
+                  {% if file.hash_matches_seal %}
+                  <span class="pill pill-status status-succeeded">matches seal</span>
+                  {% elif file.append_only %}
+                  <span class="pill pill-status status-running">append-only · grown since seal</span>
+                  {% else %}
+                  <span class="pill pill-status status-failed">changed since seal</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      {% if m.bundle_manifest %}
+      <div class="manifest-card">
+        <div>
+          <span class="seal-label">Bundle manifest — separate wrapper</span>
+          <code class="bundle-path" title="{{ m.bundle_manifest.path }}">{{ m.bundle_manifest.path }}</code>
+        </div>
+        <dl class="manifest-facts">
+          <div><dt>SHA-256</dt><dd><code title="{{ m.bundle_manifest.sha256 }}">{{ m.bundle_manifest.sha256[:16] if m.bundle_manifest.sha256 else '—' }}</code></dd></div>
+          <div><dt>Size</dt><dd>{{ m.bundle_manifest.bytes if m.bundle_manifest.bytes is not none else '—' }} bytes</dd></div>
+          <div><dt>Files listed</dt><dd>{{ m.bundle_manifest.file_count }}</dd></div>
+          <div><dt>Note</dt><dd>{{ m.bundle_manifest.note }}</dd></div>
+        </dl>
+      </div>
+      {% endif %}
+
+      <p class="muted">Sealed means tamper-evident, not approved. {{ m.boundary }}</p>
+    </div>
+    {% endif %}
+
+    {% if m.llm and m.llm.annotations and m.llm.annotations.get(stage.agent_id) %}
+    {% set reasoning = m.llm.annotations[stage.agent_id] %}
+    <div class="reasoning-card">
+      <div class="panel-head"><h3>Live reasoning · {{ reasoning.model }}</h3><span class="badge badge-live">grounded</span></div>
+      <p><strong>{{ reasoning.headline }}</strong></p>
+      {% if reasoning.observations %}
+      <ul>{% for item in reasoning.observations %}<li>{{ item.text }} <span class="muted">{% for evidence_id in item.evidence_ids %}<code>{{ evidence_id }}</code> {% endfor %}</span></li>{% endfor %}</ul>
+      {% endif %}
+      {% if reasoning.packages %}
+      <ul>{% for item in reasoning.packages %}<li><code>{{ item.package_id }}</code> {{ item.rationale }} <span class="muted">risk {{ item.risk }} · test: {{ item.test }}</span></li>{% endfor %}</ul>
+      {% endif %}
+      {% if reasoning.tradeoffs %}
+      <ul>{% for item in reasoning.tradeoffs %}<li>{{ item.text }} <span class="muted">{% for rule_id in item.rule_ids %}<code>{{ rule_id }}</code> {% endfor %}</span></li>{% endfor %}</ul>
+      {% endif %}
+      {% if reasoning.residual_risks %}
+      <ul>{% for item in reasoning.residual_risks %}<li>{{ item.text }} <span class="muted">owner: {{ item.owner }}</span></li>{% endfor %}</ul>
+      {% endif %}
+      <p class="muted">{{ reasoning.dropped_ungrounded }} ungrounded statement(s) dropped · {{ reasoning.latency_ms }} ms · {{ reasoning.usage.get('total_tokens', 0) }} tokens</p>
+    </div>
+    {% endif %}
+    {% if m.llm and m.llm.warnings %}
+    {% for warning in m.llm.warnings %}
+    {% if warning.agent == stage.agent_id %}
+    <div class="banner banner-warning"><strong>Live reasoning warning.</strong> {{ warning.message }} The deterministic result still stands.</div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
   </section>
+  {% endfor %}
 </div>
 
-{% if state.status == 'running' %}
+<section class="panel agent-artifacts">
+  <div class="panel-head">
+    <h2>Sealed bundle downloads</h2>
+    <span class="muted">local, non-deployable drafts · every change pending</span>
+  </div>
+  <div class="button-row">
+    <a class="btn" href="/api/runs/{{ run_id }}/migration/file?path={{ m.plan_path|urlencode }}">Plan JSON</a>
+    <a class="btn" href="/api/runs/{{ run_id }}/migration/file?path={{ m.report_path|urlencode }}">Migration report</a>
+    {% if m.bundle_manifest %}
+    <a class="btn" href="/api/runs/{{ run_id }}/migration/file?path={{ m.bundle_manifest.path|urlencode }}">Bundle manifest</a>
+    {% endif %}
+    <a class="btn btn-ghost" href="/api/runs/{{ run_id }}/audit" target="_blank" rel="noopener">Review audit JSON</a>
+  </div>
+  <p class="muted">Verify the agent chain with <code>preflight verify-migration {{ run_id }}</code>. This checks the migrator log only; the review packet has its own audit chain.</p>
+</section>
+
+{% if m.status == 'running' %}
 <p class="muted migration-live-note" data-migration-poll>Live run in progress. This page updates automatically.</p>
 {% endif %}
 {% endif %}

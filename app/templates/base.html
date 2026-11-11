@@ -12,14 +12,14 @@
 <body data-run-id="{{ run_id or '' }}" data-page="{{ title|lower|replace(' ', '-') }}">
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="topbar">
-    <div class="brand">
+    <a class="brand brand-sub" href="/" aria-label="PF PreFlight Cloud-readiness review home">
       <span class="brand-mark" aria-hidden="true">PF</span>
       <span class="brand-name">PreFlight</span>
       <span class="brand-sub">Cloud-readiness review</span>
-    </div>
+    </a>
     <div class="top-status">
       <span class="badge badge-synthetic">Synthetic estate</span>
-      <span class="badge badge-offline"><span class="dot"></span> Offline</span>
+      <span class="badge badge-offline" title="Local-first: runs on this machine; live reasoning is opt-in and sends synthetic fixture text only."><span class="dot"></span> Local-first</span>
       <span class="badge badge-assurance">Official Cloud Assurance: not run</span>
     </div>
   </header>
@@ -57,29 +57,29 @@
       </button>
       <div class="side-groups" id="primary-nav-links" data-nav-groups>
         <div class="side-group">
+          <div class="side-label">Agent demo</div>
+          <a class="side-link {{ 'active' if title == 'Migrator' }}" href="/migrator{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Migrator' %} aria-current="page"{% endif %}>Agent loop</a>
+          <a class="side-link {{ 'active' if title == 'Codebase lab' }}" href="/codebase"{% if title == 'Codebase lab' %} aria-current="page"{% endif %}>Codebase lab</a>
+          <a class="side-link {{ 'active' if title == 'Case studies' }}" href="/case-studies"{% if title == 'Case studies' %} aria-current="page"{% endif %}>Migration stories</a>
+        </div>
+        <div class="side-group">
           <div class="side-label">Review</div>
           <a class="side-link {{ 'active' if title == 'Workbench' }}" href="/{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Workbench' %} aria-current="page"{% endif %}>Workbench</a>
           <a class="side-link {{ 'active' if title == 'Manifest' }}" href="/manifest{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Manifest' %} aria-current="page"{% endif %}>Manifest</a>
           <a class="side-link {{ 'active' if title == 'Reconstruction' }}" href="/reconstruction{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Reconstruction' %} aria-current="page"{% endif %}>Reconstruction</a>
-          <a class="side-link {{ 'active' if title == 'Migrator' }}" href="/migrator{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Migrator' %} aria-current="page"{% endif %}>Migrator</a>
-          <a class="side-link {{ 'active' if title == 'Codebase lab' }}" href="/codebase"{% if title == 'Codebase lab' %} aria-current="page"{% endif %}>Codebase lab</a>
           <a class="side-link {{ 'active' if title == 'Findings' }}" href="/findings{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Findings' %} aria-current="page"{% endif %}>Findings</a>
-        </div>
-        <div class="side-group">
-          <div class="side-label">Evidence</div>
           <a class="side-link {{ 'active' if title == 'Evaluation' }}" href="/evaluation{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Evaluation' %} aria-current="page"{% endif %}>Evaluation</a>
           <a class="side-link {{ 'active' if title == 'Packet' }}" href="/packet{% if run_id %}?run={{ run_id }}{% endif %}"{% if title == 'Packet' %} aria-current="page"{% endif %}>Review packet</a>
         </div>
         <div class="side-group">
           <div class="side-label">Workspace</div>
-          <a class="side-link {{ 'active' if title == 'Case studies' }}" href="/case-studies"{% if title == 'Case studies' %} aria-current="page"{% endif %}>Case studies</a>
           <a class="side-link {{ 'active' if title == 'Runs' }}" href="/runs"{% if title == 'Runs' %} aria-current="page"{% endif %}>Runs</a>
           <a class="side-link {{ 'active' if title == 'Settings' }}" href="/settings"{% if title == 'Settings' %} aria-current="page"{% endif %}>Settings</a>
           <a class="side-link {{ 'active' if title == 'About and boundaries' }}" href="/about"{% if title == 'About and boundaries' %} aria-current="page"{% endif %}>About</a>
         </div>
       </div>
       <div class="side-foot">
-        <div class="offline-note">Local only. No tenant, no telemetry.</div>
+        <div class="offline-note">Local-first. No tenant, no telemetry by default.</div>
       </div>
     </aside>
 
@@ -91,6 +91,10 @@
   <footer class="footer">
     <div class="footer-line muted">
       {{ disclaimer }}
+    </div>
+    <div class="footer-line muted">
+      <strong>Reasoning:</strong> offline by default. Live MiMo reasoning is opt-in and sends only
+      synthetic fixture text to the configured endpoint — never a real tenant, credentials, or repository content.
     </div>
   </footer>
   <dialog class="decision-dialog" data-decision-dialog aria-labelledby="decision-dialog-title" aria-describedby="decision-consequence">

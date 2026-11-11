@@ -6,16 +6,97 @@
 {% set evidence_selected = evidence_query and selected_evidence and selected_evidence.evidence_id == evidence_query %}
 <div class="page-head">
   <div>
-    <div class="eyebrow">Evidence graph</div>
+    <div class="eyebrow">PreFlight · cloud-readiness review</div>
     <h1>Feature workbench</h1>
-    <p class="lede">One selected feature, traced across PCF, entity metadata, typelists, the extracted
-    template, Gosu, and tests. Click a highlighted evidence-bearing node to inspect file evidence.</p>
+    <p class="lede">PreFlight is an offline review of a Guidewire-style insurance codebase before a cloud
+    move. This page follows one feature and traces each claim back to screens, data definitions,
+    configuration, code, and tests. Click a highlighted evidence-bearing node to inspect the source.</p>
   </div>
   <div class="head-meta">
     {% if view %}{{ status(view.status.status) }}{% endif %}
     <span class="muted">Run {{ run_id }}</span>
   </div>
 </div>
+
+<section class="banner banner-boundary" aria-label="Reality boundary">
+  <strong>Reality boundary.</strong> This is a synthetic rehearsal, not an actual migration:
+  no tenant, no code compile or deployment, and no official Cloud Assurance result.
+</section>
+
+<section class="panel agent-explain" aria-labelledby="preflight-intro">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">Start here</div>
+      <h2 id="preflight-intro">What PreFlight is, in plain language</h2>
+    </div>
+  </div>
+  <div class="explain-grid">
+    <div>
+      <h3>What it is</h3>
+      <p>PreFlight is a local, read-only review tool for a Guidewire-style insurance codebase before a
+      cloud migration. It reads a snapshot, groups the code into features, and shows what each claim is
+      based on, what is still unknown, and what a safe change would touch.</p>
+      <p class="muted">It runs on this machine. It never edits the source and never deploys.</p>
+    </div>
+    <div>
+      <h3>What it is not</h3>
+      <ul>
+        <li>Not an official Cloud Assurance result, score, or certification.</li>
+        <li>It does not convert products to APD, and it does not replace Cloud Retrofit.</li>
+        <li>Not a deployment tool or a live tenant connection.</li>
+        <li>Not an autonomous approver. Every draft, mapping, and patch stays pending.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Three promises</h3>
+      <ul>
+        <li><strong>Every claim has evidence.</strong> Each finding resolves to a file and line/pointer,
+        or is labelled unresolved.</li>
+        <li><strong>Every unknown has a name.</strong> Missing sources become explicit gaps and
+        assumptions with an owner and impact.</li>
+        <li><strong>Every change waits for a human.</strong> Agents draft; a person accepts, rejects,
+        edits, or defers.</li>
+      </ul>
+    </div>
+  </div>
+  <h3>The five agents, one line each</h3>
+  <ul class="explain-list">
+    <li><strong>Scout</strong> reads the snapshot, maps the code, and scopes the feature.</li>
+    <li><strong>Architect</strong> drafts the target files, patches, and cloud configuration.</li>
+    <li><strong>Guardian</strong> runs the deterministic checks and opens human gates.</li>
+    <li><strong>Critic</strong> independently tries to break the result and records residual risk.</li>
+    <li><strong>Scribe</strong> seals the bundle in the feature loop; in the codebase loop the same role
+    is called <strong>Planner</strong>, which compiles and seals the report.</li>
+  </ul>
+  <p class="muted">Both loops use the same first four roles. Only the sealer changes name: Scribe in the
+  feature loop, Planner in the codebase loop.</p>
+  <p class="machine-gate-note"><strong>Machine check vs human gate.</strong> Guardian opens human
+  review gates. Critic runs independent machine checks; a Critic pass is not a gate.</p>
+  <div class="button-row">
+    <a class="btn btn-primary" href="/migrator{% if run_id %}?run={{ run_id }}{% endif %}">Watch the five-agent loop</a>
+    <a class="btn" href="/case-studies">Explore two completed migration stories</a>
+  </div>
+  <p class="muted">New to a term? The <a class="text-link" href="/about#glossary">plain-language glossary</a>
+  defines evidence link, feature, disposition, assumption, gate, SARIF, Gosu, APD, Cloud Data Access, and App Events.</p>
+</section>
+
+<section class="demo-path" aria-label="Suggested demo path">
+  <div>
+    <span class="demo-path-step">1</span>
+    <strong>Evidence</strong>
+    <span>You are here: the feature and its sources.</span>
+  </div>
+  <div>
+    <span class="demo-path-step">2</span>
+    <strong><a href="/migrator{% if run_id %}?run={{ run_id }}{% endif %}">Five-agent loop</a></strong>
+    <span>Scout → Architect → Guardian → Critic → Scribe.</span>
+  </div>
+  <div>
+    <span class="demo-path-step">3</span>
+    <strong><a href="/case-studies">Migration stories</a></strong>
+    <span>Two completed dummy insurer migrations.</span>
+  </div>
+</section>
 
 {% if view and view.status.status in ['failed', 'cancelled'] %}
 <section class="panel error-panel">
@@ -76,15 +157,16 @@
     <input id="feature-search" class="input" type="search" placeholder="Filter features..." data-filter-target="feature-row">
     <div class="feature-list">
       {% for feature in view.features %}
-      <a class="feature-row {{ 'selected' if view.selected_feature and feature.feature_id == view.selected_feature.feature_id }}"
-         href="/?run={{ run_id }}&feature={{ feature.feature_id }}" data-feature-row>
+      <button class="feature-row {{ 'selected' if view.selected_feature and feature.feature_id == view.selected_feature.feature_id }}"
+         type="button" data-feature-row data-feature-href="/?run={{ run_id }}&feature={{ feature.feature_id }}"
+         aria-pressed="{{ 'true' if view.selected_feature and feature.feature_id == view.selected_feature.feature_id else 'false' }}">
         <span class="feature-id">{{ feature.feature_id }}</span>
         <span class="feature-name">{{ feature.name }}</span>
         <span class="feature-meta">
           <span class="muted">{{ feature.evidence_ids|length }} evidence</span>
           {{ confidence(feature.confidence) }}
         </span>
-      </a>
+      </button>
       {% endfor %}
       <div class="empty-inline feature-empty" data-feature-empty hidden>
         <p>No features match.</p>
@@ -127,7 +209,9 @@
         {% endif %}
       </div>
     </div>
-    <div class="spine-scroll" data-spine-scroll>
+    <div class="spine-scroll" data-spine-scroll role="region"
+         aria-label="Feature spine graph, horizontally scrollable to all six columns"
+         tabindex="0">
       <svg class="spine-svg" viewBox="0 0 {{ view.spine_layout.width }} {{ view.spine_layout.height }}"
            width="{{ view.spine_layout.width }}" height="{{ view.spine_layout.height }}"
            role="group" aria-label="Evidence graph for {{ view.selected_feature.feature_id }}: six columns from PCF to tests. Highlighted nodes are keyboard-selectable; structural nodes carry no evidence record.">
@@ -151,7 +235,7 @@
           <g class="spine-node node-{{ node.kind }}{{ '' if has_evidence else ' node-structural' }}{{ ' selected' if is_selected }}"
              {% if has_evidence %}tabindex="0" role="button" aria-pressed="{{ 'true' if is_selected else 'false' }}"{% else %}role="note"{% endif %}
              data-evidence-id="{{ node.evidence_id or '' }}" data-path="{{ node.artifact_path or '' }}"
-             aria-label="{{ node.label }} {{ node.kind }}{% if node.artifact_path %} - {{ node.artifact_path }}{% endif %}{% if not has_evidence %}; structural node, no evidence record{% endif %}">
+             aria-label="{{ node.label }} - {{ node.kind }}{% if node.artifact_path %} - {{ node.artifact_path }}{% endif %} · {{ node.label_lines|join(' ') }} {{ node.kind }}{% if not has_evidence %}; structural node, no evidence record{% endif %}">
             <title>{{ node.label }} - {{ node.kind }}{% if node.artifact_path %} - {{ node.artifact_path }}{% endif %}{% if not has_evidence %} (structural node; no evidence record){% endif %}</title>
             {% if is_selected %}<rect class="node-selected-outline" x="{{ node.x - 3 }}" y="{{ node.y - 3 }}"
                   width="{{ node.w + 6 }}" height="{{ node.h + 6 }}" rx="6"/>{% endif %}

@@ -7,7 +7,10 @@ import secrets
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 REPO = Path(__file__).resolve().parents[1]
+load_dotenv(REPO / ".env")
 
 _FALLBACK_SECRET = secrets.token_urlsafe(32)
 
@@ -33,6 +36,16 @@ class Settings:
     release_context: str = "Qusar 2026.08 (review context)"
     host: str = field(default_factory=lambda: os.environ.get("PREFLIGHT_HOST", "127.0.0.1"))
     port: int = field(default_factory=lambda: int(os.environ.get("PREFLIGHT_PORT", "8000")))
+    llm_mode: str = field(default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_MODE") or "off").strip().lower())
+    llm_base_url: str = field(default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_BASE_URL") or "").strip().rstrip("/"))
+    llm_api_key: str = field(
+        default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_API_KEY") or "").strip(),
+        repr=False,
+    )
+    llm_model: str = field(default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_MODEL") or "mimo-v2.6-flash").strip())
+    llm_timeout: float = field(default_factory=lambda: float(os.environ.get("PREFLIGHT_LLM_TIMEOUT", "45")))
+    llm_allow_real_code: bool = field(default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_ALLOW_REAL_CODE") or "").strip().lower() in {"1", "true", "yes", "on"})
+
     allowed_hosts: tuple[str, ...] = ("127.0.0.1", "localhost", "testserver")
     allowed_origins: tuple[str, ...] = ()
     allowed_fixtures: tuple[str, ...] = (
@@ -49,3 +62,15 @@ class Settings:
                 "http://testserver",
                 configured,
             )))
+
+    def llm_config(self):
+        from app.services.llm import LLMConfig
+
+        return LLMConfig(
+            mode=self.llm_mode,
+            base_url=self.llm_base_url,
+            api_key=self.llm_api_key,
+            model=self.llm_model,
+            timeout=self.llm_timeout,
+            allow_real_code=self.llm_allow_real_code,
+        )

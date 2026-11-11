@@ -12,6 +12,7 @@ writes, no deployment, and no self-approval. Every patch remains ``pending``.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import io
 import json
@@ -27,6 +28,7 @@ from lxml import etree
 from app.config import Settings
 from app.models import CodeFinding
 from app.services.case_studies import case_source_root, get_case_study
+from app.services.llm import LLMConfig, LLMError, annotate_migration_agent
 from app.services.codeanalyzer import (
     ScanResult,
     analyze_codebase,
@@ -41,7 +43,7 @@ from app.services.resilience import (
     guarded_scan,
     validate_patch_safety,
 )
-from app.services.sarif import build_sarif, sarif_summary
+from app.services.sarif import build_sarif, sarif_json, sarif_summary
 
 BOUNDARY = (
     "Local, evidence-bound refactor drafts only. No source writes, no _gen edits, "
@@ -168,6 +170,36 @@ def _sha(text: str) -> str:
 
 def _canonical(payload: Any) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+_OWNER_FALLBACK = "Unassigned — assign before approval"
+_UNASSIGNED_OWNERS = {
+    "", "unassigned", "unknown", "tbd", "tbc", "none", "n/a", "na", "-", "—",
+    "not assigned", "to be assigned",
+}
+
+
+def _owner_view(owner: Any) -> dict[str, Any]:
+    """Return display fields without inventing an owner for an open gate."""
+    text = str(owner or "").strip()
+    assigned = bool(text) and text.casefold() not in _UNASSIGNED_OWNERS
+    return {
+        "owner": text or "unassigned",
+        "owner_assigned": assigned,
+        "owner_display": text if assigned else _OWNER_FALLBACK,
+    }
+
+
+def _check_stats(checks: list[dict[str, Any]], label: str,
+                 verdict: str | None = None) -> dict[str, Any]:
+    passed = sum(1 for check in checks if check.get("ok"))
+    return {
+        "label": label,
+        "total": len(checks),
+        "passed": passed,
+        "failed": len(checks) - passed,
+        "verdict": verdict,
+    }
 
 
 def _append_audit(audit: list[dict[str, Any]], *, agent: str, action: str,
@@ -654,6 +686,11 @@ def _empty_result(profile: dict[str, Any], message: str) -> dict[str, Any]:
                     "summary": message} for agent in AGENTS],
         "iterations": [],
         "handoffs": [],
+        "scout": {"status": "done", "summary": message, "checks": [],
+                  "files_scanned": 0, "loc": 0, "by_language": {}, "features": [],
+                  "hotspots": [], "imports": [], "skipped": []},
+        "llm": {"mode": "off", "status": "off", "model": None,
+                "annotations": {}, "warnings": [], "calls": []},
         "source_scan": empty_scan,
         "target_scan": {"files_scanned": 0, "findings": [], "by_severity": {},
                         "by_category": {}, "score": 0, "snapshot_sha": ""},
@@ -698,15 +735,23 @@ def _empty_result(profile: dict[str, Any], message: str) -> dict[str, Any]:
 
 def run_code_migration(case_id: str, settings: Settings, *,
                        max_iterations: int = 3,
-                       upgrade_scenario: str | None = None) -> dict[str, Any]:
+                       upgrade_scenario: str | None = None,
+                       live: bool = False,
+                       model: str | None = None,
+                       llm_config: LLMConfig | None = None,
+                       llm_transport=None) -> dict[str, Any]:
     """Run the bounded five-agent cycle over one case-study fixture."""
     started = time.monotonic()
+    llm = llm_config or LLMConfig.from_env()
+    live_model = llm.resolve_model(model) if live else None
     profile = get_case_study(case_id)
     root = case_source_root(settings, case_id)
     guarded = guarded_scan(root)
     if guarded.scan is None:
         result = _empty_result(profile, (guarded.error or {}).get("message", "scan failed"))
         result["resilience"] = guarded.to_dict()
+        result["llm"] = {"mode": "live" if live else "off", "status": "failed" if live else "off",
+                         "model": live_model, "annotations": {}, "warnings": [], "calls": []}
         return result
     if guarded.scan.files_scanned == 0:
         result = _empty_result(profile, (guarded.error or {}).get("message", "empty snapshot"))
@@ -959,6 +1004,8 @@ def run_code_migration(case_id: str, settings: Settings, *,
             "critic": final_critic,
             "planner": planner,
             "green_signal": green_signal,
+            "stale_green": False,
+            "stale_green_reason": None,
             "sarif": {
                 "summary": sarif_info,
                 "path": f"code-migration/{case_id}.sarif",
@@ -980,12 +1027,99 @@ def run_code_migration(case_id: str, settings: Settings, *,
                         "re-run the Architect with the new rule pack."
                     ),
                 })
+                if result["upgrade"]["event"].get("invalidates_green"):
+                    result["stale_green"] = True
+                    result["stale_green_reason"] = (
+                        f"Upgrade {result['upgrade']['scenario']['from_version']} to "
+                        f"{result['upgrade']['scenario']['to_version']} landed after the green "
+                        "signal was computed; the previous green result is stale and must be "
+                        "revalidated before approval."
+                    )
                 _append_audit(audit, agent="resilience", action="upgrade.invalidated-green",
                               object_id=result["upgrade"]["event"]["event_id"],
                               reason=result["upgrade"]["scenario"]["to_version"])
         verified, detail = verify_code_audit(audit)
         result["audit_verified"] = verified
         result["audit_detail"] = detail
+        result["llm"] = {
+            "mode": "live" if live else "off",
+            "status": "ready" if live else "off",
+            "model": live_model,
+            "annotations": {},
+            "warnings": [],
+            "calls": [],
+        }
+        if live:
+            if not llm.configured:
+                result["llm"]["status"] = "failed"
+                result["llm"]["warnings"].append({
+                    "agent": "critic",
+                    "code": "not_configured",
+                    "message": "Live reasoning was requested but is not configured.",
+                })
+            else:
+                live_started = time.monotonic()
+                try:
+                    annotation = annotate_migration_agent(
+                        "critic",
+                        {
+                            "case_id": case_id,
+                            "feature_id": case_id,
+                            "feature_name": profile.get("name"),
+                            "summary": f"{len(result.get('patches', []))} patches across "
+                                       f"{len(result.get('target_files', []))} target files",
+                            "packages": [
+                                {"package_id": patch.get("patch_id"),
+                                 "target_path": patch.get("target_path"),
+                                 "status": patch.get("approval"),
+                                 "evidence_ids": patch.get("finding_ids", [])}
+                                for patch in result.get("patches", [])
+                            ],
+                            "gates": [
+                                {"gate_id": risk.get("risk_id"), "kind": risk.get("category"),
+                                 "severity": risk.get("severity"), "title": risk.get("title")}
+                                for risk in final_critic.get("residual_risks", [])
+                            ],
+                            "checks": final_critic.get("checks", []),
+                            "allowed_evidence_ids": sorted({
+                                str(value) for patch in result.get("patches", [])
+                                for value in patch.get("finding_ids", [])
+                            }),
+                            "allowed_rule_ids": sorted({
+                                str(rule_id) for patch in result.get("patches", [])
+                                for rule_id in patch.get("rule_ids", [])
+                            }),
+                            "allowed_package_ids": [
+                                patch.get("patch_id") for patch in result.get("patches", [])
+                            ],
+                        },
+                        config=llm, model=live_model, transport=llm_transport,
+                    )
+                    result["llm"]["annotations"]["critic"] = annotation
+                    result["llm"]["status"] = "active"
+                    result["llm"]["calls"].append({
+                        "kind": "critic",
+                        "status": "ok",
+                        "model": annotation["model"],
+                        "latency_ms": annotation["latency_ms"],
+                        "usage": annotation["usage"],
+                        "prompt_sha256": annotation["prompt_sha256"],
+                        "response_sha256": annotation["response_sha256"],
+                    })
+                except LLMError as exc:
+                    result["llm"]["status"] = "degraded"
+                    result["llm"]["warnings"].append({
+                        "agent": "critic",
+                        "code": exc.code,
+                        "message": str(exc),
+                        "latency_ms": int((time.monotonic() - live_started) * 1000),
+                    })
+                    result["llm"]["calls"].append({
+                        "kind": "critic",
+                        "status": "failed",
+                        "code": exc.code,
+                        "latency_ms": int((time.monotonic() - live_started) * 1000),
+                    })
         return result
     except KeyError:
         raise
@@ -1002,6 +1136,417 @@ def run_code_migration(case_id: str, settings: Settings, *,
     finally:
         if final_refactor is not None:
             final_refactor.cleanup()
+
+
+def build_codebase_view(result: dict[str, Any]) -> dict[str, Any]:
+    """Add a plain-language, agent-by-agent view over a code-migration result."""
+    view = copy.deepcopy(result)
+    profile = view.get("profile") or {}
+    case_name = profile.get("name") or view.get("case_id") or "this estate"
+    source = view.get("source_scan") or {}
+    findings = view.get("findings") or []
+    patches = view.get("patches") or []
+    iterations = view.get("iterations") or []
+    guardian = view.get("guardian") or {}
+    critic = view.get("critic") or {}
+    planner = view.get("planner") or {}
+    green = view.get("green_signal") or {}
+    scout = view.get("scout") or {}
+    files = source.get("files_scanned") or scout.get("files_scanned") or 0
+    loc = source.get("loc") or scout.get("loc") or 0
+    by_language = source.get("by_language") or scout.get("by_language") or {}
+    gates = len(critic.get("residual_risks") or [])
+    iteration_count = len(iterations)
+    first = iterations[0] if iterations else {}
+    last = iterations[-1] if iterations else {}
+    first_decision = first.get("decision", "unknown")
+    last_decision = last.get("decision", "unknown")
+    last_architect = last.get("architect") or {}
+    first_guardian = first.get("guardian") or {}
+    first_critic = first.get("critic") or {}
+    final_guardian = guardian
+    final_critic = critic
+
+    risks = final_critic.get("residual_risks") or []
+    gate_owner_fallback: list[dict[str, Any]] = []
+    for risk in risks:
+        owner_fields = _owner_view(risk.get("owner"))
+        risk.update(owner_fields)
+        action = str(risk.get("action") or "").strip()
+        if owner_fields["owner_assigned"]:
+            risk["resolution_hint"] = action or "Confirm the review action and record the decision."
+        else:
+            risk["resolution_hint"] = (
+                f"Assign an owner before approval; then: {action}" if action
+                else "Assign an owner before approval and record the review decision."
+            )
+            gate_owner_fallback.append({
+                "risk_id": risk.get("risk_id"),
+                "title": risk.get("title"),
+                "severity": risk.get("severity"),
+                "owner": risk.get("owner"),
+                "owner_display": owner_fields["owner_display"],
+                "owner_assigned": False,
+                "action": action,
+                "resolution_hint": risk["resolution_hint"],
+            })
+
+    high_gates = sum(1 for risk in risks if risk.get("severity") == "high")
+    medium_gates = sum(1 for risk in risks if risk.get("severity") == "medium")
+    low_gates = sum(1 for risk in risks if risk.get("severity") == "low")
+    pending_patches = sum(
+        1 for patch in patches if str(patch.get("approval", "pending")) == "pending"
+    )
+    all_patches_pending = pending_patches == len(patches) if patches else True
+    gate_word = "gate" if gates == 1 else "gates"
+    patch_word = "patch" if len(patches) == 1 else "patches"
+    patch_phrase = (
+        f"all {len(patches)} {patch_word} remain pending approval"
+        if all_patches_pending else
+        f"{len(patches) - pending_patches} of {len(patches)} {patch_word} are already decided"
+    )
+    human_gate_summary = {
+        "total": gates,
+        "gates": gates,
+        "high": high_gates,
+        "high_gates": high_gates,
+        "medium": medium_gates,
+        "low": low_gates,
+        "pending_patches": pending_patches,
+        "approved_patches": len(patches) - pending_patches,
+        "all_patches_pending": all_patches_pending,
+        "all_pending": all_patches_pending,
+        "unassigned_owners": len(gate_owner_fallback),
+        "plain_language": (
+            f"{gates} named human review {gate_word}; {high_gates} high impact; "
+            f"{patch_phrase}."
+        ),
+    }
+
+    guardian_checks = final_guardian.get("checks") or []
+    critic_checks = final_critic.get("checks") or []
+    guardian_stats = _check_stats(
+        guardian_checks, "Guardian checks", final_guardian.get("verdict")
+    )
+    critic_stats = _check_stats(
+        critic_checks, "Critic checks", final_critic.get("verdict")
+    )
+    machine_check_summary = {
+        "guardian": guardian_stats,
+        "critic": critic_stats,
+        "total": guardian_stats["total"] + critic_stats["total"],
+        "passed": guardian_stats["passed"] + critic_stats["passed"],
+        "failed": guardian_stats["failed"] + critic_stats["failed"],
+        "plain_language": (
+            f"{guardian_stats['passed'] + critic_stats['passed']}/"
+            f"{guardian_stats['total'] + critic_stats['total']} deterministic machine "
+            f"checks passed; {gates} human review {gate_word} remain open."
+        ),
+    }
+
+    audit_events = view.get("audit") or []
+    target_files = view.get("target_files") or []
+    sarif_payload = view.get("sarif") or {}
+    sarif_info = sarif_payload.get("summary") or {}
+    report_text = planner.get("report_markdown") or ""
+    sarif_text = sarif_json(sarif_payload.get("json") or {})
+    bundle_files = [
+        {
+            "path": "MIGRATION-REPORT.md",
+            "role": "report",
+            "role_label": "Report",
+            "kind": "report",
+            "sha256": planner.get("report_sha256") or _sha(report_text),
+            "bytes": len(report_text.encode("utf-8")),
+        },
+        {
+            "path": sarif_payload.get("path") or f"code-migration/{view.get('case_id')}.sarif",
+            "role": "SARIF",
+            "role_label": "SARIF",
+            "kind": "sarif",
+            "sha256": _sha(sarif_text),
+            "results": sarif_info.get("results", 0),
+            "errors": sarif_info.get("errors", 0),
+            "warnings": sarif_info.get("warnings", 0),
+        },
+        {
+            "path": "patches/",
+            "role": "patches",
+            "role_label": "Patches",
+            "kind": "patches",
+            "count": len(patches),
+            "pending": pending_patches,
+        },
+        {
+            "path": "target/",
+            "role": "target",
+            "role_label": "Target drafts",
+            "kind": "target",
+            "count": len(target_files),
+        },
+        {
+            "path": "audit",
+            "role": "audit log",
+            "role_label": "Audit log",
+            "kind": "audit",
+            "events": len(audit_events),
+            "verified": bool(view.get("audit_verified")),
+        },
+    ]
+
+    next_actions = [
+        str(action) for action in (planner.get("next_actions") or [])
+        if str(action).strip()
+    ]
+    if gate_owner_fallback:
+        next_actions.insert(
+            0,
+            f"Assign an owner to {len(gate_owner_fallback)} unassigned residual risk "
+            f"{'gate' if len(gate_owner_fallback) == 1 else 'gates'} before approval.",
+        )
+    if not next_actions:
+        next_actions = [
+            f"Review the {len(patches)} pending {patch_word} against the evidence.",
+            "Assign an owner to every residual risk gate.",
+            "Run the named regression for each accepted patch and record the result.",
+            "Verify the hash-chained audit log before sign-off.",
+        ]
+    for fallback in (
+        "Review the pending patches against their line-located evidence.",
+        "Run the named regression for each accepted patch and record the result.",
+        "Verify the hash-chained audit log before sign-off.",
+    ):
+        if len(next_actions) >= 3:
+            break
+        if fallback not in next_actions:
+            next_actions.append(fallback)
+
+    reality_boundary = {
+        "synthetic": True,
+        "actual_migration": False,
+        "tenant_contacted": False,
+        "compiled": False,
+        "official_assurance": False,
+        "what_is_real": (
+            f"A deterministic five-agent rehearsal over a synthetic {case_name} snapshot: "
+            f"{files} files scanned, {len(findings)} line-located blockers, "
+            f"{len(patches)} reviewable patch drafts, a SARIF 2.1.0 export, and a "
+            "hash-chained audit log."
+        ),
+        "what_is_not_real": (
+            "No Guidewire tenant was contacted, no source file was edited, no patch was "
+            "applied, compiled, or deployed, and this is not an official Cloud Assurance "
+            "result."
+        ),
+    }
+
+    def language_text() -> str:
+        if not by_language:
+            return "Gosu, Java, XML, and configuration files"
+        return ", ".join(f"{key} ({value})" for key, value in sorted(by_language.items()))
+
+    stages = [
+        {
+            "agent_id": "scout",
+            "index": 1,
+            "name": "Scout",
+            "role": "Inventory the codebase",
+            "status": "done",
+            "summary": scout.get("summary", f"{files} files scanned"),
+            "plain_language": "Scout walks the insurer's codebase read-only and records every Gosu, Java, XML, configuration, and test file it can analyse. It links every blocker to a path and line.",
+            "received": ["Read-only case-study snapshot", "Cloud-blocker rule pack", "Language and file classification"],
+            "produced": [
+                f"{files} files · {loc:,} LOC",
+                f"{len(findings)} line-located blockers",
+                f"{len(scout.get('features') or [])} custom feature slices",
+            ],
+            "count": files,
+            "count_label": "files scanned",
+        },
+        {
+            "agent_id": "architect",
+            "index": 2,
+            "name": "Architect",
+            "role": "Draft the smallest reviewable refactor",
+            "status": "done",
+            "summary": f"{len(patches)} patches · {iteration_count} pass(es)",
+            "plain_language": "Architect turns each blocker family into a target draft and a unified diff: Gosu Query / application API, Cloud API/JAX-RS, App Events, Gateway routes, secret references, and codegen overrides. Nothing is compiled or deployed.",
+            "received": ["Scout's inventory", "Blocker families and evidence", "Cloud target patterns"],
+            "produced": [
+                f"{len(patches)} unified-diff patches",
+                f"{len(view.get('target_files') or [])} target files",
+                "Every patch remains pending approval",
+            ],
+            "count": len(patches),
+            "count_label": "patches",
+        },
+        {
+            "agent_id": "guardian",
+            "index": 3,
+            "name": "Guardian",
+            "role": "Re-scan the generated target",
+            "status": "done" if final_guardian.get("verdict") == "green" else "failed",
+            "summary": final_guardian.get("summary", "deterministic gate"),
+            "plain_language": "Guardian re-scans the generated target and blocks while any error or warning remains, the source hash changed, a target path is unsafe, a draft does not parse, or a patch self-approves.",
+            "received": ["Architect's target tree", "Guidewire rule pack", "Source snapshot hash"],
+            "not_received": ["Scout's narrative", "Critic's opinion", "Any live model text"],
+            "produced": [
+                f"{len(final_guardian.get('checks') or [])} deterministic checks",
+                f"Verdict: {final_guardian.get('verdict', 'pending')}",
+                f"{len(final_guardian.get('blocking') or [])} blocking rule(s) at the final pass",
+            ],
+            "count": len(final_guardian.get("checks") or []),
+            "count_label": "deterministic checks",
+        },
+        {
+            "agent_id": "critic",
+            "index": 4,
+            "name": "Critic",
+            "role": "Verify the patches and challenge the trade-offs",
+            "status": "done" if final_critic.get("verdict") == "green" else "failed",
+            "summary": final_critic.get("summary", "hybrid review"),
+            "plain_language": "Critic independently applies every displayed diff, checks coverage and source immutability, then records the architectural risks that a green machine verdict cannot settle.",
+            "received": ["Scout's evidence", "Architect's patches", "Guardian's verdict", "Target re-scan"],
+            "produced": [
+                f"{len(final_critic.get('checks') or [])} independent checks",
+                f"{len(final_critic.get('fix_requests') or [])} targeted fix requests in the final pass",
+                f"{gates} named human gates",
+            ],
+            "count": len(final_critic.get("checks") or []),
+            "count_label": "critic checks",
+        },
+        {
+            "agent_id": "planner",
+            "index": 5,
+            "name": "Planner",
+            "role": "Compile and seal the report",
+            "status": "done" if green.get("planner") else "failed",
+            "summary": planner.get("executive_summary", "report compiled"),
+            "plain_language": "Planner compiles the executive report, readiness score, SARIF summary, and next actions. It only runs after Guardian and Critic agree; the report is still a human-review artifact.",
+            "received": ["Guardian's verdict", "Critic's verdict", "Patches, targets, and SARIF"],
+            "produced": [
+                "MIGRATION-REPORT.md",
+                "results.sarif (SARIF 2.1.0)",
+                f"Readiness: {planner.get('readiness', {}).get('score_before', 0)} → "
+                f"{planner.get('readiness', {}).get('structural_score_after', 0)} structural, "
+                f"{planner.get('readiness', {}).get('human_gate_adjusted_score', 0)} after human gates",
+            ],
+            "count": len(view.get("patches") or []),
+            "count_label": "patches reported",
+        },
+    ]
+
+    narrative = (
+        f"Scout scanned {files} files ({language_text()}) and found {len(findings)} line-located "
+        f"cloud blockers. Architect produced {len(patches)} reviewable patches across "
+        f"{len(view.get('target_files') or [])} target files. "
+        f"Iteration 1 was {first_decision}: Guardian was {first_guardian.get('verdict', 'pending')} "
+        f"and Critic requested {len(first_critic.get('fix_requests') or [])} targeted fix request(s). "
+        f"After {iteration_count} iteration(s), the final Guardian verdict is "
+        f"{final_guardian.get('verdict', 'pending')} and the final Critic verdict is "
+        f"{final_critic.get('verdict', 'pending')}. Planner compiled the report. "
+        f"{gates} human review gates remain open; every patch is still pending."
+    )
+
+    explain = {
+        "headline": f"{case_name}: a completed code-migration rehearsal",
+        "plain_language": (
+            "This is a dummy insurer migration. Scout finds the legacy patterns that would "
+            "break on Guidewire Cloud. Architect drafts the replacements. Guardian re-scans "
+            "the replacements with deterministic rules. Critic tries the patches and records "
+            "the risks a machine cannot sign off. Planner writes the report. The green signal "
+            "means the machine gates agree — not that a human approved the change."
+        ),
+        "why_it_matters": (
+            "The value is not a score. It is a traceable list of what must change, the "
+            "replacement draft, the rule that triggered it, and the human decision that remains."
+        ),
+        "what_to_look_at": [
+            "Scout: the inventory and the line-located findings.",
+            "Architect: the unified diffs and cloud configuration drafts.",
+            "Iteration 1 → iteration 2: the actual rework loop, not a straight line.",
+            "Guardian: the deterministic checks that block a false green.",
+            "Critic: the trade-offs and named human gates.",
+            "Planner: the report and SARIF export for a developer pipeline.",
+        ],
+        "outcome": (
+            f"{view.get('status')} · {len(findings)} findings · {len(patches)} patches · "
+            f"{iteration_count} iterations · {gates} human gates"
+        ),
+        "caveat": (
+            "Synthetic estate. Not an official Cloud Assurance result. No source was edited, "
+            "nothing was deployed, and every patch is pending human approval."
+        ),
+    }
+
+    glossary = [
+        {"term": "Gosu", "definition": "Guidewire's JVM-based language for business logic and product rules."},
+        {"term": "APD", "definition": "Advanced Product Designer, Guidewire's cloud product-modelling tool and its import constraints."},
+        {"term": "Cloud Data Access", "definition": "Guidewire's cloud data export/streaming service (S3 Parquet); synchronous in-app reads use Gosu Query or application APIs."},
+        {"term": "App Events", "definition": "The cloud event publication mechanism that replaces legacy JMS/MQ message-transport plugins."},
+        {"term": "Integration Gateway", "definition": "The managed route for external systems that cannot consume App Events directly."},
+        {"term": "SARIF", "definition": "A standard JSON format for static-analysis results that developer pipelines can upload."},
+        {"term": "Human gate", "definition": "A named decision that remains with an owner even after the machine gates are green."},
+        {"term": "Unified diff", "definition": "A before/after patch that a reviewer can apply, inspect, or reject."},
+    ]
+
+    iteration_story = []
+    for iteration in iterations:
+        iteration_no = iteration.get("iteration")
+        architect = iteration.get("architect") or {}
+        guardian_item = iteration.get("guardian") or {}
+        critic_item = iteration.get("critic") or {}
+        target = iteration.get("target") or {}
+        by_severity = target.get("by_severity") or {}
+        target_label = (
+            f"warning: {int(by_severity.get('warning', 0) or 0)} · "
+            f"error: {int(by_severity.get('error', 0) or 0)}"
+        )
+        iteration_story.append({
+            "iteration": iteration_no,
+            "decision": iteration.get("decision"),
+            "target_label": target_label,
+            "target_findings": target.get("findings", 0),
+            "headline": (
+                f"Iteration {iteration_no}: Architect {architect.get('mode', 'full')} pass · "
+                f"Guardian {guardian_item.get('verdict', 'pending')} · "
+                f"Critic {critic_item.get('verdict', 'pending')}"
+            ),
+            "plain_language": (
+                f"Architect produced {architect.get('patches', 0)} patch(es). "
+                f"Guardian returned {guardian_item.get('verdict', 'pending')} and "
+                f"Critic requested {len(critic_item.get('fix_requests') or [])} fix request(s). "
+                + ("The loop continued." if iteration.get("decision") != "green" else "Both gates agreed, so Planner could compile.")
+            ),
+        })
+
+    view.update({
+        "stages": stages,
+        "narrative": narrative,
+        "explain": explain,
+        "glossary": glossary,
+        "iteration_story": iteration_story,
+        "bundle_files": bundle_files,
+        "report_artifacts": [dict(item) for item in bundle_files],
+        "human_gate_summary": human_gate_summary,
+        "machine_check_summary": machine_check_summary,
+        "next_actions": next_actions,
+        "reality_boundary": reality_boundary,
+        "gate_owner_fallback": gate_owner_fallback,
+        "gate_owner_fallback_count": len(gate_owner_fallback),
+        "scout_inventory": {
+            "files": files,
+            "loc": loc,
+            "by_language": by_language,
+            "features": scout.get("features") or [],
+            "hotspots": scout.get("hotspots") or [],
+            "imports": scout.get("imports") or [],
+            "skipped": scout.get("skipped") or [],
+        },
+    })
+    view.setdefault("stale_green", False)
+    view.setdefault("stale_green_reason", None)
+    return view
 
 
 def code_migration_summary(result: dict[str, Any]) -> dict[str, Any]:

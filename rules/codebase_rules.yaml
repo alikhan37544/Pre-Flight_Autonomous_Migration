@@ -51,9 +51,10 @@ rules:
         - '\.execute(?:Query|Update|Batch)\s*\('
     message: Direct JDBC or SQL access bypasses application data APIs and is prohibited on the cloud platform.
     remediation: >
-      Replace reads with the supported Gosu Query API or Cloud Data Access.
-      Replace writes with application APIs, Cloud API resources, or App Events.
-    cloud_target: Gosu Query / Cloud Data Access for reads; application APIs for writes
+      Replace synchronous reads with the supported Gosu Query API or an application
+      API; reserve Cloud Data Access for analytics/export. Replace writes with
+      application APIs, Cloud API resources, or App Events.
+    cloud_target: Gosu Query or application API for reads; application APIs for writes
     autofix: query_rewrite
     risk: high
 
@@ -90,8 +91,10 @@ rules:
     detection:
       kind: always
     message: Raw SQL scripts cannot be deployed as application logic on the cloud platform.
-    remediation: Move the operation behind Cloud Data Access or an application API.
-    cloud_target: Cloud Data Access read model or application API
+    remediation: >
+      Move application reads behind a Gosu Query or an application API; reserve
+      Cloud Data Access for analytics/export.
+    cloud_target: Gosu Query or application API; Cloud Data Access for analytics/export
     autofix: raw_sql_quarantine
     risk: high
 
@@ -139,7 +142,7 @@ rules:
         - 'extends\s+HttpServlet\b'
         - '@WebServlet\b'
         - '(?i)<servlet\b'
-    message: Custom servlets are not a supported cloud extension point.
+    message: The use of custom servlets is not a recommended practice; implement integrations with the approved REST API framework.
     remediation: Recreate the route as a Cloud API extension endpoint or an Integration Gateway route.
     cloud_target: Cloud API extension endpoint or Integration Gateway route
     autofix: servlet_to_cloud_api

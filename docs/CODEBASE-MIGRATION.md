@@ -1,6 +1,6 @@
 # Codebase migration lab
 
-The `/codebase` lab is the code-level migration layer of PreFlight. It extends the
+The `/codebase` lab is the code-level assessment and refactor-drafting layer of PreFlight. It extends the
 review workstation with a bounded, five-agent cyclic assessment of legacy Gosu, Java
 plugins, XML metadata, integration configuration, and GUnit tests.
 
@@ -67,9 +67,9 @@ claim strength, cloud target, and refactor strategy.
 
 | Rule | Pattern | Claim | Cloud target |
 |---|---|---|---|
-| `PF-CODE-SQL-001` | Direct JDBC/SQL (`java.sql`, `javax.sql`, `DriverManager`, `executeQuery`) | verified ID `IS-TLS-1238` | Gosu Query / Cloud Data Access for reads; application APIs for writes |
+| `PF-CODE-SQL-001` | Direct JDBC/SQL (`java.sql`, `javax.sql`, `DriverManager`, `executeQuery`) | verified ID `IS-TLS-1238` | Gosu Query or application API for synchronous reads; application APIs for writes; Cloud Data Access only for analytics/export |
 | `PF-CODE-SQL-002` | Dynamic SQL string construction | heuristic | Typed Gosu Query or application API |
-| `PF-CODE-SQL-003` | Raw `.sql` script in the extension bundle | heuristic | Cloud Data Access read model or application API |
+| `PF-CODE-SQL-003` | Raw `.sql` script in the extension bundle | heuristic | Gosu Query / application API, or a Cloud Data Access export model for analytics |
 | `PF-CODE-MSG-001` | Legacy message-transport plugin, JMS/MQ, `MessageTransport` | secondary | App Events webhook or Integration Gateway route |
 | `PF-CODE-SRV-001` | Servlet (`javax.servlet`, `HttpServlet`, `@WebServlet`) | verified policy | Cloud API extension endpoint or Gateway route |
 | `PF-CODE-API-001` | Removed Java runtime API (EJB, RMI, JNDI, `sun.misc.Unsafe`, old HTTP client) | verified policy | Supported platform API or Gateway |
@@ -87,6 +87,14 @@ claim strength, cloud target, and refactor strategy.
 The direct-SQL and hidden-package rules reuse the documented identifiers already used
 by the review layer. Rules that cannot claim a documented identifier are labelled
 `heuristic` and carry no standard ID.
+
+The servlet rule is `verified-policy`, not a hard cloud-standard ID: the public guidance
+says custom servlets are "not a recommended practice" and that integrations should use
+the approved REST API framework. PreFlight does not claim custom servlets are unsupported.
+
+Cloud Data Access is a streaming/export service that publishes InsuranceSuite data to S3
+as Parquet; it is not a synchronous in-app query API. The synchronous path in these drafts
+is Gosu Query or an application API.
 
 ---
 
@@ -122,7 +130,7 @@ code-level migration work early with evidence a developer can inspect.
 
 | Finding family | Draft strategy |
 |---|---|
-| Direct SQL | Remove JDBC imports/calls, add a `Query` import, and generate a candidate `<Class>CloudDataAccess.gs` service using `Query.make(...).select()` |
+| Direct SQL | Remove JDBC imports/calls, add a `Query` import, and generate a candidate typed Gosu Query service using `Query.make(...).select()`; CDA is reserved for analytics/export |
 | Dynamic SQL | Quarantine the concatenated statement and route the method through the same typed data-access draft |
 | Legacy messaging | Remove the transport plugin and generate an App Events publication descriptor plus Integration Gateway delivery route |
 | Servlet | Remove servlet imports/surface, generate a Cloud API extension YAML and a JAX-RS resource draft |
@@ -234,11 +242,13 @@ and evidence fingerprints instead.
 ## 8. Mid-migration upgrade resilience
 
 A migration assessment can outlive the target release it was written against. The
-resilience module models five release events:
+resilience module models five release events. **All five are PreFlight simulations.**
+`GWCP 2027.04` is not a verified public release note, and the 20-character APD limit is a
+scenario, not a published Guidewire limit.
 
 | Scenario | Effect |
 |---|---|
-| `GWCP-APD-NAMING-2027.04` | APD type-name limit tightens from 24 to 20; APD patches and codegen overrides are affected |
+| `GWCP-APD-NAMING-2027.04` | Simulated APD type-name limit tightens from 24 to 20; APD patches and codegen overrides are affected |
 | `GWCP-APP-EVENTS-V2-2027.04` | App Events envelope moves to schema v2; publication drafts are affected |
 | `GWCP-GATEWAY-MTLS-2027.04` | Gateway routes require mTLS and a scoped service identity |
 | `GWCP-GOSU-API-REMOVAL-2027.04` | A deprecated runtime API is removed; API replacement drafts are affected |
@@ -308,6 +318,7 @@ external network call is used.
 - Refactors are drafts; they are not compiled against a Guidewire runtime.
 - The green signal is a bounded agent verdict, not an official Cloud Assurance result.
 - Case studies and fixtures are synthetic. They are not customer data.
+- The `GWCP 2027.04` release scenarios, including the 20-character APD limit, are simulations, not published release facts.
 - APD rules are based on documented behavior and must be re-checked against the target
   release; the upgrade simulator exists for exactly that reason.
 - Every patch remains pending human approval. Nothing is deployed.

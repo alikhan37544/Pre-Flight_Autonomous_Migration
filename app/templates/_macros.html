@@ -14,6 +14,52 @@
 <span class="pill pill-status status-{{ value }}">{{ value }}</span>
 {%- endmacro %}
 
+{% macro reader_status(value) -%}
+{%- if value == 'completed_with_gates' -%}sealed · human gates open
+{%- elif value == 'green_with_human_gates' -%}machine-green · human gates open
+{%- elif value == 'revalidation_required' -%}revalidation required
+{%- elif value == 'failed' -%}stopped
+{%- elif value == 'completed' -%}sealed
+{%- elif value == 'running' -%}running
+{%- elif value == 'queued' -%}queued
+{%- elif value == 'cancelled' -%}stopped
+{%- else -%}{{ value|replace('_', ' ') }}
+{%- endif -%}
+{%- endmacro %}
+
+{% macro reader_status_class(value) -%}
+{%- if value in ['completed_with_gates', 'green_with_human_gates', 'completed'] -%}status-succeeded
+{%- elif value in ['failed', 'cancelled'] -%}status-failed
+{%- elif value == 'revalidation_required' -%}status-running
+{%- else -%}status-running
+{%- endif -%}
+{%- endmacro %}
+
+{% macro reality_callout(boundary) -%}
+<section class="reality-callout" aria-label="Reality boundary">
+  <div class="reality-callout-head">
+    <span class="reality-kicker">Reality boundary</span>
+    <strong>Synthetic rehearsal — not an actual migration</strong>
+  </div>
+  <div class="reality-grid">
+    <div class="reality-item reality-real">
+      <span class="reality-flag">What is real</span>
+      <p>{{ boundary.what_is_real }}</p>
+    </div>
+    <div class="reality-item reality-not-real">
+      <span class="reality-flag">What is not real</span>
+      <p>{{ boundary.what_is_not_real }}</p>
+    </div>
+  </div>
+  <ul class="reality-checks" aria-label="Boundary checks">
+    <li>No tenant contacted</li>
+    <li>No compile or deploy</li>
+    <li>No change approved</li>
+    <li>No official Cloud Assurance</li>
+  </ul>
+</section>
+{%- endmacro %}
+
 {% macro class_pill(value) -%}
 <span class="pill pill-class class-{{ value }}">{{ value }}</span>
 {%- endmacro %}

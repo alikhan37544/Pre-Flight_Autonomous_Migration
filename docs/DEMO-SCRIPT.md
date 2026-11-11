@@ -26,8 +26,9 @@ Open `/?run=R-DEMO-001&feature=PA-VEH-01`.
 
 Say:
 
-> “This is an offline review of a synthetic Guidewire-style Personal Auto estate. 300 files,
-> hashed and read-only. No tenant, no customer data. Official Cloud Assurance was not run.”
+> “This is a synthetic rehearsal, not an actual migration. It is an offline review of a
+> synthetic Guidewire-style Personal Auto estate. 300 files, hashed and read-only. No tenant,
+> no customer data. Official Cloud Assurance was not run.”
 
 Point at the **summary strip**:
 
@@ -39,7 +40,8 @@ Point at the **summary strip**:
 Point at the **Feature spine** (all six columns fit at 1280, including Tests):
 
 > “One feature, traced across PCF, installed entity, typelist, extracted template, Gosu, and tests.
-> The long type is 37 characters; APD truncates type names at 24. It is separate from PA-VEH-01’s
+> The long type is 37 characters; APD limits type names to 24, so a longer name can be truncated
+> and break endpoint compilation. It is separate from PA-VEH-01’s
 > 11 references: the long type appears in two files and is a PA-VEH-02 dependency. The three gaps
 > are labelled estate-wide, not claimed as three missing links in this feature. This is the kind
 > of cross-feature scope that shows up at week five.”
@@ -195,11 +197,11 @@ After the review packet, open `http://127.0.0.1:8000/codebase?case=cascade-mutua
 3. **Critic fix request** — show the targeted request back to Architect. This is the cyclic
    handoff, not a single pipeline.
 4. **Iteration 2** — Guardian and Critic are both green. Every patch is still `pending`.
-5. **Patch bundle** — open one diff; show the Cloud Data Access Gosu draft, Cloud API/JAX-RS
-   resource, App Events descriptor, or codegen override.
+5. **Patch bundle** — open one diff; show the typed Gosu Query / application-API draft,
+   Cloud API/JAX-RS resource, App Events descriptor, or codegen override.
 6. **SARIF** — download `results.sarif`; point out stable fingerprints and no secret values.
-7. **Upgrade simulator** — choose the APD naming change, evaluate, and show the generation bump,
-   invalidated green signal, affected patches, and revalidate/rollback/defer options.
+7. **Upgrade simulator** — choose the simulated APD naming release change, evaluate, and show the
+   generation bump, invalidated green signal, affected patches, and revalidate/rollback/defer options.
 8. **Close** — “The green signal is bounded. The machine did the repetitive refactor; the human
    still owns the change.”
 

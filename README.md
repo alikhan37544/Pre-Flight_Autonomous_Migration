@@ -10,11 +10,23 @@ PreFlight is an offline, evidence-first review workstation for legacy Guidewire-
 
 [![CI](https://github.com/SaundaryaSingh/Preflight-CloudMigration/actions/workflows/ci.yml/badge.svg)](https://github.com/SaundaryaSingh/Preflight-CloudMigration/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-![Tests](https://img.shields.io/badge/tests-449%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-481%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Status](https://img.shields.io/badge/status-demo--ready-informational)
 
 ![PreFlight Workbench](docs/screenshots/workbench-1440.png)
+
+> ### Reality boundary — read before the demo
+>
+> **Real software on synthetic inputs. This is not an actual migration.**
+>
+> - **What is real:** the scanner, rule pack and claim-strength labels, evidence links, unified diffs, SARIF 2.1.0 exporter, hash-chained audit log, and the two migration archetypes are implemented and tested.
+> - **What is synthetic:** the estate, insurer names, code, APD release scenarios, case-study footprint numbers, and evaluation slice are invented. No tenant or customer data is contacted.
+> - **Proof ladder:** Stage 1 synthetic rehearsal (current) → Stage 2 real read-only snapshot with blind SME validation → Stage 3 compile/test in a Guidewire developer environment → Stage 4 official Cloud Assurance plus SME sign-off → Stage 5 production cutover with rollback.
+> - **What is not proven:** compilation, runtime behaviour, tenant compatibility, official Cloud Assurance, data migration, deployment, rollback, customer outcomes, and generalisation.
+> - **Do not use it for:** an actual-migration claim, a pass/fail, a certification, deployment approval, a savings claim, or a customer reference.
+>
+> **Official Cloud Assurance: not run.** Full evidence review and sources: [`docs/REALITY-BOUNDARY.md`](docs/REALITY-BOUNDARY.md).
 
 ---
 
@@ -38,10 +50,10 @@ Generic linters answer none of those questions. PreFlight is built around the in
 4. **Reviews migration-specific patterns** with claim-strength labels: verified standard ID, verified policy, verified document, secondary, or heuristic.
 5. **Reconstructs a local Cloud API extension draft** for one feature slice: `_ext` schema, mapping, updater, codegen config, and product access file.
 6. **Produces explicit dispositions** for source properties and turns unresolved items into an assumption register with impact ranges and questions to ask.
-7. **Benchmarks the method** on frozen synthetic fixtures with a sealed reference target, baselines, hard negatives, and a naming-shift holdout.
+7. **Evaluates the method** on frozen synthetic fixtures with a sealed reference target, baselines, hard negatives, and a naming-shift holdout.
 8. **Exports a review packet** with evidence, assumptions, findings, hashes, and a hash-chained audit trail.
 9. **Runs a bounded multi-agent migrator** over the completed review: Scout scopes the feature, Architect generates target files, Guardian opens risk gates, Critic verifies the output, and Scribe seals the plan, report, and bundle manifest. Every change stays pending approval.
-10. **Runs a five-agent codebase migration lab** over synthetic insurer estates: Scout inventories Gosu, Java, XML, and tests; Architect emits cloud refactors and unified diffs; Guardian re-scans the target against APD and cloud-blocker rules; Critic applies patches and records runtime risk; Planner compiles a SARIF 2.1.0 bundle and executive report. Mid-migration release upgrades invalidate stale green signals.
+10. **Runs a five-agent codebase migration lab** over synthetic insurer estates: Scout inventories Gosu, Java, XML, and tests; Architect emits cloud refactors and unified diffs; Guardian re-scans the target against APD and cloud-blocker rules; Critic applies patches and records runtime risk; Planner compiles a SARIF 2.1.0 bundle and executive report. Simulated mid-migration release changes invalidate stale green signals.
 
 ## Autonomous migrator
 
@@ -69,14 +81,14 @@ packages, hard-coded secrets, weak crypto, static tenant state, process/filesyst
 assumptions, explicit bundle commits, swallowed exceptions, APD long type names, and
 database-coupled unit tests.
 
-Architect turns each blocker family into a reviewable draft: Cloud Data Access Gosu,
-Cloud API/JAX-RS resources, App Events and Integration Gateway configuration, codegen
-`nameOverride`, secret-reference descriptors, and unified diffs. Guardian re-scans the
-target and blocks while any error or warning remains. Critic applies the displayed diffs,
-checks coverage and source immutability, then records architecture/runtime risks as named
-human gates. Planner compiles the report and SARIF 2.1.0 output. A mid-migration release
-upgrade increments the generation, invalidates the previous green signal, and offers
-revalidate, rollback, or defer.
+Architect turns each blocker family into a reviewable draft: typed Gosu Query /
+application-API services, Cloud API/JAX-RS resources, App Events and Integration Gateway
+configuration, codegen `nameOverride`, secret-reference descriptors, and unified diffs.
+Guardian re-scans the target and blocks while any error or warning remains. Critic applies
+the displayed diffs, checks coverage and source immutability, then records
+architecture/runtime risks as named human gates. Planner compiles the report and SARIF
+2.1.0 output. A simulated mid-migration release change increments the generation,
+invalidates the previous green signal, and offers revalidate, rollback, or defer.
 
 ```bash
 make demo
@@ -113,7 +125,7 @@ See [`docs/CODEBASE-MIGRATION.md`](docs/CODEBASE-MIGRATION.md) and
 | Advisory findings | 24 from 8 rules |
 | Mappings | 12 explicit dispositions |
 | Assumptions | 3 |
-| Tests | 449 collected (439 non-browser + 10 Playwright) |
+| Tests (current suite) | 481 passed with the current pytest suite (`pytest`, 2026-11-11) |
 | Frozen evaluation hashes | `ground_truth/FROZEN.json` |
 | Review packet | [`docs/demo/preflight-review-packet.html`](docs/demo/preflight-review-packet.html) |
 | Run summary | [`docs/demo/run-summary.json`](docs/demo/run-summary.json) |
@@ -170,7 +182,7 @@ http://127.0.0.1:8000/codebase?case=harbor-pc
 
 The demo server auto-restarts if it is stopped inside tmux. The launcher pins a local-only
 `PREFLIGHT_SECRET_KEY` so an already-open page keeps its CSRF token across those restarts;
-normal production runs still use the random per-process fallback. Leave it in the background:
+normal (non-demo) runs still use the random per-process fallback. Leave it in the background:
 
 ```text
 Ctrl+b, then d
@@ -287,7 +299,7 @@ sensitive logging. See [`docs/CODEBASE-MIGRATION.md`](docs/CODEBASE-MIGRATION.md
 ## Testing
 
 ```bash
-make test       # full suite: 449 tests
+make test       # current pytest suite (481 passed at this snapshot)
 make e2e        # Playwright golden path
 make claims     # claims-ledger and rule-coverage gate
 make verify     # hash-chained audit verification

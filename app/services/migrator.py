@@ -9,14 +9,22 @@ bundle under ``migration/`` in the run store.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+from app.services.llm import (
+    LLMConfig,
+    LLMError,
+    annotate_migration_agent,
+)
 
 MIGRATION_ARTIFACT = "migration.json"
 AUDIT_PATH = "migration/audit.jsonl"
@@ -186,6 +194,8 @@ def _initial_state(run_id: str, feature: dict[str, Any], feature_id: str) -> dic
         "outputs": [],
         "verification": {"status": "pending", "checks": []},
         "summary": {},
+        "llm": {"mode": "off", "status": "off", "model": None,
+                "annotations": {}, "warnings": [], "calls": []},
         "audit": {"path": AUDIT_PATH, "events": 0, "head": None, "verified": False},
         "report_path": REPORT_PATH,
         "plan_path": PLAN_PATH,
@@ -202,6 +212,586 @@ def _set_agent(state: dict[str, Any], agent_id: str, **changes: Any) -> None:
 
 def _persist(store, run_id: str, state: dict[str, Any]) -> None:
     store.write_artifact(run_id, MIGRATION_ARTIFACT, state)
+
+
+def _gate_count(gate: dict[str, Any]) -> int:
+    match = re.search(r"\((\d+)\s+findings?", str(gate.get("title", "")))
+    return int(match.group(1)) if match else 1
+
+
+def _gate_rule_id(gate: dict[str, Any]) -> str:
+    source = str(gate.get("source_id") or "")
+    return source or "unclassified"
+
+
+def _plural(count: int, singular: str, plural: str | None = None) -> str:
+    return f"{count} {singular if count == 1 else (plural or singular + 's')}"
+
+
+_OWNER_FALLBACK = "Unassigned — assign before approval"
+_UNASSIGNED_OWNERS = {
+    "", "unassigned", "unknown", "tbd", "tbc", "none", "n/a", "na", "-", "—",
+    "not assigned", "to be assigned",
+}
+_BUNDLE_ROLE_PRIORITY = {"target": 0, "plan": 1, "report": 2, "agent log": 3, "artifact": 4}
+
+
+def _owner_view(owner: Any) -> dict[str, Any]:
+    """Return display fields without inventing an owner for an open gate."""
+    text = str(owner or "").strip()
+    assigned = bool(text) and text.casefold() not in _UNASSIGNED_OWNERS
+    return {
+        "owner": text or "unassigned",
+        "owner_assigned": assigned,
+        "owner_display": text if assigned else _OWNER_FALLBACK,
+    }
+
+
+def _bundle_role(path: str) -> tuple[str, str]:
+    """Map a sealed bundle path to the demo's role label and coarse kind."""
+    name = Path(path).name.lower()
+    if name == "migration-plan.json":
+        return "plan", "plan"
+    if name == "migration-report.md":
+        return "report", "report"
+    if name == "audit.jsonl":
+        return "agent log", "agent log"
+    if "codegen" in name:
+        return "codegen config", "target"
+    if "schema" in name:
+        return "schema", "target"
+    if "mapping" in name:
+        return "mapping", "target"
+    if "updater" in name:
+        return "updater", "target"
+    lowered = path.lower()
+    if "/apis/" in lowered or "/installedlobs/" in lowered or name.endswith((".yaml", ".yml")):
+        return "API contract", "target"
+    return "target", "target"
+
+
+def _bundle_view_parts(
+    state: dict[str, Any], run_dir: Path | None
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Build the list of sealed content files and the separate manifest wrapper.
+
+    The sealed hashes in ``state['bundle']['sha256_files']`` are authoritative;
+    the migration directory is only used for byte counts (or to list files for
+    older states that predate the bundle summary). The manifest is not one of
+    the sealed content files, so it is returned separately.
+    """
+    bundle = state.get("bundle") or {}
+    sealed = bundle.get("sha256_files") if isinstance(bundle, dict) else None
+    hashes = sealed if isinstance(sealed, dict) else {}
+    paths = {
+        str(path): digest
+        for path, digest in hashes.items()
+        if path and Path(str(path)).name != "bundle-manifest.json"
+    }
+    if not paths and run_dir is not None:
+        migration_dir = Path(run_dir) / BUNDLE_ROOT
+        if migration_dir.is_dir():
+            for path in sorted(migration_dir.rglob("*")):
+                if path.is_file() and path.name != "bundle-manifest.json":
+                    relative = path.relative_to(Path(run_dir)).as_posix()
+                    paths[relative] = _sha(path.read_bytes())
+    entries: list[dict[str, Any]] = []
+    package_order = {
+        f"{TARGET_ROOT}/{package.get('target_path')}": index
+        for index, package in enumerate(state.get("packages") or [])
+        if package.get("target_path")
+    }
+    for path in sorted(paths):
+        role, kind = _bundle_role(path)
+        entry: dict[str, Any] = {
+            "path": path,
+            "role": role,
+            "role_label": role,
+            "kind": kind,
+            "sha256": paths[path],
+        }
+        if run_dir is not None:
+            candidate = Path(run_dir) / path
+            if candidate.is_file():
+                data = candidate.read_bytes()
+                entry["bytes"] = len(data)
+                entry["current_sha256"] = _sha(data)
+                entry["hash_matches_seal"] = entry["current_sha256"] == entry["sha256"]
+                if role == "agent log":
+                    entry["append_only"] = True
+                    entry["note"] = (
+                        "Sealed digest covers the log at seal time; later events "
+                        "append to the same hash chain."
+                    )
+        entries.append(entry)
+    entries.sort(key=lambda item: (
+        _BUNDLE_ROLE_PRIORITY.get(item["kind"], 9),
+        package_order.get(item["path"], 10_000),
+        item["path"],
+    ))
+    manifest = None
+    if bundle:
+        manifest = {
+            "path": bundle.get("path") or MANIFEST_PATH,
+            "sha256": bundle.get("sha256"),
+            "bytes": bundle.get("bytes"),
+            "file_count": bundle.get("file_count", len(entries)),
+            "note": "Manifest wrapper — separate from the sealed content files.",
+        }
+    elif run_dir is not None:
+        manifest_path = Path(run_dir) / MANIFEST_PATH
+        if manifest_path.is_file():
+            data = manifest_path.read_bytes()
+            try:
+                payload = json.loads(data)
+            except (ValueError, UnicodeDecodeError):
+                payload = {}
+            manifest = {
+                "path": MANIFEST_PATH,
+                "sha256": _sha(data),
+                "bytes": len(data),
+                "file_count": payload.get("file_count", len(entries)),
+                "note": "Manifest wrapper — separate from the sealed content files.",
+            }
+    return entries, manifest
+
+
+def _check_summary(checks: list[dict[str, Any]], label: str) -> dict[str, Any]:
+    passed = sum(1 for check in checks if check.get("ok"))
+    return {
+        "label": label,
+        "total": len(checks),
+        "passed": passed,
+        "failed": len(checks) - passed,
+    }
+
+
+def build_migration_view(
+    state: dict[str, Any],
+    *,
+    evidence: list[dict[str, Any]] | None = None,
+    findings: list[dict[str, Any]] | None = None,
+    assumptions: list[dict[str, Any]] | None = None,
+    run_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Enrich a persisted migration state for the human-facing agent loop.
+
+    This is a view-layer function. It never changes the sealed plan or the
+    migration artifact, so the offline bundle keeps its original hashes.
+    """
+    view = copy.deepcopy(state)
+    evidence = evidence or []
+    findings = findings or []
+    assumptions = assumptions or []
+    agents = {item.get("agent_id"): item for item in view.get("agents", [])}
+    packages = view.get("packages", []) or []
+    gates = view.get("gates", []) or []
+    checks = (view.get("verification") or {}).get("checks", []) or []
+    summary = view.get("summary", {}) or {}
+    feature_id = view.get("feature_id") or "the selected feature"
+    feature_name = view.get("feature_name") or feature_id
+    package_count = len(packages)
+    generated = sum(1 for package in packages if package.get("status") == "draft_ready")
+    gate_count = len(gates)
+    assumption_gates = [gate for gate in gates if gate.get("kind") == "assumption"]
+    review_gates = [gate for gate in gates if gate.get("kind") == "review"]
+    high_gates = sum(1 for gate in gates if gate.get("severity") == "high")
+    passed = sum(1 for check in checks if check.get("ok"))
+    verification_ok = (view.get("verification") or {}).get("status") == "passed"
+    failed = len(checks) - passed
+
+    rule_groups: dict[str, dict[str, Any]] = {}
+    for gate in review_gates:
+        rule_id = _gate_rule_id(gate)
+        group = rule_groups.setdefault(rule_id, {
+            "rule_id": rule_id,
+            "title": gate.get("title", rule_id),
+            "count": 0,
+            "severity": gate.get("severity", "medium"),
+            "gates": [],
+        })
+        group["count"] += _gate_count(gate)
+        group["gates"].append(gate)
+        if gate.get("severity") == "high":
+            group["severity"] = "high"
+
+    # Owner fallbacks are explicit review facts: never invent a person. The
+    # same fields are exposed on the flat gate list and on the grouped view.
+    for gate in gates:
+        gate.update(_owner_view(gate.get("owner")))
+        question = str(gate.get("question") or "").strip()
+        if gate.get("kind") == "assumption":
+            prefix = (
+                "Answer the open question and record the decision"
+                if gate["owner_assigned"] else
+                "Assign an owner, then answer the open question"
+            )
+            gate["resolution_hint"] = f"{prefix}: {question}" if question else prefix + "."
+        elif gate.get("kind") == "review":
+            rule_id = _gate_rule_id(gate)
+            gate["resolution_hint"] = (
+                f"Review the {_plural(_gate_count(gate), 'finding')} for {rule_id}; "
+                "accept the risk or remediate, then re-run Guardian and Critic."
+            )
+    for group in rule_groups.values():
+        first_gate = group["gates"][0] if group["gates"] else {}
+        group.update(_owner_view(first_gate.get("owner")))
+        group["resolution_hint"] = (
+            f"Review the {_plural(group['count'], 'finding')} for {group['rule_id']}; "
+            "accept the risk or remediate, then re-run Guardian and Critic."
+        )
+
+    feature_evidence = summary.get("feature_evidence", len(evidence))
+    total_evidence = summary.get("evidence", len(evidence))
+    scan_files = summary.get("files", 0)
+    dispositions = summary.get("dispositions", 0)
+    findings_count = summary.get("findings", len(findings))
+    artifact_count = summary.get("artifacts", len(packages) + 4)
+
+    evidence_preview = [
+        {
+            "evidence_id": item.get("evidence_id"),
+            "path": item.get("path"),
+            "line": item.get("line") or (item.get("locator") or {}).get("line"),
+            "locator": item.get("locator"),
+            "locator_kind": (item.get("locator") or {}).get("kind"),
+            "locator_value": (item.get("locator") or {}).get("value"),
+            "excerpt": (item.get("excerpt") or "")[:240],
+            "method": item.get("method"),
+            "confidence": item.get("confidence"),
+        }
+        for item in evidence[:8]
+    ]
+
+    package_previews = []
+    for package in packages:
+        preview = ""
+        if run_dir is not None:
+            target = (Path(run_dir) / TARGET_ROOT / str(package.get("target_path", ""))).resolve()
+            root = (Path(run_dir) / TARGET_ROOT).resolve()
+            if root in target.parents and target.is_file():
+                try:
+                    preview = target.read_text(encoding="utf-8", errors="replace")[:5000]
+                except OSError:
+                    preview = ""
+        package_previews.append({**package, "preview": preview})
+
+    bundle_files, bundle_manifest = _bundle_view_parts(view, run_dir)
+    pending_changes = sum(
+        1 for package in packages if str(package.get("approval", "pending")) == "pending"
+    )
+    approved_changes = package_count - pending_changes
+    all_changes_pending = approved_changes == 0
+    unassigned_owners = sum(
+        1 for gate in assumption_gates if not gate.get("owner_assigned")
+    )
+    review_group_count = len(rule_groups)
+    human_decision_count = len(assumption_gates) + review_group_count
+    machine_checks = _check_summary(checks, "Critic checks")
+    machine_checks["verdict"] = (view.get("verification") or {}).get("status", "pending")
+    machine_checks["checks"] = checks
+
+    gate_phrase = (
+        f"{len(assumption_gates)} assumptions + {review_group_count} rule groups = "
+        f"{_plural(human_decision_count, 'human review decision')}"
+    )
+    change_phrase = (
+        f"all {_plural(package_count, 'generated change')} are pending approval"
+        if all_changes_pending else
+        f"{approved_changes} of {_plural(package_count, 'generated change')} are already decided"
+    )
+    human_gate_summary = {
+        "assumption_gates": len(assumption_gates),
+        "rule_groups": review_group_count,
+        "total": human_decision_count,
+        "high": high_gates,
+        "high_gates": high_gates,
+        "pending_changes": pending_changes,
+        "approved_changes": approved_changes,
+        "all_changes_pending": all_changes_pending,
+        "all_pending": all_changes_pending,
+        "unassigned_owners": unassigned_owners,
+        "machine_checks": machine_checks,
+        "plain_language": f"{gate_phrase}; {high_gates} high impact; {change_phrase}.",
+    }
+
+    audit = view.get("audit") or {}
+    audit_events = int(audit.get("events") or 0)
+    next_actions: list[str] = []
+    if unassigned_owners:
+        next_actions.append(
+            f"Assign an owner to {_plural(unassigned_owners, 'unassigned assumption gate')} "
+            "before approval."
+        )
+    elif assumption_gates:
+        next_actions.append(
+            f"Confirm the named owner for each of the {_plural(len(assumption_gates), 'assumption gate')}."
+        )
+    if assumption_gates:
+        next_actions.append(
+            f"Resolve {_plural(len(assumption_gates), 'open assumption')} and record the answer "
+            "for each one."
+        )
+    if dispositions:
+        next_actions.append(
+            f"Accept or reject the {_plural(dispositions, 'source-to-target mapping')} used by the draft."
+        )
+    next_actions.append(
+        f"Review and approve or reject the {_plural(package_count, 'draft package')}; "
+        "none are approved automatically."
+    )
+    next_actions.append(
+        f"Verify {_plural(audit_events, 'audit event')} in the hash-chained agent log"
+        + (" (chain verified)." if audit.get("verified") else " (chain not yet verified).")
+    )
+    for fallback in (
+        "Confirm the evidence behind each package with the named owner.",
+        "Verify the sealed bundle manifest and its hashes before sign-off.",
+    ):
+        if len(next_actions) >= 3:
+            break
+        next_actions.append(fallback)
+
+    reality_boundary = {
+        "synthetic": True,
+        "actual_migration": False,
+        "tenant_contacted": False,
+        "compiled": False,
+        "official_assurance": False,
+        "what_is_real": (
+            f"A deterministic five-agent pass over a read-only synthetic snapshot: "
+            f"{_plural(package_count, 'target draft')}, {_plural(len(bundle_files), 'sealed bundle file')}, "
+            f"and a hash-chained agent log."
+        ),
+        "what_is_not_real": (
+            "No Guidewire tenant was contacted, no code was compiled or deployed, "
+            "no change was approved, and this is not an official Cloud Assurance result."
+        ),
+    }
+
+    def agent(agent_id: str) -> dict[str, Any]:
+        return agents.get(agent_id, {"name": agent_id.title(), "role": "", "status": "queued",
+                                     "summary": "", "checks": []})
+
+    scout = agent("scout")
+    architect = agent("architect")
+    guardian = agent("guardian")
+    critic = agent("critic")
+    scribe = agent("scribe")
+
+    stages = [
+        {
+            "agent_id": "scout",
+            "index": 1,
+            "name": "Scout",
+            "role": "Resolve the feature and evidence",
+            "status": scout.get("status", "queued"),
+            "summary": scout.get("summary", ""),
+            "plain_language": "Scout opens the read-only snapshot and finds the files, evidence, findings, and dispositions that belong to this feature. If the slice is not grounded, it refuses to plan.",
+            "received": [
+                "Completed review run and source manifest",
+                "Feature index and evidence graph",
+                "Findings and explicit dispositions",
+            ],
+            "produced": [
+                f"{feature_id} · {feature_name}",
+                f"{_plural(feature_evidence, 'evidence link')} on this feature",
+                f"{_plural(total_evidence, 'evidence record')} across {_plural(scan_files, 'file')}",
+                f"{_plural(findings_count, 'finding')} · {_plural(dispositions, 'disposition')}",
+            ],
+            "handoff": f"Scout → Architect: feature scope, {feature_evidence} evidence links, and {dispositions} dispositions.",
+            "checks": scout.get("checks", []),
+            "count": feature_evidence,
+            "count_label": "evidence links",
+        },
+        {
+            "agent_id": "architect",
+            "index": 2,
+            "name": "Architect",
+            "role": "Generate the target draft",
+            "status": architect.get("status", "queued"),
+            "summary": architect.get("summary", ""),
+            "plain_language": "Architect takes each explicit source-to-target disposition and writes the corresponding cloud target file. Every package is a local draft; nothing is deployed or auto-approved.",
+            "received": [
+                f"Scout's {feature_id} scope",
+                f"{_plural(dispositions, 'explicit disposition')}",
+                "Evidence IDs for every package",
+            ],
+            "produced": [
+                f"{_plural(package_count, 'work package')}",
+                f"{generated}/{package_count} target files written",
+                "Every package remains pending human approval",
+            ],
+            "handoff": f"Architect → Guardian: {package_count} work packages and {artifact_count} bundle artefacts.",
+            "checks": architect.get("checks", []),
+            "count": package_count,
+            "count_label": "packages",
+        },
+        {
+            "agent_id": "guardian",
+            "index": 3,
+            "name": "Guardian",
+            "role": "Open deterministic risk gates",
+            "status": guardian.get("status", "queued"),
+            "summary": guardian.get("summary", ""),
+            "plain_language": "Guardian is the strict compliance gate. It sees only the Architect's packages and evidence-linked findings/assumptions. It opens a gate for every open assumption and every rule family that still has an unanswered finding.",
+            "received": [
+                f"Architect's {_plural(package_count, 'package')}",
+                "Open assumptions and review findings",
+                "Guidewire rule pack and APD constraints",
+            ],
+            "not_received": [
+                "Scout's narrative or opinion",
+                "Critic's verdict or suggested fixes",
+                "Any model-generated text",
+            ],
+            "produced": [
+                f"{_plural(gate_count, 'open gate')}: {len(assumption_gates)} assumption + {len(rule_groups)} rule groups",
+                f"{high_gates} high-impact gates",
+                "Deployment remains blocked",
+            ],
+            "handoff": f"Guardian → Critic: {gate_count} gates; deterministic verdict is independent of the narratives.",
+            "checks": guardian.get("checks", []),
+            "count": gate_count,
+            "count_label": "gates",
+        },
+        {
+            "agent_id": "critic",
+            "index": 4,
+            "name": "Critic",
+            "role": "Verify and challenge the package",
+            "status": critic.get("status", "queued"),
+            "summary": critic.get("summary", ""),
+            "plain_language": "Critic independently checks the whole handoff: packages exist, paths are safe and unique, generated JSON/YAML parses, every package is evidence-linked, and nothing was auto-approved.",
+            "received": [
+                "Scout's evidence summary",
+                "Architect's packages and target files",
+                "Guardian's gate register",
+            ],
+            "produced": [
+                f"{passed}/{len(checks)} checks passed" if checks else "Verification pending",
+                "Verdict: PASS" if verification_ok else "Verdict: FAIL" if checks else "Verdict: pending",
+                "0 auto-approved changes",
+            ],
+            "handoff": f"Critic → Scribe: {passed}/{len(checks) or 7} checks passed; human gates remain open.",
+            "checks": checks,
+            "count": passed,
+            "count_label": "checks passed",
+        },
+        {
+            "agent_id": "scribe",
+            "index": 5,
+            "name": "Scribe",
+            "role": "Seal the plan, report, and bundle",
+            "status": scribe.get("status", "queued"),
+            "summary": scribe.get("summary", ""),
+            "plain_language": "Scribe writes the plan, the human-readable report, the bundle manifest, and the hash-chained agent log. Sealing is not approval: every change still waits for a human.",
+            "received": [
+                "Critic's verification result",
+                "Guardian's open gates",
+                "Package and target hashes",
+            ],
+            "produced": [
+                f"{artifact_count} bundle files",
+                "migration-plan.json · MIGRATION-REPORT.md",
+                "bundle-manifest.json · audit.jsonl",
+            ],
+            "handoff": "Scribe → sealed bundle: every change is pending human approval.",
+            "checks": scribe.get("checks", []),
+            "count": artifact_count,
+            "count_label": "bundle files",
+        },
+    ]
+
+    handoffs = []
+    for index, stage in enumerate(stages):
+        target = stages[index + 1]["agent_id"] if index + 1 < len(stages) else "sealed bundle"
+        handoffs.append({
+            "seq": index + 1,
+            "from": stage["agent_id"],
+            "to": target,
+            "kind": "handoff" if index + 1 < len(stages) else "seal",
+            "message": stage["handoff"],
+        })
+
+    narrative = (
+        f"Scout resolved {feature_id} · {feature_name} from the snapshot. It found "
+        f"{feature_evidence} evidence links across {total_evidence} evidence records, "
+        f"{findings_count} findings, and {dispositions} dispositions. "
+        f"Architect turned those dispositions into {package_count} work packages; "
+        f"{generated} target files were generated. "
+        f"Guardian opened {gate_count} gates — {len(assumption_gates)} assumption gates and "
+        f"{len(rule_groups)} rule groups — with {high_gates} marked high impact. "
+        f"Critic ran {len(checks)} checks; {passed} passed"
+        + (f" and {failed} failed." if failed else ".")
+        + f" Scribe sealed {artifact_count} bundle files, the plan, the report, and the agent log. "
+        "Every change remains pending human approval."
+    )
+
+    explain = {
+        "headline": "How to read this page: five agents, one evidence chain",
+        "plain_language": (
+            "This page is the demo of the migration crew. Scout finds the evidence. "
+            "Architect writes the cloud target drafts. Guardian opens the compliance "
+            "gates. Critic tries to break the result. Scribe seals the plan and report. "
+            "Nobody deploys; every change is a draft for a human."
+        ),
+        "why_it_matters": (
+            "A migration estimate is only trustworthy if every claim has evidence and "
+            "every unknown has an owner. The gates are not failures — they are the "
+            "decisions a delivery team must make before anything ships."
+        ),
+        "what_to_look_at": [
+            "Start with Scout: 300 files, 101 evidence records, 31 links on PA-VEH-01.",
+            "Then Architect: five target packages, all evidence-linked, all pending.",
+            "Then Guardian: 3 assumption gates + 8 rule groups = 11 human decisions.",
+            "Then Critic: 7/7 checks passed, but 0 auto-approvals.",
+            "Then Scribe: the sealed plan, report, bundle, and hash-chained log.",
+        ],
+        "outcome": "completed_with_gates — verification passed; human gates remain open.",
+        "caveat": "This is not a deployment and not an official Cloud Assurance result.",
+    }
+
+    glossary = [
+        {"term": "Evidence link", "definition": "A pointer from a claim to a file, line or pointer, excerpt, method, and confidence."},
+        {"term": "Work package", "definition": "One target file generated from one explicit source-to-target disposition."},
+        {"term": "Gate", "definition": "A named human decision that must be resolved before the bundle can ship."},
+        {"term": "Assumption gate", "definition": "A gate created because the evidence is incomplete or a decision was rejected."},
+        {"term": "Rule group", "definition": "A gate grouping every open finding for one Guidewire rule."},
+        {"term": "Deterministic", "definition": "The same input produces the same output; no model is called."},
+        {"term": "Sealed bundle", "definition": "A hashed plan, report, target files, manifest, and agent log. Sealed means tamper-evident, not approved."},
+        {"term": "Official Cloud Assurance", "definition": "Guidewire's official cloud-readiness assessment. PreFlight is not that assessment."},
+    ]
+
+    view.update({
+        "stages": stages,
+        "handoffs": handoffs,
+        "narrative": narrative,
+        "explain": explain,
+        "glossary": glossary,
+        "gate_groups": {
+            "assumptions": assumption_gates,
+            "rules": sorted(rule_groups.values(), key=lambda item: item["rule_id"]),
+        },
+        "evidence_preview": evidence_preview,
+        "package_previews": package_previews,
+        "bundle_files": bundle_files,
+        "bundle_manifest": bundle_manifest,
+        "human_gate_summary": human_gate_summary,
+        "machine_checks": machine_checks,
+        "next_actions": next_actions,
+        "reality_boundary": reality_boundary,
+        "loop": {
+            "rework_path": "Guardian or Critic can send the package back to Architect; Scribe only seals after verification.",
+            "green": verification_ok and not failed,
+            "human_gates": gate_count,
+            "machine_green": verification_ok and not failed,
+        },
+    })
+    view.setdefault("llm", {"mode": "off", "status": "off", "model": None,
+                            "annotations": {}, "warnings": [], "calls": []})
+    return view
+
 
 
 def _evidence_for_source(source_ref: str, evidence: list[dict[str, Any]]) -> list[str]:
@@ -234,16 +824,74 @@ def _parse_generated(path: Path) -> tuple[bool, str]:
     return True, "parsed"
 
 
+def _live_reasoning(
+    state: dict[str, Any],
+    *,
+    kind: str,
+    payload: dict[str, Any],
+    config: LLMConfig,
+    model: str | None,
+    transport=None,
+) -> None:
+    """Run one optional live annotation and record a sanitized audit trail."""
+    started = time.monotonic()
+    try:
+        annotation = annotate_migration_agent(
+            kind, payload, config=config, model=model, transport=transport
+        )
+        state.setdefault("llm", {}).setdefault("annotations", {})[kind] = annotation
+        state["llm"].setdefault("calls", []).append({
+            "kind": kind,
+            "status": "ok",
+            "model": annotation["model"],
+            "latency_ms": annotation["latency_ms"],
+            "usage": annotation["usage"],
+            "prompt_sha256": annotation["prompt_sha256"],
+            "response_sha256": annotation["response_sha256"],
+        })
+        for agent in state.get("agents", []):
+            if agent.get("agent_id") == kind:
+                agent["reasoning"] = annotation
+    except LLMError as exc:
+        state.setdefault("llm", {}).setdefault("warnings", []).append({
+            "agent": kind,
+            "code": exc.code,
+            "message": str(exc),
+            "latency_ms": int((time.monotonic() - started) * 1000),
+        })
+        state["llm"]["status"] = "degraded"
+        state["llm"].setdefault("calls", []).append({
+            "kind": kind,
+            "status": "failed",
+            "code": exc.code,
+            "latency_ms": int((time.monotonic() - started) * 1000),
+        })
+
+
+
 def run_migration(store, run_id: str, *, feature_id: str | None = None,
-                  pace: float = 0.35) -> dict[str, Any]:
+                  pace: float = 0.35, live: bool = False,
+                  model: str | None = None, llm_config: LLMConfig | None = None,
+                  llm_transport=None) -> dict[str, Any]:
     """Run the five agents end-to-end and persist the bundle and state.
 
     ``pace`` adds a short pause between handoffs so the live UI can show agent
-    progress. Tests and CLI callers set it to zero.
+    progress. Tests and CLI callers set it to zero. ``live`` is opt-in: it asks
+    the configured model endpoint for grounded Scout/Architect/Critic narratives,
+    while Guardian remains deterministic.
     """
     status = store.read_status(run_id)
     if status.get("status") != "succeeded":
         raise ValueError("migration requires a succeeded analysis run")
+
+    config = llm_config or LLMConfig.from_env()
+    if live and not config.configured:
+        raise LLMError(
+            "Live reasoning was requested but is not configured. Set "
+            "PREFLIGHT_LLM_BASE_URL and PREFLIGHT_LLM_API_KEY, or run offline.",
+            code="not_configured",
+        )
+    live_model = config.resolve_model(model) if live else None
 
     features = _read(store, run_id, "features.json", {"features": []}).get("features", [])
     feature = next((item for item in features if item.get("feature_id") == feature_id), None)
@@ -254,6 +902,18 @@ def run_migration(store, run_id: str, *, feature_id: str | None = None,
     feature_id = feature["feature_id"]
 
     state = _initial_state(run_id, feature, feature_id)
+    if live:
+        state["mode"] = (
+            f"five specialist agents · live reasoning ({live_model}) · deterministic Guardian"
+        )
+        state["llm"] = {
+            "mode": "live",
+            "status": "ready",
+            "model": live_model,
+            "annotations": {},
+            "warnings": [],
+            "calls": [],
+        }
     store.write_artifact(run_id, MIGRATION_ARTIFACT, state)
     _append_audit(store, run_id, agent="orchestrator", action="migration.started",
                   object_id=run_id, reason=f"autonomous draft for {feature_id}")
@@ -300,6 +960,42 @@ def run_migration(store, run_id: str, *, feature_id: str | None = None,
             "dispositions": len(mappings),
             "feature_evidence": len(feature_evidence),
         })
+        if live:
+            feature_ids = set(feature_evidence)
+            allowed_evidence = [str(value) for value in feature_evidence]
+            scout_evidence = [
+                {
+                    "evidence_id": item.get("evidence_id"),
+                    "path": item.get("path"),
+                    "line": item.get("line"),
+                    "excerpt": (item.get("excerpt") or "")[:300],
+                    "method": item.get("method"),
+                }
+                for item in evidence
+                if item.get("evidence_id") in feature_ids
+            ][:12]
+            _live_reasoning(
+                state,
+                kind="scout",
+                payload={
+                    "feature_id": feature_id,
+                    "feature_name": feature.get("name", feature_id),
+                    "summary": state["agents"][0]["summary"],
+                    "evidence": scout_evidence,
+                    "findings": [
+                        {"rule_id": item.get("rule_id"), "severity": item.get("severity"),
+                         "title": item.get("title")} for item in findings[:12]
+                    ],
+                    "allowed_evidence_ids": allowed_evidence,
+                    "allowed_rule_ids": sorted({str(item.get("rule_id")) for item in findings if item.get("rule_id")}),
+                },
+                config=config,
+                model=live_model,
+                transport=llm_transport,
+            )
+            state["llm"]["status"] = (
+                "active" if state["llm"].get("annotations") else "degraded"
+            )
         _persist(store, run_id, state)
         _append_audit(store, run_id, agent="scout", action="agent.completed", object_id="scout",
                       reason=state["agents"][0]["summary"])
@@ -381,6 +1077,33 @@ def run_migration(store, run_id: str, *, feature_id: str | None = None,
                  "detail": "target bundle only"},
             ],
         )
+        if live:
+            _live_reasoning(
+                state,
+                kind="architect",
+                payload={
+                    "feature_id": feature_id,
+                    "feature_name": feature.get("name", feature_id),
+                    "summary": state["agents"][1]["summary"],
+                    "packages": [
+                        {"package_id": item["package_id"], "target_path": item["target_path"],
+                         "disposition": item.get("disposition"),
+                         "evidence_ids": item.get("evidence_ids", [])}
+                        for item in packages
+                    ],
+                    "allowed_evidence_ids": sorted({
+                        str(evidence_id) for item in packages
+                        for evidence_id in item.get("evidence_ids", [])
+                    }),
+                    "allowed_package_ids": [item["package_id"] for item in packages],
+                },
+                config=config,
+                model=live_model,
+                transport=llm_transport,
+            )
+            state["llm"]["status"] = (
+                "active" if state["llm"].get("annotations") else "degraded"
+            )
         _persist(store, run_id, state)
         _append_audit(store, run_id, agent="architect", action="agent.completed",
                       object_id="architect", reason=state["agents"][1]["summary"])
@@ -497,6 +1220,41 @@ def run_migration(store, run_id: str, *, feature_id: str | None = None,
                      f"verdict {'PASS' if not failed else 'FAIL'}"),
             checks=checks,
         )
+        if live:
+            _live_reasoning(
+                state,
+                kind="critic",
+                payload={
+                    "feature_id": feature_id,
+                    "feature_name": feature.get("name", feature_id),
+                    "summary": state["agents"][3]["summary"],
+                    "packages": [
+                        {"package_id": item["package_id"], "target_path": item["target_path"],
+                         "status": item["status"], "approval": item.get("approval")}
+                        for item in packages
+                    ],
+                    "gates": [
+                        {"gate_id": gate["gate_id"], "kind": gate["kind"],
+                         "severity": gate["severity"], "title": gate["title"]}
+                        for gate in gates
+                    ],
+                    "checks": checks,
+                    "allowed_evidence_ids": sorted({
+                        str(evidence_id) for item in packages
+                        for evidence_id in item.get("evidence_ids", [])
+                    }),
+                    "allowed_rule_ids": sorted({
+                        str(item.get("rule_id")) for item in findings if item.get("rule_id")
+                    }),
+                    "allowed_package_ids": [item["package_id"] for item in packages],
+                },
+                config=config,
+                model=live_model,
+                transport=llm_transport,
+            )
+            state["llm"]["status"] = (
+                "active" if len(state["llm"].get("annotations", {})) >= 3 else "degraded"
+            )
         _persist(store, run_id, state)
         _append_audit(store, run_id, agent="critic", action="agent.completed",
                       object_id="critic", reason=state["agents"][3]["summary"])
@@ -545,6 +1303,15 @@ def run_migration(store, run_id: str, *, feature_id: str | None = None,
             "outputs": outputs,
             "verification": state["verification"],
         }
+        if live:
+            plan["llm"] = {
+                "mode": state["llm"].get("mode"),
+                "model": state["llm"].get("model"),
+                "status": state["llm"].get("status"),
+                "calls": state["llm"].get("calls", []),
+                "warnings": state["llm"].get("warnings", []),
+                "annotations": state["llm"].get("annotations", {}),
+            }
         plan_bytes = (json.dumps(plan, indent=2, sort_keys=False) + "\n").encode("utf-8")
         plan_sha256 = _sha(plan_bytes)
         _write_bytes(migration_dir / "migration-plan.json", plan_bytes)

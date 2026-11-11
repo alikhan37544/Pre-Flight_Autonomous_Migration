@@ -30,13 +30,59 @@
     <ul class="limitation-list">
       <li>Snapshots are read-only; hashes are checked before and after analysis.</li>
       <li>Drafts are written under <code>data/runs/&lt;run&gt;/draft/</code> and never into the source.</li>
-      <li>No telemetry, no external calls, no live tenant, no credentials.</li>
+      <li>The default path is fully offline: no telemetry, no tenant, no credentials.</li>
+      <li>Optional live reasoning is opt-in, env-configured, and limited to synthetic fixtures by default.</li>
       <li>Secrets are redacted at capture; only a fingerprint is stored.</li>
       <li>The review log is hash-chained and verifiable, but is not non-repudiation.</li>
       <li>Runs and drafts can be deleted from the <a class="text-link" href="/runs">Runs</a> page.</li>
     </ul>
   </section>
 </div>
+
+<section class="panel" aria-labelledby="reasoning-settings">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">Optional live reasoning</div>
+      <h2 id="reasoning-settings">MiMo / OpenAI-compatible endpoint</h2>
+    </div>
+    {% if llm_status.configured %}
+    <span class="pill pill-status status-succeeded">enabled</span>
+    {% else %}
+    <span class="pill pill-status status-running">offline only</span>
+    {% endif %}
+  </div>
+  <div class="grid-2">
+    <div>
+      <dl class="migration-facts">
+        <div><dt>Mode</dt><dd>{{ llm_status.mode }}</dd></div>
+        <div><dt>Endpoint</dt><dd>{{ llm_status.base_host or 'not configured' }}</dd></div>
+        <div><dt>Models</dt><dd>{% for model in llm_status.models %}<code>{{ model }}</code>{% if not loop.last %} · {% endif %}{% endfor %}</dd></div>
+        <div><dt>Default</dt><dd><code>{{ llm_status.default_model }}</code></dd></div>
+        <div><dt>Real code</dt><dd>{{ 'allowed' if llm_status.allow_real_code else 'synthetic only' }}</dd></div>
+      </dl>
+      {% if llm_status.configured %}
+      <p class="muted"><strong>Live reasoning is enabled.</strong> The base URL and key are read only
+      from the environment. No key value is displayed or requested in this UI. After changing
+      <code>.env</code>, restart the app so the new values take effect.</p>
+      {% else %}
+      <p class="muted"><strong>{{ llm_status.reason or 'Live reasoning is off.' }}</strong> By default
+      only synthetic fixtures are eligible; real code stays blocked unless explicitly allowed.</p>
+      <p class="muted">To enable it, set <code>PREFLIGHT_LLM_MODE=live</code>,
+      <code>PREFLIGHT_LLM_BASE_URL</code>, and <code>PREFLIGHT_LLM_API_KEY</code> in <code>.env</code>,
+      then restart the app. The UI never displays or asks for a key value.</p>
+      {% endif %}
+    </div>
+    <div>
+      <p><strong>How it is used.</strong> Scout, Architect, and Critic may receive a grounded
+      narrative prompt. Guardian never calls the model. Every returned statement must cite an
+      allowed evidence, rule, or package ID; ungrounded statements are dropped and counted.</p>
+      <p class="muted">Connection details live only in the environment. No key is written to the
+      repository, logs, screenshots, or API responses.</p>
+      <button class="btn btn-small" type="button" data-llm-check {{ 'disabled' if not llm_status.configured }}>Test connection</button>
+      <span class="muted" data-llm-check-status role="status"></span>
+    </div>
+  </div>
+</section>
 
 <section class="panel">
   <div class="panel-head"><h2>Bundled fixtures</h2><span class="muted">synthetic only</span></div>

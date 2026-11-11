@@ -571,6 +571,87 @@ def test_feature_filter_shows_no_match_state(server) -> None:
 
 
 @pytest.mark.e2e
+def test_five_agent_loop_is_visual_and_replayable(server) -> None:
+    """A first-time visitor can launch the crew, see all five stages, and step the loop."""
+    base = server["base"]
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 900})
+        page.goto(f"{base}/migrator?run=R-E2E", wait_until="networkidle")
+        expect(page.locator("h1")).to_contain_text("migration crew")
+        expect(page.locator("[data-migration-start]").first).to_be_visible()
+        page.locator("[data-migration-start]").first.click()
+        expect(page.locator("[data-agent-step]")).to_have_count(5, timeout=30000)
+        expect(page.locator("[data-agent-step]").nth(0)).to_contain_text("Scout")
+        expect(page.locator("[data-agent-step]").nth(4)).to_contain_text("Scribe")
+        expect(page.locator("[data-agent-stage]:visible")).to_have_count(1)
+        expect(page.locator("[data-agent-stage]:visible")).to_contain_text("Evidence handed to Architect")
+        page.locator('[data-agent-step="2"]').click()
+        expect(page.locator("[data-agent-stage]:visible")).to_contain_text("Open gates by type")
+        page.locator("[data-replay-next]").click()
+        expect(page.locator("[data-agent-stage]:visible")).to_contain_text("Independent verification")
+        expect(page.locator("[data-replay-status]")).to_contain_text("Critic")
+        page.screenshot(path=str(server["data"].parent / "migrator-loop-1440.png"), full_page=True)
+        browser.close()
+
+
+@pytest.mark.e2e
+def test_codebase_story_tabs_and_explainability(server) -> None:
+    """The codebase story exposes tabs, plain-language narrative, and upgrade controls."""
+    base = server["base"]
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 900})
+        page.goto(f"{base}/codebase?case=cascade-mutual", wait_until="networkidle")
+        expect(page.locator("h1")).to_contain_text("migration rehearsal")
+        expect(page.locator("[data-codebase-tab]")).to_have_count(5)
+        expect(page.locator("[data-codebase-panel]:visible")).to_have_count(1)
+        expect(page.locator(".agent-narrative")).to_contain_text("Scout scanned")
+        expect(page.locator(".glossary-details")).to_contain_text("Gosu")
+        page.locator("[data-codebase-tab='patches']").click()
+        expect(page.locator("[data-codebase-panel='patches']")).to_be_visible()
+        expect(page.locator(".patch-card").first).to_be_visible()
+        page.locator("[data-codebase-tab='upgrade']").click()
+        expect(page.locator("[data-codebase-panel='upgrade']")).to_be_visible()
+        expect(page.locator("#upgrade-select")).to_be_visible()
+        page.select_option("#upgrade-select", "GWCP-APD-NAMING-2027.04")
+        page.locator(".upgrade-form button[type=submit]").click()
+        expect(page.locator(".impact-card")).to_be_visible()
+        expect(page.locator(".impact-card")).to_contain_text("revalidation_required")
+        page.screenshot(path=str(server["data"].parent / "codebase-upgrade-1440.png"), full_page=True)
+        browser.close()
+
+
+@pytest.mark.e2e
+def test_migration_stories_are_explainable(server) -> None:
+    base = server["base"]
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 900})
+        page.goto(f"{base}/case-studies", wait_until="networkidle")
+        expect(page.locator("h1")).to_contain_text("Two completed migrations")
+        expect(page.locator(".agent-explain")).to_contain_text("How to explore")
+        expect(page.locator(".case-outcome").first).to_contain_text("blockers found")
+        expect(page.locator(".case-outcome").first).to_contain_text("human gates")
+        expect(page.locator("a", has_text="Explore the five-agent run").first).to_be_visible()
+        browser.close()
+
+
+@pytest.mark.e2e
+def test_agent_pages_do_not_overflow_at_390(server) -> None:
+    base = server["base"]
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 390, "height": 844})
+        for path in ["/migrator?run=R-E2E", "/codebase?case=cascade-mutual", "/case-studies"]:
+            page.goto(f"{base}{path}", wait_until="networkidle")
+            overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+            assert overflow <= 1, f"{path} overflows by {overflow}px"
+        browser.close()
+
+
+
+@pytest.mark.e2e
 def test_loading_page_returns_to_the_same_route(server) -> None:
     """A queued run's loading page redirects to the route it was opened from."""
     base = server["base"]

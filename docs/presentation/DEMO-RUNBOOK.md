@@ -95,7 +95,9 @@ The clock is approximate. The demo is deliberately not a feature tour; every cli
 
 Say:
 
-> “This is an offline review of a synthetic Guidewire-style Personal Auto estate. 300 files, hashed and read-only. No tenant, no customer data. Official Cloud Assurance was not run.”
+> “This is a synthetic rehearsal, not an actual migration: an offline review of a synthetic
+> Guidewire-style Personal Auto estate. 300 files, hashed and read-only. No tenant, no
+> customer data. Official Cloud Assurance was not run.”
 
 Point at the **summary strip**:
 
@@ -145,7 +147,7 @@ After both actions the run has **11 audit events** and **4 assumptions**. The pa
 
 At **1280 × 720**, the mapping table is horizontally scrollable and the decision column may need a small side-scroll; use 1440 × 900 when you want M-01 through M-04 and the decision buttons side by side. M-12 is below the fold at both sizes — scroll to it, then return to the header for the A-DEC-04 notice.
 
-Say the boundary explicitly: “The draft targets Cloud Retrofit **without APD App**, which Guidewire labels not the recommended process; field-level `nameOverride` applies only on that path. The `_ext` draft is a local JSON contract, not official Guidewire schema, mapping, or updater syntax.”
+Say the boundary explicitly: “The draft targets Cloud Retrofit **without APD App**, which Guidewire labels not the recommended process; field-level `nameOverride` applies only on that path. The codegen draft shown is a type-level `nameOverride` only; it is not a full APD conversion or field mapping. The `_ext` draft is a local JSON contract, not official Guidewire schema, mapping, or updater syntax.”
 
 **Exact IDs in this queue**
 
@@ -355,7 +357,7 @@ One authorised, anonymised pilot estate for one LOB; two blind SME annotators; a
 - No real estate, customer code, live tenant, deployment, or official Cloud Assurance run.
 - Packet (`packet`/`packet_json`), content digests, and audit head change with reviewer decisions and packet refreshes; read the live screen. The snapshot hash is the stable fixture hash. The seed is 9 events / 3 assumptions; the runbook actions make 11 / 4.
 - The audit chain is local and tamper-evident, not non-repudiation.
-- Tests: 418 passing; freeze manifest: 18/18 recorded hashes; these are build facts, not domain-validation evidence.
+- Tests: 481 passed with the current pytest suite (`pytest`, 2026-11-11); freeze manifest: 18/18 recorded hashes; these are build facts, not domain-validation evidence.
 
 ---
 
@@ -403,7 +405,7 @@ PACKET        /packet?run=R-DEMO-001
               content digests bind findings/mappings/evidence; audit head = chain
               static docs/demo packet = historical, not hash-verifiable
 
-BUILD         418 tests · 18/18 freeze hashes · 9 seed audit events
+BUILD         481 passed with the current pytest suite · 18/18 freeze hashes · 9 seed audit events
 
 CLOSE         “Every claim has evidence; every unknown has a name;
                every change waits for a human.”

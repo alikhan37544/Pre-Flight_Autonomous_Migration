@@ -149,7 +149,7 @@ def _class_name(path: str) -> str:
 
 
 def _rewrite_sql(text: str, kind: str) -> tuple[str, int, list[str]]:
-    notes = ["replaced direct JDBC/SQL with a Cloud Data Access or Query draft"]
+    notes = ["replaced direct JDBC/SQL with a Gosu Query / application API draft"]
     text, changed = _replace_lines(
         text, SQL_RE, kind,
         "direct JDBC/SQL removed; use Query.make(...) or an application API",
@@ -160,7 +160,7 @@ def _rewrite_sql(text: str, kind: str) -> tuple[str, int, list[str]]:
     if kind == "java":
         text = text.replace(
             "// PreFlight: direct JDBC/SQL removed",
-            "// PreFlight: direct JDBC/SQL removed; route reads through Cloud Data Access",
+            "// PreFlight: direct JDBC/SQL removed; route reads through Gosu Query or an application API",
         )
     return text, changed, notes
 
@@ -529,21 +529,21 @@ def _candidate_entity(class_name: str) -> str:
     return entity or "Entity"
 
 
-def _gosu_data_access_draft(path: str, text: str) -> tuple[str, str]:
+def _gosu_query_service_draft(path: str, text: str) -> tuple[str, str]:
     package, class_name = _package_and_class(text, path)
     entity = _candidate_entity(class_name)
     content = (
         f"package {package}\n\n"
         "uses gw.api.database.Query\n\n"
-        "// PreFlight Architect draft: candidate Cloud Data Access / Query service.\n"
+        "// PreFlight Architect draft: candidate Gosu Query / application API service.\n"
         "// Confirm the entity and projected fields with the data owner before merge.\n"
-        f"class {class_name}CloudDataAccess {{\n"
+        f"class {class_name}QueryService {{\n"
         f"  function load() : List<{entity}> {{\n"
         f"    return Query.make({entity}).select().toList()\n"
         "  }\n"
         "}\n"
     )
-    return f"gsrc/{package.replace('.', '/')}/{class_name}CloudDataAccess.gs", content
+    return f"gsrc/{package.replace('.', '/')}/{class_name}QueryService.gs", content
 
 
 def _jaxrs_resource_draft(path: str, text: str) -> tuple[str, str]:
@@ -637,7 +637,7 @@ def refactor_codebase(scan: ScanResult, *, source_root: Path,
             for rule_id in rule_ids:
                 if rule_id in {"PF-CODE-SQL-001", "PF-CODE-SQL-002"}:
                     target_text, _count, step_notes = _rewrite_sql(target_text, kind)
-                    support_path, content = _gosu_data_access_draft(relative, raw)
+                    support_path, content = _gosu_query_service_draft(relative, raw)
                     supporting[support_path] = (
                         content,
                         [item.finding_id for item in findings

@@ -43,6 +43,7 @@ from app.services.case_studies import (
     list_case_studies,
 )
 from app.services.code_migration import (
+    build_codebase_view,
     code_migration_summary,
     run_code_migration,
     verify_code_audit,
@@ -52,7 +53,18 @@ from app.services.discovery import DiscoveryResult
 from app.services.evaluate import EvaluationResult
 from app.services.intake import UnsafeArchiveError, safe_extract_zip
 from app.services.packet import DISCLAIMER, build_packet, verify_packet_artifacts
-from app.services.migrator import MIGRATION_ARTIFACT, run_migration, verify_migration_log
+from app.services.migrator import (
+    MIGRATION_ARTIFACT,
+    build_migration_view,
+    run_migration,
+    verify_migration_log,
+)
+from app.services.llm import (
+    LLMConfig,
+    LLMError,
+    MODELS,
+    chat_json,
+)
 from app.services.pipeline import RunCancelled, execute_run
 from app.services.reconstruction import ReconstructionResult
 from app.services.redaction import redact_excerpt
@@ -254,11 +266,15 @@ class AssistantRequest(BaseModel):
 class MigrationRequest(BaseModel):
     feature_id: str | None = None
     force: bool = False
+    live: bool = False
+    model: str | None = None
 
 
 class CodeMigrationRequest(BaseModel):
     max_iterations: int = Field(default=3, ge=1, le=5)
     upgrade_scenario: str | None = None
+    live: bool = False
+    model: str | None = None
 
 
 class UpgradeRequest(BaseModel):
@@ -571,6 +587,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "title": title,
             "csrf_token": getattr(request.state, "csrf_token", ""),
             "settings": settings,
+            "llm_status": settings.llm_config().public(),
             "product_version": "0.1.0",
             "now": _now(),
         }
@@ -623,6 +640,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if patch.get("patch_id") == patch_id:
                 return patch
         raise HTTPException(status_code=404, detail="patch not found")
+
+    def migration_view(run_id: str) -> dict[str, Any] | None:
+        store: RunStore = app.state.store
+        try:
+            state = store.read_artifact(run_id, MIGRATION_ARTIFACT)
+        except StoreError as exc:
+            if exc.code == "NOT_FOUND":
+                return None
+            raise
+        evidence = _read(store, run_id, "evidence.json", {}).get("evidence", [])
+        findings = _read(store, run_id, "findings.json", {}).get("findings", [])
+        assumptions = _read(store, run_id, "assumptions.json", {}).get("assumptions", [])
+        view = build_migration_view(
+            state, evidence=evidence, findings=findings, assumptions=assumptions,
+            run_dir=store.run_dir(run_id),
+        )
+        view["audit"]["verified"], view["audit"]["detail"] = verify_migration_log(store, run_id)
+        return view
 
     # -- pages ---------------------------------------------------------
     @app.get("/", response_class=HTMLResponse)
@@ -758,9 +793,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         view, response = guard(request, run_id, "Migrator")
         if response:
             return response
+        migration = migration_view(run_id)
         return templates.TemplateResponse(
             request=request, name="migrator.html",
-            context=context(request, run_id, view, "Migrator"),
+            context=context(request, run_id, view, "Migrator", migration=migration),
         )
 
     @app.get("/codebase", response_class=HTMLResponse)
@@ -786,6 +822,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     **result.get("green_signal", {}),
                     **impact["green_signal_after"],
                 }
+                if impact["event"].get("invalidates_green"):
+                    result["stale_green"] = True
+                    result["stale_green_reason"] = (
+                        f"Upgrade {impact['scenario']['from_version']} to "
+                        f"{impact['scenario']['to_version']} invalidated the green signal; "
+                        "revalidate the affected patches before approval."
+                    )
+        result = build_codebase_view(result)
         return templates.TemplateResponse(
             request=request, name="codebase.html",
             context=context(
@@ -802,11 +846,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/case-studies", response_class=HTMLResponse)
     def case_studies_page(request: Request):
+        profiles = list_case_studies()
+        summaries = {}
+        for profile in profiles:
+            try:
+                summaries[profile["case_id"]] = code_migration_summary(
+                    codebase_result(profile["case_id"])
+                )
+            except Exception:
+                summaries[profile["case_id"]] = None
         return templates.TemplateResponse(
             request=request, name="case_studies.html",
             context=context(
                 request, None, None, "Case studies",
-                profiles=list_case_studies(),
+                profiles=profiles,
+                summaries=summaries,
             ),
         )
 
@@ -965,6 +1019,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # PreFlight is not an LLM server. Some local AI/IDE extensions probe this
         # OpenAI-compatible path; return a truthful empty model list instead of 404.
         return {"object": "list", "data": [], "preflight": "not an LLM; no models"}
+
+    @app.get("/api/llm/status")
+    def llm_status():
+        return settings.llm_config().public()
+
+    @app.post("/api/llm/check", dependencies=[Depends(require_csrf)])
+    def llm_check():
+        config = settings.llm_config()
+        if not config.configured:
+            raise HTTPException(status_code=409, detail=config.public()["reason"])
+        try:
+            result = chat_json(
+                [{"role": "user", "content": 'Return JSON only: {"ok": true}'}],
+                config=config,
+                max_tokens=30,
+            )
+        except LLMError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+        return {
+            "ok": True,
+            "model": result["model"],
+            "latency_ms": result["latency_ms"],
+            "usage": result["usage"],
+            "provider": "OpenAI-compatible",
+        }
 
     @app.get("/api/runs")
     def list_runs():
@@ -1181,14 +1260,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def migration_api(run_id: str):
         store: RunStore = app.state.store
         _status_or_404(store, run_id)
-        try:
-            state = store.read_artifact(run_id, MIGRATION_ARTIFACT)
-        except StoreError as exc:
-            if exc.code == "NOT_FOUND":
-                return {"run_id": run_id, "status": "not_started", "progress": 0, "agents": []}
-            raise
-        state["audit"]["verified"], state["audit"]["detail"] = verify_migration_log(store, run_id)
-        return state
+        view = migration_view(run_id)
+        if view is None:
+            return {"run_id": run_id, "status": "not_started", "progress": 0, "agents": []}
+        return view
 
     @app.post("/api/runs/{run_id}/migration", dependencies=[Depends(require_csrf)])
     def start_migration(run_id: str, body: MigrationRequest):
@@ -1208,10 +1283,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 return {"run_id": run_id, "status": "running", "agents": existing.get("agents", []) if existing else []}
             if existing and existing.get("status") in {"completed", "completed_with_gates"} and not body.force:
                 return existing
+            if body.live and not settings.llm_config().configured:
+                raise HTTPException(
+                    status_code=409,
+                    detail=("Live reasoning is not configured. Set PREFLIGHT_LLM_BASE_URL and "
+                            "PREFLIGHT_LLM_API_KEY, or run the deterministic offline pass."),
+                )
 
             def target() -> None:
                 try:
-                    run_migration(store, run_id, feature_id=body.feature_id, pace=0.35)
+                    run_migration(
+                        store, run_id, feature_id=body.feature_id, pace=0.35,
+                        live=body.live, model=body.model,
+                    )
                 except Exception:
                     logger.exception("migration failed for %s", run_id)
                 finally:
@@ -1259,6 +1343,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             result = run_code_migration(
                 case_id, settings, max_iterations=body.max_iterations,
                 upgrade_scenario=body.upgrade_scenario,
+                live=body.live, model=body.model,
             )
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail="case fixture not found") from exc

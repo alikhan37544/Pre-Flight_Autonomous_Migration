@@ -29,6 +29,21 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
             "integrations": "7",
             "rating_calls_per_day": "1.8M",
         },
+        "footprint_caveat": (
+            "Illustrative, synthetic figures for a constructed archetype; not measured "
+            "customer data."
+        ),
+        "reality_boundary": {
+            "synthetic": True,
+            "actual_migration": False,
+            "tenant_contacted": False,
+            "compiled": False,
+            "official_assurance": False,
+            "proof_ladder": (
+                "Stage 1 synthetic rehearsal only: no real snapshot, compilation, tenant "
+                "contact, official Cloud Assurance, or production cutover."
+            ),
+        },
         "lobs": [
             {
                 "name": "Personal Auto",
@@ -51,7 +66,7 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
                     "java/cascade/plugin/LegacyRatingPlugin.java",
                 ],
                 "anti_patterns": ["PF-CODE-SQL-001", "PF-CODE-SQL-002", "PF-CODE-MT-001"],
-                "cloud_target": "Cloud Data Access read model + typed Gosu rating factor service",
+                "cloud_target": "Gosu Query / application API + typed Gosu rating factor service",
             },
             {
                 "name": "Dealer vehicle feed",
@@ -87,7 +102,8 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
             },
         ],
         "constraints": [
-            "Direct SQL is prohibited; reads move to Cloud Data Access and writes to application APIs.",
+            "Direct SQL is prohibited; synchronous reads move to Gosu Query or application "
+            "APIs, while Cloud Data Access is reserved for analytics/export.",
             "The dealer feed has a contractual 200 ms p95 acknowledgement budget.",
             "TX, OR, and WA maintain separate mandatory-offer and notice rules.",
             "The commission system cannot subscribe to App Events directly; it needs an Integration Gateway route.",
@@ -97,7 +113,7 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
             {"rule_id": "PF-CODE-SQL-001", "category": "data_access", "count": 3,
              "summary": "JDBC reads in a Gosu rating query and a Java plugin."},
             {"rule_id": "PF-CODE-SRV-001", "category": "servlet", "count": 1,
-             "summary": "Dealer-feed servlet is not a supported cloud extension point."},
+             "summary": "Dealer-feed servlet: custom servlets are not a recommended practice; use the approved REST API framework."},
             {"rule_id": "PF-CODE-MSG-001", "category": "messaging", "count": 2,
              "summary": "JMS message-transport plugin and legacy messaging config."},
             {"rule_id": "PF-CODE-SEC-001", "category": "security", "count": 2,
@@ -122,7 +138,7 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
         "tagline": "A complex personal and commercial carrier whose claims, billing, and coastal underwriting customizations cross three applications.",
         "source_release": "Qusar 2026.08 (pre-cloud snapshot)",
         "target_release": "GWCP 2027.04",
-        "cloud_program": "Cloud Retrofit with APD conversion · multi-LOB",
+        "cloud_program": "Cloud Retrofit + APD naming preparation (type-level codegen draft) · multi-LOB",
         "footprint": {
             "policies": "2.6M",
             "states": "TX · LA · FL · WA",
@@ -131,6 +147,21 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
             "java_plugins": "19",
             "integrations": "42",
             "rating_calls_per_day": "11.4M",
+        },
+        "footprint_caveat": (
+            "Illustrative, synthetic figures for a constructed archetype; not measured "
+            "customer data."
+        ),
+        "reality_boundary": {
+            "synthetic": True,
+            "actual_migration": False,
+            "tenant_contacted": False,
+            "compiled": False,
+            "official_assurance": False,
+            "proof_ladder": (
+                "Stage 1 synthetic rehearsal only: no real snapshot, compilation, tenant "
+                "contact, official Cloud Assurance, or production cutover."
+            ),
         },
         "lobs": [
             {
@@ -189,7 +220,7 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
                 "description": "A nightly batch reads legacy billing tables, writes reconciliation files, and can exit the process on error.",
                 "evidence_paths": ["gsrc/harbor/batch/BillingReconciliation.gs"],
                 "anti_patterns": ["PF-CODE-SQL-001", "PF-CODE-MT-002"],
-                "cloud_target": "Cloud API job + managed scheduler + Cloud Data Access read model",
+                "cloud_target": "Cloud API job + managed scheduler + Gosu Query / application API",
             },
             {
                 "name": "Experience-mod publication",
@@ -217,7 +248,9 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
             "Coastal underwriting has a filed-model dependency and a state audit trail.",
             "The vendor MQ estate cannot be retired during the first cloud release.",
             "Workers' comp classification updates run under a regulatory calendar.",
-            "APD conversion and code migration run in parallel, so type-name changes can invalidate endpoint drafts.",
+            "APD naming preparation and code migration run in parallel, so type-name changes "
+            "can invalidate endpoint drafts; the lab drafts only a type-level codegen "
+            "nameOverride, not a full APD conversion.",
         ],
         "expected_findings": [
             {"rule_id": "PF-CODE-SQL-001", "category": "data_access", "count": 5,
@@ -245,7 +278,8 @@ CASE_STUDIES: dict[str, dict[str, Any]] = {
             "Harbor demonstrates the hard case: the code-level green signal is necessary but "
             "not sufficient. The Critic keeps architectural risks visible across applications, "
             "and the upgrade simulator shows why a green bundle must be invalidated when the "
-            "target release changes an APD or App Events constraint mid-assessment."
+            "target release changes an APD or App Events constraint mid-assessment. Its APD "
+            "deliverable is a type-level codegen naming draft, not a full APD conversion."
         ),
     },
 }

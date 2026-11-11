@@ -1,0 +1,392 @@
+{
+  "generated_at": "2026-11-11T12:25:20Z",
+  "deck": "docs/presentation/index.html",
+  "slides": 23,
+  "viewports": {
+    "1920x1080": {
+      "slides": 23,
+      "failures": []
+    },
+    "1440x900": {
+      "slides": 23,
+      "failures": []
+    },
+    "1280x720": {
+      "slides": 23,
+      "failures": []
+    },
+    "1024x768": {
+      "slides": 23,
+      "failures": []
+    },
+    "390x844": {
+      "slides": 23,
+      "failures": []
+    }
+  },
+  "console_errors": [],
+  "external_requests": [],
+  "deep_link": {
+    "hash": "#slide-23",
+    "active": "slide-23",
+    "counter": "23 / 23"
+  },
+  "keyboard": {
+    "home": "slide-1",
+    "end": "slide-23",
+    "notes_open": true,
+    "notes_text": "Close on the standard, not the feature list. \u201cEvery claim has evidence; every unknown has a name; every change waits for a human. That is what we want a migrati",
+    "help_open": true,
+    "help_text": "Deep links use #slide-1 \u2026 #slide-23. The deck has no external fonts, scripts, styles, or network calls. Print produces one 16:9 slide per page. Reduced-motion settings are respected."
+  },
+  "print": {
+    "slides": 23,
+    "issues": [],
+    "page_height_ok": true
+  },
+  "pdf": {
+    "path": "docs/presentation/PreFlight-deck.pdf",
+    "bytes": 1486730,
+    "sha256": "ddb97057f7c964703a0e875d96c0be6f73ded42420be9c19ffaeb082815d6262",
+    "pages": 23,
+    "page_size": "1200 x 675.12 pts"
+  },
+  "screenshots": [
+    {
+      "file": "assets/deck-23/deck-slide-13-1920x1080.png",
+      "bytes": 225595,
+      "sha256": "f755f803fc17c3eb9007753df18a1b09719a9ffa166716eaac81da036a896bf2"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-14-1920x1080.png",
+      "bytes": 240655,
+      "sha256": "a751b1f585e12d03fc96853fca96b04284345c7e9aa3be135a7aca7466f943a9"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-15-1920x1080.png",
+      "bytes": 279480,
+      "sha256": "44fa555c6b25d28237e0a0b24e78782d8df61cafda8bdf00dc9e55db0579c1b5"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-16-1920x1080.png",
+      "bytes": 261803,
+      "sha256": "3f588f98a91b391d27bacdc41c4d227b2d5d7651187d0720f06b43b1f4cb4c84"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-17-1920x1080.png",
+      "bytes": 263357,
+      "sha256": "58a049829fb3123cf2f46de42bf1f4db6bae2ceeb5d15e2da52822ddc35ef801"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-18-1920x1080.png",
+      "bytes": 252794,
+      "sha256": "abf5504ac2e450944f897df91cf1e24b7742d4b30b1bb86242c457d946bfe600"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-19-1920x1080.png",
+      "bytes": 255326,
+      "sha256": "c6d1c14e665aaa6239a3e281f3936fa967cedc344153c3728761aa196d5b34c9"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-01-1440x900.png",
+      "bytes": 99503,
+      "sha256": "0105bb71043d9484f6092d54bb7cc8e14d395bf399f5236f4c51577a07705d88"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-02-1440x900.png",
+      "bytes": 174270,
+      "sha256": "680ef2be1538281553e59bece8060627d3f538b895788fc1049a0713a7087a47"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-03-1440x900.png",
+      "bytes": 168803,
+      "sha256": "ab8fa5fff72b7643779af0f6aaf85405487fbf0b7ccbd8eac5bb51165d387743"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-04-1440x900.png",
+      "bytes": 133997,
+      "sha256": "1f9c5a950c020cf36950caacf725ba2bc2193516e97a34549d5a50f64539a236"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-05-1440x900.png",
+      "bytes": 205258,
+      "sha256": "169c8ce5786683f753a7dc5a5e92a2898759c0e949b805c511c67531ba28b61f"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-06-1440x900.png",
+      "bytes": 243262,
+      "sha256": "cf4521eff79f30e49c1bff7c6b96a984f42f60be3927d8fe32b16b54b16917db"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-07-1440x900.png",
+      "bytes": 185598,
+      "sha256": "52dce7f186c5afe0ec85b365920a397b4b586e7f4e14dee07d3b72bf102f3a3d"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-08-1440x900.png",
+      "bytes": 224520,
+      "sha256": "7712a0790e5895f1ebe38f734c5a61f78ecbf91073e503e83194cfb446b0036a"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-09-1440x900.png",
+      "bytes": 289335,
+      "sha256": "be2e44f2fb41746fb42c441b7d3562e5c0c8d6f4f0f6c92a5c22ee2e96e996e7"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-10-1440x900.png",
+      "bytes": 223262,
+      "sha256": "b4743ae2d247f5a07987fafa6329453e595484f84a8a3ab5d271b908249a7b2b"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-11-1440x900.png",
+      "bytes": 173394,
+      "sha256": "552f8bea370684b50e46589a1c3887f422deacdc693ddb2ab290b72d224aa161"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-12-1440x900.png",
+      "bytes": 283538,
+      "sha256": "017b14e516d3829e94f88a299f7546dac9e7b840d4cc056f9c89b0ff2fb57d92"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-13-1440x900.png",
+      "bytes": 180769,
+      "sha256": "606926ce1eef4ff4d279e17a88c3e21538e7879c3c99f9b0899e1045031c25f5"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-14-1440x900.png",
+      "bytes": 202061,
+      "sha256": "f307c355a00fa9213c4497e668f1faad8786d8843c6f7f25e3833df6be94f4e5"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-15-1440x900.png",
+      "bytes": 213951,
+      "sha256": "1988079ae4abfa503b3d086928aadc6957d8b34938167984124b29792ee801c0"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-16-1440x900.png",
+      "bytes": 217367,
+      "sha256": "f1451990f975032493168d36faf8e9b5bbb33e6a09f9a5c6a873cfd6448c5c1d"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-17-1440x900.png",
+      "bytes": 211878,
+      "sha256": "7943df22da0b8d28dfa8baebf95018e9788f250ce4a5f7070111b34ad23ca673"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-18-1440x900.png",
+      "bytes": 190602,
+      "sha256": "8fa3e97b348690d7464c97cf5d6e3147bbb3b64d3de5dff064b1a0d80163dfcd"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-19-1440x900.png",
+      "bytes": 196306,
+      "sha256": "f156028252fd813d7148615f1756ed6c351f0237bd638b094643ed5cab6eb228"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-20-1440x900.png",
+      "bytes": 126692,
+      "sha256": "6e20fc3756a2a3774152f42ef67130d2b87acc7335abd0a2219d31c6847cabb4"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-21-1440x900.png",
+      "bytes": 169557,
+      "sha256": "9368624a2e1fd3183781ff4f16820b714ffb0c471f6a6b353b7c0b11410d1299"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-22-1440x900.png",
+      "bytes": 172881,
+      "sha256": "fa8ff4517dbf7d4e892292e9143d3634b60bc01fbfa279d096819bf7a71aa180"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-23-1440x900.png",
+      "bytes": 128426,
+      "sha256": "a714023314e876120b5ae64afea403a99e607c8a8e14ae88ae3470313d4477a9"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-13-1280x720.png",
+      "bytes": 133523,
+      "sha256": "7db1e422454d95f9e54357bfb0f363401caa6071ac80b8ebd265293e75e98332"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-14-1280x720.png",
+      "bytes": 144880,
+      "sha256": "ff23bf0bf08285c1322dd0072441b9d4be28ae1e5f5574608707d94afe69bc42"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-15-1280x720.png",
+      "bytes": 166525,
+      "sha256": "55e19d75ceba6932c799309a52ead84fa2dd043eac74d00cf902c4de7af6091d"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-16-1280x720.png",
+      "bytes": 151446,
+      "sha256": "22aa0cec48b60b7a49fca0d563b3990e464c439a536ab5a444c2320717477fca"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-17-1280x720.png",
+      "bytes": 157748,
+      "sha256": "4cc2b5ce9db6173ed53000631b4892725ecaaed67f938f353eb3f89fd36b00ef"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-18-1280x720.png",
+      "bytes": 150970,
+      "sha256": "0fa5ac0dc31aa921f2254107f936719bdd529370107700e893055f564b042947"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-19-1280x720.png",
+      "bytes": 145784,
+      "sha256": "4fa3f1c69289f0de1285150b66a9e3be9d71a11f63fa7ce2884090f1c378a479"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-13-1024x768.png",
+      "bytes": 127718,
+      "sha256": "6cbfe6b7e7ce11dd28541ad03e34c6e9d9722e0fe4a9a49b27774a8f24a11bbe"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-14-1024x768.png",
+      "bytes": 141359,
+      "sha256": "a7a92c561266f0454dbbb48501e14788ef32014670f905c0bddb74447f64d85d"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-15-1024x768.png",
+      "bytes": 180433,
+      "sha256": "e98d148bc864091c4eec4e1c9790ab4f86ea4f8ce383e4ba6c822619c8a5b70f"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-16-1024x768.png",
+      "bytes": 144392,
+      "sha256": "cc425fb59e9ede109137d83c45f8583c87809254a4efafd06b159d90c5a06218"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-17-1024x768.png",
+      "bytes": 149349,
+      "sha256": "9ddb73deb7adac4c430fecb2e0f2b1736df413a9e8a019dc9bf1b0dc3c92dbd0"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-18-1024x768.png",
+      "bytes": 151590,
+      "sha256": "8aa3cfdf1e6231fdd196e79c40c172e9b6af29b575fe6065348250aa7e0d05f7"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-19-1024x768.png",
+      "bytes": 144963,
+      "sha256": "9395b237eabd1d25618da8f647a9e3b29807eb82aafd9a8c9a3103ec09ef30f7"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-01-390x844.png",
+      "bytes": 70801,
+      "sha256": "589e03442075466398399fa77140bc5a50661e890e44290bd8d8b9e50d0fc4b0"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-02-390x844.png",
+      "bytes": 151356,
+      "sha256": "7c7a21ab3666aa90a335c16ae08203484cb92757960c2d926d28ec6283fb98ae"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-03-390x844.png",
+      "bytes": 124812,
+      "sha256": "2397efcbe99e309f1f3d80b9efbd1c157a4f36db4f489fbb0c5d9769464e5d30"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-04-390x844.png",
+      "bytes": 135655,
+      "sha256": "380d9000b6422e431b2161a28ef971adf848587b51b7cb6ea015ae880c7ec0f7"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-05-390x844.png",
+      "bytes": 168104,
+      "sha256": "70bb9757822a5fe5bdf59f82dc17ae70de635aff597c383b5ed466a9e1b93aeb"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-06-390x844.png",
+      "bytes": 148532,
+      "sha256": "0efbb473b474ac839ee5326f7959f4e01077cc107d92895009910ff6e1df0fa8"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-07-390x844.png",
+      "bytes": 107209,
+      "sha256": "a38f1a8c4d03665d4abeacb2ee51a818420190bac8ad3aa807ebedfa70b9effa"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-08-390x844.png",
+      "bytes": 135226,
+      "sha256": "0046120c7d8bdc8999d5d53cd5a7911f7df9881ca891cd459e5ba6cb1c6d492f"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-09-390x844.png",
+      "bytes": 179778,
+      "sha256": "0ddb5a42c8558e7a3c2f9d7bb0927212fb58201218d687c7c9d5164781803a01"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-10-390x844.png",
+      "bytes": 154250,
+      "sha256": "e7b110c06cd66e376762dde138511082b41f9dc2c9143daf37fac1e8778b6329"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-11-390x844.png",
+      "bytes": 137252,
+      "sha256": "f69e2138410c8b46b58d3781bc8f62298125a137524b90922ad0eb0913229b4b"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-12-390x844.png",
+      "bytes": 161144,
+      "sha256": "8b36a4d4ca004addd56a6d39e5e21e26b1daf1a1e3c5d4a60ddb95e412f1df42"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-13-390x844.png",
+      "bytes": 152982,
+      "sha256": "711c014d239e05333d24c4718dd78194760838dc95f44bd0ecd4f6816a616465"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-14-390x844.png",
+      "bytes": 138532,
+      "sha256": "88cc826fe395c4a85e2796e9791b1678e6e743ac6e802ce21fc8ab63b42d0b79"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-15-390x844.png",
+      "bytes": 126312,
+      "sha256": "b3b8fa3d5a0a156f176c493404856629224879b3d068a82a1d875f821f6f38b5"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-16-390x844.png",
+      "bytes": 176212,
+      "sha256": "27d6316ad62131e916edd9bb317003aca3e00da86ad616cd5f4005e5474beb17"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-17-390x844.png",
+      "bytes": 165369,
+      "sha256": "741b8cae66397c2144b61a899060c86d45803d09324ed8848951c28e9c051bae"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-18-390x844.png",
+      "bytes": 163870,
+      "sha256": "ded9b39ac86f5dd9867eec76f2f0437a03c4d51e628b5cf322e36191f3552c8d"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-19-390x844.png",
+      "bytes": 169887,
+      "sha256": "4de4a13927e915d34bf538b3612e0ec8cc64d535679d2f69bf5a1669ef947a48"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-20-390x844.png",
+      "bytes": 112025,
+      "sha256": "e27e49e4a24fc3a9d8f73be1f17837b45a8c651932063c90537d5ffc52635044"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-21-390x844.png",
+      "bytes": 143426,
+      "sha256": "2980fd4b8bb507d1bfb6579e9427ce12e3e9f424bf517a2409f2bade7af2ef61"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-22-390x844.png",
+      "bytes": 156122,
+      "sha256": "2e5b3f05e6fed0f83a4fa1f4961c6a10ad3dae988bd8ca7bc10b70f71f9a0d84"
+    },
+    {
+      "file": "assets/deck-23/deck-slide-23-390x844.png",
+      "bytes": 100453,
+      "sha256": "b8a049db677c6c6f74da483e1a1365420a79ff47fd90169204add678ae7edbd9"
+    }
+  ],
+  "ok": true
+}

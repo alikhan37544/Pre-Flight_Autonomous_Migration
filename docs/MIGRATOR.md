@@ -1,8 +1,9 @@
-# Autonomous multi-agent migrator
+# Autonomous multi-agent draft migrator
 
-`/migrator` is the autonomy layer on top of a completed PreFlight review run. It
-is the answer to “what changes would a migration team actually make, and what
-must a human decide before those changes ship?”
+`/migrator` is the bounded draft-generation layer on top of a completed synthetic
+PreFlight review run. It answers “what changes would a migration team consider, and what
+must a human decide before those changes ship?” It drafts changes; it does not perform an
+actual migration.
 
 Five specialist agents run as deterministic handoffs over the persisted review
 artifacts:
@@ -70,7 +71,8 @@ Inside `data/runs/<run_id>/`:
 ## Boundaries
 
 This is not Guidewire Cloud Assurance, not a deployment tool, and not a live
-tenant connector. The generated target files are local JSON/YAML drafts for
+tenant connector. It does not perform an actual migration or production cutover.
+The generated target files are local JSON/YAML drafts for
 review, not a compiled Guidewire package. Official Cloud Assurance was not run.
 
 For code-level refactoring, anti-pattern detection, SARIF export, and mid-migration

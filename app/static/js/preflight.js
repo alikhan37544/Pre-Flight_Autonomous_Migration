@@ -20,6 +20,20 @@
     toastTimer = setTimeout(() => toast.classList.remove("visible"), 4200);
   }
 
+  const STATUS_LABELS = {
+    completed_with_gates: "sealed · human gates open",
+    green_with_human_gates: "machine-green · human gates open",
+    revalidation_required: "revalidation required",
+    failed: "stopped",
+    cancelled: "stopped",
+    completed: "sealed",
+  };
+
+  function readerStatus(value) {
+    if (!value) return "";
+    return STATUS_LABELS[value] || String(value).replace(/_/g, " ");
+  }
+
   async function postJson(url, payload) {
     const response = await fetch(url, {
       method: "POST",
@@ -150,6 +164,15 @@
         if (!hide) visible += 1;
       });
       if (featureEmpty) featureEmpty.hidden = visible > 0;
+    });
+  });
+
+  /* Feature rows are pressed-state buttons so the selected feature is exposed
+     to assistive technology; navigation stays in-page and keeps the current run. */
+  document.querySelectorAll("[data-feature-row][data-feature-href]").forEach((row) => {
+    row.addEventListener("click", () => {
+      const href = row.dataset.featureHref;
+      if (href) window.location.assign(href);
     });
   });
 
@@ -1066,7 +1089,7 @@
       const label = document.querySelector("[data-migration-label]");
       if (bar && typeof state.progress === "number") bar.value = state.progress;
       if (label) {
-        const current = state.current_agent ? `Running ${state.current_agent}` : state.status;
+        const current = state.current_agent ? `Running ${state.current_agent}` : readerStatus(state.status);
         label.textContent = `${current} · ${Math.round(state.progress || 0)}%`;
       }
       (state.agents || []).forEach((agent) => {
@@ -1097,10 +1120,74 @@
   /* Codebase lab: replay the cyclic loop and run a fresh assessment. */
   const codebaseReplay = document.querySelector("[data-codebase-replay]");
   const codebaseRun = document.querySelector("[data-codebase-run]");
+  const codebaseLiveRun = document.querySelector("[data-codebase-live-run]");
   const codebaseCase = new URLSearchParams(window.location.search).get("case") || "cascade-mutual";
+
+  const tabButtons = Array.from(document.querySelectorAll("[data-codebase-tab]"));
+  const tabPanels = Array.from(document.querySelectorAll("[data-codebase-panel]"));
+  const codebaseTabNames = tabButtons.map((button) => button.dataset.codebaseTab);
+  function codebaseTabFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("upgrade")) return "upgrade";
+    const hash = window.location.hash.replace(/^#/, "").toLowerCase();
+    const aliases = { upgrade: "upgrade", "cb-upgrade": "upgrade" };
+    const tab = aliases[hash] || hash.replace(/^cb-/, "");
+    return codebaseTabNames.includes(tab) ? tab : "loop";
+  }
+  function showCodebaseTab(name, options = {}) {
+    tabButtons.forEach((button) => {
+      const active = button.dataset.codebaseTab === name;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+      button.tabIndex = active ? 0 : -1;
+    });
+    tabPanels.forEach((panel) => { panel.hidden = panel.dataset.codebasePanel !== name; });
+    if (options.focus) {
+      const current = tabButtons.find((button) => button.dataset.codebaseTab === name);
+      if (current) current.focus();
+    }
+    if (options.syncHash) {
+      const url = new URL(window.location.href);
+      url.hash = name === "loop" ? "" : name;
+      window.history.replaceState({}, "", url);
+    }
+  }
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => showCodebaseTab(button.dataset.codebaseTab, { syncHash: true }));
+  });
+  const codebaseTablist = document.querySelector("[data-codebase-tabs]");
+  if (codebaseTablist && tabButtons.length) {
+    codebaseTablist.addEventListener("keydown", (event) => {
+      const current = tabButtons.indexOf(document.activeElement);
+      if (current < 0) return;
+      let next = null;
+      if (event.key === "ArrowRight") next = tabButtons[(current + 1) % tabButtons.length];
+      else if (event.key === "ArrowLeft") next = tabButtons[(current - 1 + tabButtons.length) % tabButtons.length];
+      else if (event.key === "Home") next = tabButtons[0];
+      else if (event.key === "End") next = tabButtons[tabButtons.length - 1];
+      if (next) {
+        event.preventDefault();
+        showCodebaseTab(next.dataset.codebaseTab, { syncHash: true, focus: true });
+      }
+    });
+  }
+  if (tabButtons.length) showCodebaseTab(codebaseTabFromUrl());
+  window.addEventListener("hashchange", () => {
+    if (tabButtons.length) showCodebaseTab(codebaseTabFromUrl());
+  });
+
+  function codebasePayload(live) {
+    const modelNode = document.querySelector("[data-codebase-model]");
+    return {
+      max_iterations: 3,
+      live: Boolean(live),
+      model: modelNode ? modelNode.value : undefined,
+    };
+  }
 
   if (codebaseReplay) {
     codebaseReplay.addEventListener("click", () => {
+      if (tabButtons.length) showCodebaseTab("loop", { syncHash: true });
       const cards = Array.from(document.querySelectorAll("[data-iteration]"));
       if (!cards.length) return;
       cards.forEach((card) => card.classList.remove("is-active"));
@@ -1122,9 +1209,7 @@
     codebaseRun.addEventListener("click", async () => {
       codebaseRun.disabled = true;
       try {
-        await postJson(`/api/codebase/cases/${encodeURIComponent(codebaseCase)}/run`, {
-          max_iterations: 3,
-        });
+        await postJson(`/api/codebase/cases/${encodeURIComponent(codebaseCase)}/run`, codebasePayload(false));
         notify("Five-agent loop completed. Reloading the bundle.");
         window.setTimeout(() => window.location.reload(), 500);
       } catch (error) {
@@ -1133,6 +1218,37 @@
       }
     });
   }
+
+  if (codebaseLiveRun) {
+    codebaseLiveRun.addEventListener("click", async () => {
+      codebaseLiveRun.disabled = true;
+      try {
+        await postJson(`/api/codebase/cases/${encodeURIComponent(codebaseCase)}/run`, codebasePayload(true));
+        notify("Live five-agent loop completed. Reloading the bundle.");
+        window.setTimeout(() => window.location.reload(), 500);
+      } catch (error) {
+        codebaseLiveRun.disabled = false;
+        notify(error.message, true);
+      }
+    });
+  }
+
+  document.querySelectorAll("[data-upgrade-rerun]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      try {
+        await postJson(`/api/codebase/cases/${encodeURIComponent(codebaseCase)}/run`, {
+          max_iterations: 3,
+          upgrade_scenario: button.dataset.scenario,
+        });
+        notify("Architect re-ran against the new release constraint. Reloading the loop.");
+        window.setTimeout(() => window.location.reload(), 500);
+      } catch (error) {
+        button.disabled = false;
+        notify(error.message, true);
+      }
+    });
+  });
 
   document.querySelectorAll("[data-upgrade-resume]").forEach((button) => {
     button.addEventListener("click", async () => {
@@ -1165,8 +1281,13 @@
       migrationButton.disabled = true;
       try {
         const force = migrationButton.dataset.migrationForce === "1";
-        await postJson(`/api/runs/${runId}/migration`, { force });
-        notify("Migration running.");
+        const liveChoice = document.querySelector('input[name="migration-live"]:checked');
+        const live = migrationButton.dataset.migrationLive === "1" ||
+          (liveChoice && liveChoice.value === "1");
+        const modelNode = document.querySelector("[data-migration-model]");
+        const model = modelNode ? modelNode.value : undefined;
+        await postJson(`/api/runs/${runId}/migration`, { force, live, model });
+        notify(live ? "Live five-agent run started." : "Five-agent run started.");
         const hasRenderedState = Boolean(migrationPanel.dataset.migrationStatus);
         if (hasRenderedState) {
           migrationButton.disabled = false;
@@ -1178,6 +1299,230 @@
       } catch (error) {
         migrationButton.disabled = false;
         notify(error.message, true);
+      }
+    });
+  }
+
+  /* Five-agent replay: step through Scout → Architect → Guardian → Critic → Scribe. */
+  const stageButtons = Array.from(document.querySelectorAll("[data-agent-step]"));
+  const stagePanels = Array.from(document.querySelectorAll("[data-agent-stage]"));
+  const replayStatus = document.querySelector("[data-replay-status]");
+  let replayIndex = 0;
+  let replayTimer = null;
+
+  function stageFromUrl() {
+    const requested = new URLSearchParams(window.location.search).get("stage");
+    if (!requested) return 0;
+    const index = stageButtons.findIndex((button) => button.dataset.agent === requested);
+    return index >= 0 ? index : 0;
+  }
+
+  function stageName(index) {
+    const button = stageButtons[index];
+    return button ? (button.querySelector("strong")?.textContent || `Stage ${index + 1}`) : "Stage";
+  }
+
+  function showStage(index, options = {}) {
+    if (!stageButtons.length) return;
+    replayIndex = Math.max(0, Math.min(index, stageButtons.length - 1));
+    stageButtons.forEach((button, buttonIndex) => {
+      const active = buttonIndex === replayIndex;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    stagePanels.forEach((panel, panelIndex) => {
+      panel.hidden = panelIndex !== replayIndex;
+      panel.classList.toggle("is-active", panelIndex === replayIndex);
+    });
+    if (replayStatus) {
+      replayStatus.textContent = `Step ${replayIndex + 1} of ${stageButtons.length} · ${stageName(replayIndex)}`;
+    }
+    /* Keep the stage in the URL so a background refresh (the live run
+       auto-reloads when it finishes) cannot silently drop the viewer's place. */
+    if (options.syncUrl !== false) {
+      const agent = stageButtons[replayIndex].dataset.agent;
+      if (agent) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("stage", agent);
+        window.history.replaceState({}, "", url);
+      }
+    }
+    if (options.scroll) {
+      const panel = stagePanels[replayIndex];
+      if (panel) {
+        panel.scrollIntoView({ behavior: "auto", block: "start" });
+        const heading = panel.querySelector(".panel-head h2");
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus({ preventScroll: true });
+        } else {
+          panel.focus({ preventScroll: true });
+        }
+      }
+    }
+  }
+
+  function stopReplay() {
+    if (replayTimer) {
+      window.clearInterval(replayTimer);
+      replayTimer = null;
+    }
+    document.querySelectorAll("[data-replay-play]").forEach((button) => {
+      button.textContent = "Play";
+    });
+  }
+
+  stageButtons.forEach((button, index) => {
+    button.addEventListener("click", () => {
+      stopReplay();
+      showStage(index, { scroll: true });
+    });
+  });
+  document.querySelectorAll("[data-replay-prev]").forEach((button) => {
+    button.addEventListener("click", () => {
+      stopReplay();
+      showStage(replayIndex - 1, { scroll: true });
+    });
+  });
+  document.querySelectorAll("[data-replay-next]").forEach((button) => {
+    button.addEventListener("click", () => {
+      stopReplay();
+      showStage(replayIndex + 1, { scroll: true });
+    });
+  });
+  document.querySelectorAll("[data-replay-reset]").forEach((button) => {
+    button.addEventListener("click", () => {
+      stopReplay();
+      showStage(0, { scroll: true });
+    });
+  });
+
+  function startReplay() {
+    if (replayTimer || !stageButtons.length) return;
+    document.querySelectorAll("[data-replay-play]").forEach((button) => {
+      button.textContent = "Pause";
+    });
+    showStage(replayIndex, { scroll: true });
+    replayTimer = window.setInterval(() => {
+      if (replayIndex >= stageButtons.length - 1) {
+        stopReplay();
+        notify("Five-agent replay complete. Human gates remain open.");
+        return;
+      }
+      showStage(replayIndex + 1, { scroll: true });
+    }, 1600);
+  }
+
+  document.querySelectorAll("[data-replay-play]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (replayTimer) {
+        stopReplay();
+        return;
+      }
+      startReplay();
+    });
+  });
+
+  /* The top "Replay loop" control previously did nothing. Start a fresh replay,
+     reveal the first stage panel, and announce the change. */
+  document.querySelectorAll("[data-agent-replay]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (!stageButtons.length) return;
+      stopReplay();
+      showStage(0, { syncUrl: false });
+      startReplay();
+      if (replayStatus) {
+        replayStatus.textContent = `Replay started · Step 1 of ${stageButtons.length} · ${stageName(0)}`;
+      }
+      notify("Replay started at Scout. Human gates remain open.");
+    });
+  });
+  if (stageButtons.length) showStage(stageFromUrl(), { syncUrl: false });
+
+  /* Scout evidence preview: hydrate locator text from the evidence record so a
+     line/pointer/xpath is shown instead of an empty or generic cell. */
+  document.querySelectorAll("[data-evidence-table]").forEach((table) => {
+    const evidenceRun = table.dataset.runId || runId;
+    if (!evidenceRun) return;
+    table.querySelectorAll("[data-evidence-locator]").forEach(async (cell) => {
+      const evidenceId = cell.dataset.evidenceId;
+      if (!evidenceId) return;
+      try {
+        const response = await fetch(
+          `/api/runs/${encodeURIComponent(evidenceRun)}/evidence/${encodeURIComponent(evidenceId)}`,
+          { headers: { Accept: "application/json" } }
+        );
+        if (!response.ok) return;
+        const record = await response.json();
+        const locator = record && typeof record.locator === "object" && record.locator
+          ? record.locator : null;
+        const line = (locator && locator.line) || record.line || null;
+        let pointer = "";
+        if (locator) {
+          if (locator.value) {
+            const kind = String(locator.kind || "").replace(/_/g, " ").trim();
+            pointer = kind ? `${kind} ${locator.value}` : String(locator.value);
+          } else if (locator.kind) {
+            pointer = String(locator.kind).replace(/_/g, " ");
+          }
+        } else if (typeof record.locator === "string") {
+          pointer = record.locator;
+        }
+        pointer = pointer || record.pointer || "";
+        const parts = [];
+        if (line) parts.push(`line ${line}`);
+        if (pointer) parts.push(pointer);
+        const text = parts.length
+          ? parts.join(" · ")
+          : (record.method ? `${record.method} · no line locator` : "locator not recorded");
+        cell.textContent = text;
+        cell.title = text;
+      } catch (error) {
+        /* Keep the server-rendered fallback when the record cannot be read. */
+      }
+    });
+  });
+
+  /* Codebase long detail blocks: open on desktop, collapsed behind clear summaries
+     on narrow screens. The native <details> keeps every word available. */
+  const autoDetails = Array.from(document.querySelectorAll("[data-auto-details]"));
+  const narrowDetailsQuery = window.matchMedia("(max-width: 900px)");
+  function syncAutoDetails() {
+    autoDetails.forEach((details) => {
+      details.open = !narrowDetailsQuery.matches;
+    });
+    window.requestAnimationFrame(syncScrollRegions);
+  }
+  if (autoDetails.length) {
+    syncAutoDetails();
+    if (narrowDetailsQuery.addEventListener) {
+      narrowDetailsQuery.addEventListener("change", syncAutoDetails);
+    } else {
+      narrowDetailsQuery.addListener(syncAutoDetails);
+    }
+    autoDetails.forEach((details) => {
+      details.addEventListener("toggle", () => {
+        window.requestAnimationFrame(syncScrollRegions);
+      });
+    });
+  }
+
+  /* Settings: test the optional live endpoint without exposing the key. */
+  const llmCheck = document.querySelector("[data-llm-check]");
+  if (llmCheck) {
+    llmCheck.addEventListener("click", async () => {
+      const status = document.querySelector("[data-llm-check-status]");
+      llmCheck.disabled = true;
+      if (status) status.textContent = "Checking…";
+      try {
+        const payload = await postJson("/api/llm/check", {});
+        if (status) status.textContent = `OK · ${payload.model} · ${payload.latency_ms} ms`;
+        notify("Live reasoning endpoint responded.");
+      } catch (error) {
+        if (status) status.textContent = error.message;
+        notify(error.message, true);
+      } finally {
+        llmCheck.disabled = false;
       }
     });
   }

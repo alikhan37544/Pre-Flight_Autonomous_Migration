@@ -2,6 +2,18 @@
 
 **What it is:** an offline, evidence-first review workstation for a synthetic Guidewire-style P&C insurance estate. It inventories files, groups them into business features, links every claim to file evidence, finds migration blockers, drafts a local target, and names every unknown — but never deploys or self-approves.
 
+> ### Reality boundary — read before the demo
+>
+> **Real software on synthetic inputs. This is not an actual migration.**
+>
+> - **What is real:** the scanner, rule pack and claim-strength labels, evidence links, unified diffs, SARIF 2.1.0 exporter, hash-chained audit log, and the two migration archetypes execute and are tested.
+> - **What is synthetic:** the estate, insurer names, code, APD release scenarios, case-study footprint numbers, and evaluation slice are invented.
+> - **Proof ladder:** Stage 1 synthetic rehearsal (current) → Stage 2 real read-only snapshot with blind SME validation → Stage 3 compile/test in a Guidewire developer environment → Stage 4 official Cloud Assurance plus SME sign-off → Stage 5 production cutover with rollback.
+> - **What is not proven:** compilation, runtime behaviour, tenant compatibility, official Cloud Assurance, data migration, deployment, rollback, customer outcomes, and generalisation.
+> - **Do not use it for:** an actual-migration claim, a pass/fail, a certification, deployment approval, a savings claim, or a customer reference.
+>
+> **Official Cloud Assurance: not run.** Full evidence review and sources: [`REALITY-BOUNDARY.md`](REALITY-BOUNDARY.md).
+
 ---
 
 ## Insurance coverage
@@ -18,9 +30,9 @@
 
 **Demo features (8, all Personal Auto):** Vehicle Information · Vehicle Rating Factors · Driver Information · Driver Eligibility · Coverage Selection · Coverage Terms · Policy Line and Editions · Policy Questions.
 
-**Cascade Mutual:** monoline Personal Auto (420k policies, TX/OR/WA) with 5 custom features: telematics discount, dealer feed, commission publication, state rating cache, vendor credentials.
+**Cascade Mutual (synthetic archetype):** monoline Personal Auto; illustrative synthetic footprint 420k policies, TX/OR/WA, with 5 custom features: telematics discount, dealer feed, commission publication, state rating cache, vendor credentials.
 
-**Harbor P&C:** multi-line (2.6M policies, TX/LA/FL/WA) with 6 cross-application features: coastal wind mitigation, claims vendor gateway, vendor MQ publication, billing reconciliation, experience-mod publication, credentials & claim logs.
+**Harbor P&C (synthetic archetype):** multi-line; illustrative synthetic footprint 2.6M policies, TX/LA/FL/WA, with 6 cross-application features: coastal wind mitigation, claims vendor gateway, vendor MQ publication, billing reconciliation, experience-mod publication, credentials & claim logs. Its APD deliverable is a type-level codegen `nameOverride` only; APD conversion and field mapping are not modeled.
 
 ---
 
@@ -81,7 +93,7 @@
 | Assumptions / gaps | 3 / 3 |
 | Migrator | 5 packages · 11 gates · 7/7 checks · `completed_with_gates` |
 | Packet | 6 sections |
-| Project tests | 449 (439 + 10 Playwright) |
+| Project tests | 481 passed with the current pytest suite (`pytest`, 2026-11-11) |
 | Cascade / Harbor | 18 / 20 findings · 22 / 21 patches · 10 / 11 gates |
 
 ---
@@ -90,6 +102,7 @@
 
 **Say:**
 - "Independent academic research prototype."
+- "Synthetic rehearsal on a synthetic estate; not an actual migration."
 - "Synthetic Personal Auto estate; no tenant or customer data."
 - "Every claim has file evidence; every unknown has a name."
 - "Local, non-deployable drafts; every change is pending human approval."

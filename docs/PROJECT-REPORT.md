@@ -37,7 +37,7 @@ In simple terms:
 | What would the target change look like? | A local, non-deployable `_ext` target draft and a diff |
 | What must a human decide? | Explicit accept / reject / defer decisions and open gates |
 
-**It is not** a converter, a deployment tool, an official Cloud Assurance check, or a live tenant connector. It stops before APD conversion, deployment, and tenant contact.
+**It is not** a converter, a deployment tool, an official Cloud Assurance check, or a live tenant connector. It stops before APD conversion, deployment, and tenant contact. The demo is a synthetic rehearsal, not an actual migration; the evidence and the boundary are documented in [`REALITY-BOUNDARY.md`](REALITY-BOUNDARY.md).
 
 ---
 
@@ -79,16 +79,16 @@ The **deep-dive reconstruction slice** is `PA-VEH-01`. It traces 12 explicit dis
 
 ### 2.3 The two case-study estates (code-level lab)
 
-These are separate synthetic insurer profiles used by the `/codebase` lab. They are designed to show two migration realities.
+These are separate synthetic insurer profiles used by the `/codebase` lab. They are designed to show two migration shapes. All footprint figures below — policy counts, states, PCF screen counts, custom-code counts, integration counts, and rating volumes — are **illustrative synthetic values** for constructed archetypes, not measured customer data.
 
 #### Cascade Mutual — monoline Personal Auto
 
 | Item | Detail |
 |---|---|
 | Segment | Monoline Personal Auto mutual |
-| Policies | 420,000 |
+| Policies (illustrative synthetic) | 420,000 |
 | States | TX, OR, WA |
-| Source → target | Qusar 2026.08 → GWCP 2027.04 |
+| Source → target (simulated release change) | Qusar 2026.08 → GWCP 2027.04 |
 | Program | Cloud Retrofit without APD App · single LOB |
 | LOB | **Personal Auto** |
 | Product model | `CascadeAuto` (custom, APD-targeted) |
@@ -101,10 +101,10 @@ These are separate synthetic insurer profiles used by the `/codebase` lab. They 
 | Item | Detail |
 |---|---|
 | Segment | Multi-line regional P&C group |
-| Policies | 2.6 million |
+| Policies (illustrative synthetic) | 2.6 million |
 | States | TX, LA, FL, WA |
-| Source → target | Qusar 2026.08 → GWCP 2027.04 |
-| Program | Cloud Retrofit with APD conversion · multi-LOB |
+| Source → target (simulated release change) | Qusar 2026.08 → GWCP 2027.04 |
+| Program | Cloud Retrofit + APD naming preparation (type-level codegen draft) · multi-LOB |
 
 | LOB | Product model | Editions | LOB-level features |
 |---|---|---|---|
@@ -279,7 +279,7 @@ Four tabs:
 8. **Architect patch bundle** — unified diffs with target path, risk, approval `pending`.
 9. **Human review gates** — open by design.
 10. **Planner report** — executive report link and summary.
-11. **Mid-migration upgrade resilience** — five release-change scenarios, generation bump, invalidated green signal, affected patches, and **revalidate / rollback / defer** choices.
+11. **Mid-migration upgrade resilience** — five simulated release-change scenarios, generation bump, invalidated green signal, affected patches, and **revalidate / rollback / defer** choices.
 12. **Unexpected scenario playbook** — source changed, corrupt file, duplicate target, analyzer crash, empty snapshot.
 13. **Downloads** — SARIF 2.1.0, report, patch bundle ZIP.
 
@@ -357,7 +357,7 @@ Plus hashes (snapshot, rule pack, reference target, ground truth, features, find
 
 **The question it answers:** *What does the method look like on two different insurer shapes?*
 
-Two profile cards — **Cascade Mutual** (narrow, single-LOB, high-value rating path) and **Harbor P&C** (multi-LOB, cross-application, APD + code migration in parallel) — each showing footprint, LOBs, custom features, constraints, and a "why it matters" thesis. The page closes with four claims the cases support.
+Two profile cards — **Cascade Mutual** (narrow, single-LOB, high-value rating path) and **Harbor P&C** (multi-LOB, cross-application, APD naming preparation + code migration in parallel) — each showing footprint, LOBs, custom features, constraints, and a "why it matters" thesis. The page closes with four claims the cases support. All footprint figures are illustrative synthetic values; Harbor's APD deliverable is a type-level codegen `nameOverride` only, not a full APD conversion.
 
 **How to explain it:** *"One monoline carrier and one multi-line group. The method is the same; the risk mix is different."*
 
@@ -487,7 +487,7 @@ Scout ──inventory──▶ Architect ──draft──▶ Guardian
 
 - Iteration 1 handles **error-severity blockers only**; later iterations handle warnings.
 - Generates target drafts and unified diffs:
-  - Cloud Data Access Gosu service for direct SQL
+  - Typed Gosu Query / application-API service for direct SQL (CDA is reserved for analytics/export, not synchronous in-app reads)
   - Cloud API YAML + JAX-RS resource for servlets
   - App Events + Integration Gateway descriptors for legacy messaging
   - Secret-reference descriptors for hard-coded credentials
@@ -603,6 +603,8 @@ Deterministic re-scan of the target. It blocks while any error or warning remain
 | GUnit coupling | Database access in a pure test |
 | Sensitive logging | PII or secrets written to output |
 
+The servlet rule is `verified-policy`, not a hard cloud-standard ID: the public guidance says custom servlets are "not a recommended practice" and that integrations should use the approved REST API framework. PreFlight does not claim custom servlets are unsupported.
+
 ### 6.3 Claim strength
 
 Every finding carries one of: **verified ID**, **verified policy**, **verified document**, **secondary**, or **heuristic**. No finding is presented as a Cloud Assurance violation.
@@ -625,7 +627,7 @@ Every finding carries one of: **verified ID**, **verified policy**, **verified d
 | Assumptions / gaps | 3 / 3 |
 | Migrator output | 5 work packages, 5 draft files, 11 gates (6 high), 7/7 checks, `completed_with_gates` |
 | Review packet | 6 sections |
-| Tests in the project | 449 (439 non-browser + 10 Playwright) |
+| Tests in the project | 481 passed with the current pytest suite (`pytest`, 2026-11-11) |
 | Cascade case | 18 findings, 22 patches, 10 human gates, 2 iterations |
 | Harbor case | 20 findings, 21 patches, 11 human gates, 2 iterations |
 
@@ -680,7 +682,8 @@ Every finding carries one of: **verified ID**, **verified policy**, **verified d
 | **Typelist (.tti / .ttx)** | Installed and extended dropdown/type definitions |
 | **Gosu** | Guidewire's JVM-based programming language |
 | **GUnit** | Guidewire's unit-test framework |
-| **APD** | Advanced Product Designer — Guidewire's product-definition tool; type names over 24 characters are a known import constraint |
+| **APD** | Advanced Product Designer — Guidewire's product-definition tool; type names are limited to 24 characters, a known import constraint |
+| **CDA** | Cloud Data Access — Guidewire's data streaming/export service that lands InsuranceSuite data in S3 as Parquet; it is **not** a synchronous in-app query API. Synchronous reads use Gosu Query or an application API |
 | **GWCP** | Guidewire Cloud Platform |
 | **Cloud API / `_ext`** | The cloud extension surface: schema, mapping, updater, codegen, and product-access configuration |
 | **`_gen`** | Generated files that must never be edited by hand |
@@ -700,4 +703,4 @@ PreFlight answers one question well:
 
 > **"What does this insurance estate actually contain, what will block its move to cloud, and what must a human decide before anything changes?"**
 
-It covers a **synthetic Personal Auto** policy-administration estate in the main demo, and **Personal Auto, Homeowners, and Workers' Comp** across its two code-level case studies. It produces evidence, dispositions, assumptions, findings, a draft target, a gate register, and a sealed review packet — but it never deploys, never self-approves, and never claims to be an official Cloud Assurance result.
+It covers a **synthetic Personal Auto** policy-administration estate in the main demo, and **Personal Auto, Homeowners, and Workers' Comp** across its two code-level case studies. It produces evidence, dispositions, assumptions, findings, a draft target, a gate register, and a sealed review packet — but it never deploys, never self-approves, and never claims to be an official Cloud Assurance result. The demo is a synthetic rehearsal, not an actual migration.

@@ -1,7 +1,11 @@
 # Insurer case studies
 
-Two synthetic insurer estates exercise different code-migration realities. Both are
+Two synthetic insurer estates exercise different code-migration shapes. Both are
 invented. They contain no customer data and no confidential Guidewire content.
+
+All footprint figures below — policy counts, states, PCF screen counts, custom-code
+counts, integration counts, and rating volumes — are **illustrative synthetic values**
+for constructed archetypes, not measured customer data.
 
 The profiles live in `app/services/case_studies.py`; their source snapshots live in
 `fixtures/case-studies/`.
@@ -10,8 +14,10 @@ The profiles live in `app/services/case_studies.py`; their source snapshots live
 
 ## 1. Cascade Mutual — monoline Personal Auto
 
-**Profile:** a focused Personal Auto mutual with 420,000 policies across TX, OR, and WA.
-It runs a pre-cloud Qusar 2026.08 snapshot against a GWCP 2027.04 target.
+**Profile:** a focused Personal Auto mutual with an illustrative synthetic footprint of
+420,000 policies across TX, OR, and WA. It runs a pre-cloud Qusar 2026.08 snapshot against
+a **simulated** GWCP 2027.04 target; the 2027.04 release change is a PreFlight scenario,
+not a published Guidewire release note.
 
 **Line of business**
 
@@ -23,7 +29,7 @@ It runs a pre-cloud Qusar 2026.08 snapshot against a GWCP 2027.04 target.
 
 | Feature | Owner | Code surface | Cloud target |
 |---|---|---|---|
-| Telematics discount tier | Product & Rating | Gosu + Java rating plugin | Cloud Data Access read model + typed Gosu factor service |
+| Telematics discount tier | Product & Rating | Gosu + Java rating plugin | Gosu Query / application API + typed Gosu factor service |
 | Dealer vehicle feed | Distribution | Servlet and integration plugin XML | Cloud API extension endpoint or Gateway route |
 | Agency commission publication | Finance & Distribution | JMS message-transport plugin | App Events + Integration Gateway |
 | State rating cache | Platform Engineering | Static tenant/factor cache | Tenant-scoped service state or managed cache |
@@ -31,7 +37,7 @@ It runs a pre-cloud Qusar 2026.08 snapshot against a GWCP 2027.04 target.
 
 **Constraints that shape the design**
 
-- Direct SQL is prohibited; reads move to Cloud Data Access, writes to application APIs.
+- Direct SQL is prohibited; synchronous reads move to Gosu Query or an application API, while Cloud Data Access is reserved for analytics/export (CDA publishes to S3 as Parquet and is not a synchronous in-app query path; see [`REALITY-BOUNDARY.md`](REALITY-BOUNDARY.md) §4.1).
 - The dealer feed has a contractual acknowledgement budget.
 - Three states maintain separate mandatory-offer and notice rules.
 - The commission system cannot subscribe to App Events directly; it needs a Gateway route.
@@ -44,13 +50,13 @@ It runs a pre-cloud Qusar 2026.08 snapshot against a GWCP 2027.04 target.
 | Source findings | 18 (10 error, 8 warning) |
 | Categories | data access, messaging, servlet, security, multi-tenancy, transactions, APD, testing, logging, API |
 | Loop | 2 iterations: first error-first pass is reworked, second full pass is green |
-| Refactor patches | 22 drafts, including Cloud API, App Events, secret-reference, codegen, Cloud Data Access, and JAX-RS resource drafts |
+| Refactor patches | 22 drafts, including Cloud API, App Events, secret-reference, codegen, typed Gosu Query/application-API, and JAX-RS resource drafts |
 | Human gates | 10 open risks |
 | Exit | `green_with_human_gates`; no deployment and every patch pending |
 
 **Why it matters**
 
-Cascade is the narrow, high-value case: a small integration surface where direct SQL is
+Cascade represents the narrow, high-value shape: a small integration surface where direct SQL is
 both a cloud blocker and a latency risk. The green signal is only useful after the rating
 rewrite, dealer-feed route, and commission publication are reviewed by their owners.
 
@@ -58,9 +64,10 @@ rewrite, dealer-feed route, and commission publication are reviewed by their own
 
 ## 2. Harbor P&C — multi-line regional carrier
 
-**Profile:** a regional P&C group with 2.6 million policies across Personal Auto,
-Homeowners, and Workers' Compensation. Its custom code crosses PolicyCenter,
-ClaimCenter, and BillingCenter.
+**Profile:** a regional P&C group with an illustrative synthetic footprint of 2.6 million
+policies across Personal Auto, Homeowners, and Workers' Compensation. Its custom code
+crosses PolicyCenter, ClaimCenter, and BillingCenter. Its APD deliverable is a type-level
+codegen `nameOverride` draft only; APD conversion and field mapping are not modeled.
 
 **Lines of business**
 
@@ -77,7 +84,7 @@ ClaimCenter, and BillingCenter.
 | Coastal wind mitigation | Homeowners Product | Gosu eligibility cache, internal API, long APD type | Public API + tenant-scoped eligibility service + codegen override |
 | Claims vendor gateway | Claims Technology | Servlet | Cloud API endpoint or Gateway route |
 | Vendor MQ publication | Enterprise Integration | JMS/MQ plugin and XML transport | App Events + Gateway protocol bridge |
-| Billing reconciliation batch | Billing Operations | JDBC, local file/thread/process assumptions | Cloud API job + managed scheduler + Cloud Data Access |
+| Billing reconciliation batch | Billing Operations | JDBC, local file/thread/process assumptions | Cloud API job + managed scheduler + Gosu Query / application API |
 | Experience-mod publication | Workers' Comp Actuarial | JDBC + dynamic SQL + messaging | App Events + typed rating lookup |
 | Credentials and claim logs | Security & Claims | Literal vendor secrets, PII output, weak crypto | Secret manager + structured redacted logging |
 
@@ -88,8 +95,9 @@ ClaimCenter, and BillingCenter.
 - Coastal underwriting has a filed-model dependency and a state audit trail.
 - The vendor MQ estate cannot be retired during the first cloud release.
 - Workers' comp classification updates run under a regulatory calendar.
-- APD conversion and code migration run in parallel, so type-name changes can invalidate
-  endpoint drafts.
+- APD naming preparation and code migration run in parallel, so type-name changes can
+  invalidate endpoint drafts. The lab drafts a type-level codegen `nameOverride`, not a
+  full APD conversion.
 
 **What the lab currently finds**
 
@@ -100,18 +108,20 @@ ClaimCenter, and BillingCenter.
 | Loop | 2 iterations: error-first rework, then full-pass green |
 | Refactor patches | 21 drafts across Gosu, Java, XML, YAML, and cloud configuration |
 | Human gates | 11 open risks |
-| Exit | `green_with_human_gates`; a mid-migration APD or App Events upgrade invalidates it |
+| Exit | `green_with_human_gates`; a simulated mid-migration APD or App Events release change invalidates it |
 
 **Why it matters**
 
-Harbor is the hard case: a code-level green signal is necessary but not sufficient. The
+Harbor represents the hard shape: a code-level green signal is necessary but not sufficient. The
 Critic keeps cross-application risks visible, and the upgrade simulator shows why a
-green bundle must be revalidated when the target release changes an APD or App Events
+green bundle must be revalidated when the simulated target release changes an APD or App Events
 constraint mid-assessment.
 
 ---
 
 ## 3. What both cases demonstrate
+
+These are demonstrations on synthetic fixtures, not evidence about a real estate.
 
 | Claim | Evidence in the lab |
 |---|---|
@@ -120,7 +130,7 @@ constraint mid-assessment.
 | Guardian is deterministic | Re-scan, path safety, APD limit, syntax parse, SARIF structure, approval state |
 | Critic is hybrid | Diff application and coverage checks plus named architecture/runtime risks |
 | The loop can stop red | A one-iteration run exits `blocked` without a false green |
-| Platform upgrades invalidate green | Generation bump, affected patch list, scenario checks, resume options |
+| Simulated platform upgrades invalidate green | Generation bump, affected patch list, scenario checks, resume options |
 | Output reaches pipelines | SARIF 2.1.0 without source excerpts or secret values |
 | Human ownership survives autonomy | Every patch remains pending; every residual risk has an owner and action |
 

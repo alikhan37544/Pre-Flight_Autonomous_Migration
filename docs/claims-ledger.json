@@ -219,7 +219,7 @@
       "source_url": "https://docs.guidewire.com/security/hardening-guidance-for-insurancesuite/application-and-development-security",
       "quote": "The use of custom servlets is not a recommended practice. All integrations should be implemented using the approved REST API framework.",
       "falsifier": "A new official servlet guidance.",
-      "consequence": "`PF-GW-SRV-001` is `verified-policy`, no `IS-*` ID.",
+      "consequence": "`PF-GW-SRV-001` is `verified-policy`, no `IS-*` ID. Use \u201cnot a recommended practice\u201d, not \u201cunsupported\u201d.",
       "rule_ids": [
         "PF-GW-SRV-001"
       ]
@@ -461,6 +461,57 @@
       "consequence": "Rule and UI label PF-GW-SBT-001 as heuristic, standard_family=none, with no standard_id; the readiness flag remains separate from advisory findings.",
       "rule_ids": [
         "PF-GW-SBT-001"
+      ]
+    },
+    {
+      "id": "C-038",
+      "claim": "Cloud Data Access (CDA) is a data streaming/export service: it publishes InsuranceSuite data to an Amazon S3 bucket as Parquet tables for downstream and analytics consumers. It is not a synchronous in-application query API; synchronous reads use Gosu Query or an application API.",
+      "status": "VERIFIED-PROCESS",
+      "access": "public",
+      "source_url": "https://github.com/Guidewire/cda-client",
+      "quote": "Guidewire cda-client README: CDA populates an S3 bucket and the reader downloads Parquet table data from S3. Guidewire's CDA blog describes a data streaming service (both accessed 2026-11-11). https://www.guidewire.com/resources/blog/developers/get-to-know-cloud-data-access-webinar-guide-and-highlights",
+      "falsifier": "Public CDA documentation describing a synchronous in-app query API.",
+      "consequence": "Rule targets and drafts call the synchronous path \u201cGosu Query / application API\u201d; CDA is reserved for analytics/export. See docs/REALITY-BOUNDARY.md \u00a74.1.",
+      "rule_ids": [
+        "PF-CODE-SQL-001",
+        "PF-GW-SQL-001"
+      ]
+    },
+    {
+      "id": "C-039",
+      "claim": "The `GWCP 2027.04` release-change scenarios \u2014 including the 24-to-20-character APD limit, App Events v2, Gateway mTLS, Gosu API removal, and Cloud API version changes \u2014 are PreFlight simulations, not published Guidewire release notes.",
+      "status": "PRODUCT-CLAIM",
+      "access": "none",
+      "source_url": "",
+      "quote": "PreFlight scenario design; no public 2027.04 release note or 20-character APD limit was verified in the sources reviewed on 2026-11-11.",
+      "falsifier": "A public Guidewire 2027.04 release note that documents the same changes.",
+      "consequence": "Label every scenario as simulated; do not present 2027.04 or the 20-character limit as a real release commitment.",
+      "rule_ids": [
+        "PF-CODE-APD-001"
+      ]
+    },
+    {
+      "id": "C-040",
+      "claim": "Case-study footprint values (policy counts, states, PCF screen counts, custom Gosu/Java file counts, integration counts, and rating calls per day) are illustrative synthetic figures for constructed archetypes, not measured customer data.",
+      "status": "PRODUCT-CLAIM",
+      "access": "public",
+      "source_url": "",
+      "quote": "PreFlight fixture design; `app/services/case_studies.py` carries a `footprint_caveat` for both archetypes.",
+      "falsifier": "An authorized real-estate measurement with a data source.",
+      "consequence": "Label the figures illustrative wherever they appear; never use them in benchmark, ROI, or customer-reference claims.",
+      "rule_ids": []
+    },
+    {
+      "id": "C-041",
+      "claim": "The Harbor P&C APD artifact is a type-level codegen `nameOverride` draft only; it does not model APD App import, field-level `schemaPropertyName`, product-model synchronization, or endpoint regeneration, and is not a full APD conversion.",
+      "status": "PRODUCT-CLAIM",
+      "access": "none",
+      "source_url": "",
+      "quote": "PreFlight codebase-lab scope; see docs/CASE-STUDIES.md and docs/REALITY-BOUNDARY.md \u00a74.3.",
+      "falsifier": "A Harbor draft that includes real APD import, field mappings, product-model synchronization, and regenerated endpoints.",
+      "consequence": "Present Harbor as a type-name codegen example, not as APD-conversion coverage.",
+      "rule_ids": [
+        "PF-CODE-APD-001"
       ]
     }
   ]

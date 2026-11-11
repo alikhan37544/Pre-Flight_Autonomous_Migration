@@ -24,6 +24,20 @@
     <li>Not a live-tenant connector or deployment tool.</li>
     <li>The Migrator is an autonomous <strong>draft generator</strong>: it writes a local, non-deployable bundle and leaves every change pending human approval. It does not connect to a tenant or deploy code.</li>
   </ul>
+  <h2 id="glossary">Plain-language glossary</h2>
+  <p class="muted">Written for a reader with no Guidewire or cloud-migration background.</p>
+  <dl class="glossary-grid">
+    <div><dt>Evidence link</dt><dd>A reference from a claim to the exact file and line or pointer it came from, so a reviewer can check the source.</dd></div>
+    <div><dt>Feature</dt><dd>A named piece of insurance functionality, such as vehicle information on a policy, that PreFlight follows from screens and data definitions through code and tests.</dd></div>
+    <div><dt>Disposition</dt><dd>The recorded decision about a finding or mapping: accept, reject, edit, or defer, with a written reason.</dd></div>
+    <div><dt>Assumption</dt><dd>A named unknown or judgement call, with an impact rating and an owner, used when evidence is missing instead of quietly guessing.</dd></div>
+    <div><dt>Gate</dt><dd>A checkpoint that stays with a named human owner. A green machine check does not close a human gate.</dd></div>
+    <div><dt>SARIF</dt><dd>A standard JSON report format for static-analysis findings, so developer tools and code-scanning dashboards can display them.</dd></div>
+    <div><dt>Gosu</dt><dd>Guidewire's programming language for product rules and business logic. It is written code, not a visual product model.</dd></div>
+    <div><dt>APD</dt><dd>Guidewire's cloud product-definition system. PreFlight reviews readiness but does not convert products into APD.</dd></div>
+    <div><dt>Cloud Data Access</dt><dd>The supported cloud way to read Guidewire data, replacing direct database or JDBC queries.</dd></div>
+    <div><dt>App Events</dt><dd>Guidewire's cloud event mechanism, replacing legacy message queues such as JMS or MQ.</dd></div>
+  </dl>
   <h2>Claim legend</h2>
   {% call scroll_region("Claim legend table, horizontally scrollable if needed") %}
     <table class="data-table compact claim-legend-table">

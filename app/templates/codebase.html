@@ -1,46 +1,173 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pluralize %}
+{% from "_macros.html" import pluralize, reader_status, reader_status_class, reality_callout %}
 
 {% block content %}
 {% set gs = result.green_signal %}
 {% set readiness = result.planner.readiness %}
-<div class="page-head">
+{% set hg = result.human_gate_summary %}
+{% set mc = result.machine_check_summary %}
+{% if result.stale_green %}
+<section class="banner banner-warning stale-green-banner" role="alert" aria-label="Stale green signal">
+  <strong>Stale green signal — revalidation required.</strong> {{ result.stale_green_reason }}
+  <span class="stale-green-note">The previous machine-green result is superseded. No patch is
+  approved by this page, and the historical narrative below is pre-upgrade context only.</span>
+</section>
+{% endif %}
+
+<div class="page-head agent-hero">
   <div>
-    <div class="eyebrow">Codebase migration lab · five-agent cyclic loop</div>
-    <h1>{{ result.profile.name }} · code-level readiness</h1>
-    <p class="lede">Scout inventories the code. Architect generates refactor drafts. Guardian
-    re-scans the target. Critic verifies the patches and records runtime risks. Planner compiles
-    the executive report. The loop repeats until both gates are green — or stops with a named blocker.</p>
+    <div class="eyebrow">Codebase lab · five-agent cyclic loop</div>
+    <h1>{{ result.profile.name }} · code-level migration rehearsal</h1>
+    <p class="lede">Scout inventories the code. Architect drafts the refactor. Guardian re-scans the
+    target deterministically and opens human review gates. Critic applies the diffs and runs
+    independent machine checks. Planner compiles the report. The loop repeats until Guardian's
+    checks are green and Critic has no open rework — or stops with a named blocker.</p>
   </div>
   <div class="head-meta">
-    {% if gs.unified %}
-    <span class="pill pill-status status-succeeded">green · human gates open</span>
+    {% if result.status == 'revalidation_required' %}
+    <span class="pill pill-status status-running">revalidation required</span>
+    {% elif gs.unified %}
+    <span class="pill pill-status status-succeeded">machine-green · human gates open</span>
+    {% elif result.status == 'failed' %}
+    <span class="pill pill-status status-failed">stopped</span>
     {% else %}
-    <span class="pill pill-status status-failed">{{ result.status }}</span>
+    <span class="pill pill-status {{ reader_status_class(result.status) }}">{{ reader_status(result.status) }}</span>
     {% endif %}
-    <span class="badge badge-neutral">generation {{ result.generation }}</span>
-    <span class="badge badge-offline"><span class="dot"></span> {{ result.boundary.split('.')[0] }}</span>
+    <span class="badge badge-neutral">bundle generation {{ result.generation }} · {{ pluralize(result.iterations|length, 'iteration') }}</span>
+    {% if result.llm and result.llm.mode == 'live' %}
+    <span class="badge badge-live">Reasoning: MiMo {{ result.llm.model }}</span>
+    {% else %}
+    <span class="badge badge-offline"><span class="dot"></span> Reasoning: offline</span>
+    {% endif %}
   </div>
 </div>
 
-<div class="case-switcher" role="navigation" aria-label="Case study switcher">
-  <span class="muted">Case:</span>
+{{ reality_callout(result.reality_boundary) }}
+
+<section class="banner banner-info" aria-label="Machine checks and human gates">
+  <strong>Machine check vs human gate.</strong> Guardian opens human review gates. Critic runs
+  independent machine checks; a Critic pass is not a gate. Planner seals only after both machine
+  checks agree. <strong>A machine-green result is not human approval.</strong>
+</section>
+
+<section class="banner {{ 'banner-info' if gs.unified and not result.stale_green else 'banner-warning' }}" aria-label="Verification and approval state">
+  <div class="signal-line">
+    <strong>Machine checks: {{ 'green' if gs.unified and not result.stale_green else 'not green' }}{% if result.stale_green %} (stale){% endif %}.</strong>
+    {% if result.stale_green %}The previous machine checks passed, but the release upgrade invalidated the signal.{% endif %}
+    Guardian {{ 'green' if gs.guardian else 'blocking' }} · Critic {{ 'green' if gs.critic else 'requesting rework' }} ·
+    Planner {{ 'compiled' if gs.planner else 'waiting' }}. {{ gs.reason }}{% if gs.reason and gs.reason[-1] not in '.!?' %}.{% endif %}
+  </div>
+  <div class="signal-line">
+    <strong>Human approval: required.</strong> {{ hg.total }} review gates remain open and
+    {{ hg.pending_patches }} patches stay pending. No change is approved here.
+  </div>
+  <span class="muted">Official Cloud Assurance: not run.</span>
+</section>
+
+<section class="approval-split" aria-label="Machine verification and human approval">
+  <div class="approval-card approval-machine">
+    <span class="approval-label">Machine verification</span>
+    {% if result.stale_green %}
+    <strong>{{ mc.passed }}/{{ mc.total }} checks passed before the upgrade</strong>
+    <p>The previous green result is stale; revalidation is required before any approval. Machine checks verify the artifact; they do not approve it.</p>
+    {% else %}
+    <strong>{{ mc.passed }}/{{ mc.total }} deterministic checks passed</strong>
+    <p>Guardian {{ mc.guardian.passed }}/{{ mc.guardian.total }} · Critic {{ mc.critic.passed }}/{{ mc.critic.total }}.
+    Machine checks verify the artifact; they do not approve it.</p>
+    {% endif %}
+  </div>
+  <div class="approval-card approval-human">
+    <span class="approval-label">Human approval</span>
+    <strong>{{ hg.total }} gates open · {{ hg.pending_patches }} of {{ result.patches|length }} patches pending</strong>
+    <p>{{ hg.plain_language }} A person must still accept, reject, or defer every change.</p>
+  </div>
+</section>
+
+<div class="case-switcher" role="navigation" aria-label="Migration story switcher">
+  <span class="muted">Migration story:</span>
   {% for item in profiles %}
-  <a class="case-chip {{ 'active' if item.case_id == result.case_id }}" href="/codebase?case={{ item.case_id }}">{{ item.name }}</a>
+  <a class="case-chip {{ 'active' if item.case_id == result.case_id }}" href="/codebase?case={{ item.case_id }}"
+     {% if item.case_id == result.case_id %}aria-current="page"{% endif %}>{{ item.name }}</a>
   {% endfor %}
   <span class="case-switcher-spacer"></span>
-  <a class="btn btn-small" href="/case-studies">Case study profiles</a>
-  <button class="btn btn-small" type="button" data-codebase-replay>Replay loop</button>
-  <button class="btn btn-small" type="button" data-codebase-run>Run fresh</button>
+  <div class="case-switcher-actions">
+    <a class="btn btn-small" href="/case-studies">All migration stories</a>
+    <button class="btn btn-small" type="button" data-codebase-replay>Replay loop</button>
+    <button class="btn btn-small btn-primary" type="button" data-codebase-run title="Run the offline deterministic five-agent loop">Run fresh</button>
+    {% if llm_status.configured %}
+    <span class="live-run-group">
+      <span class="live-disclosure">Run live: opt-in · only synthetic fixture text is sent</span>
+      <select class="input input-small" data-codebase-model aria-label="Live model">
+        {% for model in llm_status.models %}<option value="{{ model }}" {{ 'selected' if model == llm_status.default_model }}>{{ model }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-small" type="button" data-codebase-live-run title="Run live with the selected model. Only synthetic fixture text is sent.">Run live</button>
+    </span>
+    {% endif %}
+  </div>
 </div>
 
-<section class="banner {{ 'banner-info' if gs.unified else 'banner-warning' }}" aria-label="Green signal">
-  <strong>
-    {% if gs.unified %}Unified green signal.{% else %}Not green yet.{% endif %}
-  </strong>
-  Guardian {{ 'green' if gs.guardian else 'blocking' }} · Critic {{ 'green' if gs.critic else 'requesting rework' }} ·
-  Planner {{ 'compiled' if gs.planner else 'waiting' }}. {{ gs.reason }}
-  <span class="muted">Human approval required: yes. Official Cloud Assurance: not run.</span>
+<section class="panel agent-explain" aria-labelledby="codebase-explain-heading">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">No context needed</div>
+      <h2 id="codebase-explain-heading">{{ 'Revalidation required — the earlier rehearsal is superseded' if result.stale_green else result.explain.headline }}</h2>
+    </div>
+    <span class="badge badge-neutral">read this first</span>
+  </div>
+  {% if result.stale_green %}
+  <p class="banner banner-warning stale-inline"><strong>Stale green.</strong> The green signal was
+  invalidated by a release change. The narrative and iteration history below are pre-upgrade context;
+  the current state is “revalidation required”.</p>
+  {% endif %}
+  <p class="agent-explain-lede">{{ result.explain.plain_language }}</p>
+  <details class="fold-body explain-fold" data-auto-details open>
+    <summary>Why it matters, what to look at, and the outcome</summary>
+    <div class="explain-grid">
+    <div>
+      <h3>Why it matters</h3>
+      <p>{{ result.explain.why_it_matters }}</p>
+    </div>
+    <div>
+      <h3>What to look at</h3>
+      <ol class="explain-list">{% for item in result.explain.what_to_look_at %}<li>{{ item }}</li>{% endfor %}</ol>
+    </div>
+    <div>
+      <h3>Outcome</h3>
+      <p><strong>{{ result.explain.outcome|replace('completed_with_gates', 'sealed · human gates open')|replace('green_with_human_gates', 'machine-green · human gates open')|replace('revalidation_required', 'revalidation required') }}</strong></p>
+      <p class="muted">{{ result.explain.caveat }}</p>
+    </div>
+  </div>
+  </details>
+  <details class="glossary-details">
+    <summary>Glossary for a first-time reader ({{ result.glossary|length }} terms)</summary>
+    <dl class="glossary-grid">
+      {% for item in result.glossary %}<div><dt>{{ item.term }}</dt><dd>{{ item.definition }}</dd></div>{% endfor %}
+    </dl>
+  </details>
+</section>
+
+<section class="panel agent-narrative-panel" aria-labelledby="codebase-narrative-heading">
+  <div class="panel-head">
+    <h2 id="codebase-narrative-heading">{{ 'What happened before the upgrade' if result.stale_green else 'What just happened' }}</h2>
+    <span class="muted">the whole loop in one paragraph</span>
+  </div>
+  <p class="agent-narrative">{{ result.narrative }}</p>
+</section>
+
+<section class="panel next-actions-panel" aria-labelledby="codebase-next-actions">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">Human to-do</div>
+      <h2 id="codebase-next-actions">What a human must do next</h2>
+    </div>
+    <span class="badge badge-warning">Nothing is approved</span>
+  </div>
+  <details class="fold-body next-actions-fold" data-auto-details open>
+    <summary>{{ result.next_actions|length }} actions · expand the full human to-do list</summary>
+    <ol class="next-actions-list">
+      {% for action in result.next_actions %}<li>{{ action }}</li>{% endfor %}
+    </ol>
+  </details>
 </section>
 
 <div class="summary-strip">
@@ -52,268 +179,438 @@
   <div class="summary-stat summary-signal"><span class="summary-value">{{ gs.gates }}</span><span class="summary-label">human review gates</span></div>
 </div>
 
-<section class="panel" aria-labelledby="cycle-heading">
-  <div class="panel-head">
-    <h2 id="cycle-heading">The cyclic crew</h2>
-    <span class="muted">Scout → Architect ↔ Guardian / Critic → Planner</span>
-  </div>
-  <div class="cycle-map" aria-label="Five-agent cyclic workflow">
-    {% for agent in result.agents %}
-    <div class="cycle-node cycle-{{ agent.agent }} {{ 'is-green' if agent.status == 'done' else ('is-failed' if agent.status == 'failed' else '') }}">
-      <span class="cycle-index">{{ loop.index }}</span>
-      <strong>{{ agent.name }}</strong>
-      <span class="cycle-role">{{ agent.role }}</span>
-      <p>{{ agent.summary }}</p>
-      <span class="cycle-state">{{ agent.status }}</span>
-    </div>
-    {% if not loop.last %}<span class="cycle-arrow" aria-hidden="true">→</span>{% endif %}
-    {% endfor %}
-  </div>
-  <div class="cycle-loop-note">
-    <span class="loop-arrow" aria-hidden="true">↺</span>
-    Critic sends targeted fix requests back to Architect. Guardian re-scans every new target. The loop
-    never bypasses a red gate, and Planner only compiles after both gates agree.
-  </div>
+<nav class="tab-bar" role="tablist" aria-label="Codebase lab views" data-codebase-tabs>
+  <button class="tab-button is-active" type="button" role="tab" id="cb-tab-loop" aria-selected="true" aria-controls="cb-loop" tabindex="0" data-codebase-tab="loop">Five-agent loop</button>
+  <button class="tab-button" type="button" role="tab" id="cb-tab-findings" aria-selected="false" aria-controls="cb-findings" tabindex="-1" data-codebase-tab="findings">Source findings ({{ result.findings|length }})</button>
+  <button class="tab-button" type="button" role="tab" id="cb-tab-patches" aria-selected="false" aria-controls="cb-patches" tabindex="-1" data-codebase-tab="patches">Patches ({{ result.patches|length }})</button>
+  <button class="tab-button" type="button" role="tab" id="cb-tab-gates" aria-selected="false" aria-controls="cb-gates" tabindex="-1" data-codebase-tab="gates">Gates, report &amp; SARIF</button>
+  <button class="tab-button" type="button" role="tab" id="cb-tab-upgrade" aria-selected="false" aria-controls="cb-upgrade" tabindex="-1" data-codebase-tab="upgrade">Upgrade resilience</button>
+</nav>
 
-  <div class="handoff-list">
-    {% for handoff in result.handoffs %}
-    <div class="handoff-item handoff-{{ handoff.kind }}">
-      <span class="handoff-seq">{{ handoff.seq }}</span>
-      <span class="handoff-route"><code>{{ handoff.from }}</code> → <code>{{ handoff.to }}</code></span>
-      <span class="handoff-message">{{ handoff.message }}</span>
+<section class="tab-panel" id="cb-loop" role="tabpanel" aria-labelledby="cb-tab-loop" data-codebase-panel="loop">
+  <section class="panel" aria-labelledby="cycle-heading">
+    <div class="panel-head">
+      <h2 id="cycle-heading">The cyclic crew</h2>
+      <span class="muted">Scout → Architect ↔ Guardian / Critic → Planner</span>
     </div>
-    {% endfor %}
-  </div>
-</section>
+    <p class="agent-role-map"><strong>Planner</strong> is the codebase lab's seal/report agent — the same role <strong>Scribe</strong> plays in the feature loop.</p>
+    <div class="agent-cycle" role="group" aria-label="Five-agent cyclic workflow">
+      {% for stage in result.stages %}
+      <div class="cycle-stage cycle-{{ stage.agent_id }} {{ 'is-green' if stage.status == 'done' else ('is-failed' if stage.status == 'failed' else '') }}" data-codebase-stage="{{ loop.index0 }}">
+        <span class="cycle-head">
+          <span class="cycle-index">{{ stage.index }}</span>
+          <span class="cycle-role">{{ stage.role }}</span>
+        </span>
+        <strong>{{ stage.name }}</strong>
+        <span class="cycle-count">{{ stage.count }} {{ stage.count_label }}</span>
+        <span class="cycle-state">{{ 'complete' if stage.status == 'done' else ('stopped' if stage.status == 'failed' else stage.status) }}</span>
+      </div>
+      {% if not loop.last %}<span class="cycle-arrow" aria-hidden="true">→</span>{% endif %}
+      {% endfor %}
+      <span class="cycle-return" aria-hidden="true">↺ Critic sends targeted fixes back to Architect</span>
+    </div>
+    <div class="cycle-loop-note">
+      Guardian re-scans every new target and opens human gates. Critic applies every displayed diff
+      and runs independent machine checks. Planner only compiles after both machine checks agree.
+      The green signal never bypasses a named human gate.
+    </div>
+    <div class="handoff-list">
+      {% for handoff in result.handoffs %}
+      <div class="handoff-item handoff-{{ handoff.kind }}">
+        <span class="handoff-seq">{{ handoff.seq }}</span>
+        <span class="handoff-route"><code>{{ handoff.from }}</code> → <code>{{ handoff.to }}</code></span>
+        <span class="handoff-message">{{ handoff.message }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
 
-<section class="panel" aria-labelledby="iterations-heading">
-  <div class="panel-head">
-    <h2 id="iterations-heading">Iterative patching</h2>
-    <span class="muted">{{ pluralize(result.iterations|length, 'pass') }} · the first pass is intentionally error-first</span>
-  </div>
-  <div class="iteration-list" data-iteration-list>
-    {% for iteration in result.iterations %}
-    <article class="iteration-card {{ 'iteration-green' if iteration.decision == 'green' else 'iteration-rework' }}" data-iteration>
-      <header>
-        <span class="iteration-number">Iteration {{ iteration.iteration }}</span>
-        <span class="pill pill-status {{ 'status-succeeded' if iteration.decision == 'green' else 'status-failed' }}">{{ iteration.decision }}</span>
-        <span class="muted">Architect mode: {{ iteration.architect.mode }} · {{ iteration.architect.patches }} patch(es) · target {{ iteration.target.by_severity }}</span>
-      </header>
-      <div class="iteration-grid">
-        <div class="iteration-agent">
-          <h3>Architect</h3>
-          <p>{{ iteration.architect.summary }}</p>
-          <p class="muted">Target score {{ iteration.target.score }}/100 · {{ iteration.architect.added_files }} cloud config draft(s)</p>
+  <section class="panel" aria-labelledby="agent-detail-heading">
+    <div class="panel-head">
+      <h2 id="agent-detail-heading">Agent-by-agent: what each one received and produced</h2>
+      <span class="muted">plain language + exact counts</span>
+    </div>
+    <details class="fold-body" data-auto-details open>
+      <summary>Agent-by-agent detail <span class="fold-meta">{{ result.stages|length }} agents · received / produced</span></summary>
+      <div class="stage-card-grid">
+        {% for stage in result.stages %}
+        <article class="stage-card">
+          <div class="stage-card-head">
+            <span class="cycle-index">{{ stage.index }}</span>
+            <div><strong>{{ stage.name }}</strong><span class="muted">{{ stage.role }}</span></div>
+            <span class="pill pill-status {{ 'status-succeeded' if stage.status == 'done' else 'status-failed' }}">{{ 'complete' if stage.status == 'done' else ('stopped' if stage.status == 'failed' else stage.status) }}</span>
+          </div>
+          <p class="stage-plain">{{ stage.plain_language }}</p>
+          <div class="stage-card-grid-inner">
+            <div><h3>Received</h3><ul>{% for item in stage.received %}<li>{{ item }}</li>{% endfor %}</ul></div>
+            <div><h3>Produced</h3><ul>{% for item in stage.produced %}<li>{{ item }}</li>{% endfor %}</ul></div>
+          </div>
+          {% if stage.not_received %}<p class="stage-not-received"><strong>Not received:</strong> {{ stage.not_received|join(' · ') }}</p>{% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </details>
+  </section>
+
+  <section class="panel" aria-labelledby="scout-inventory-heading">
+    <div class="panel-head">
+      <h2 id="scout-inventory-heading">Scout inventory</h2>
+      <span class="muted">{{ result.scout_inventory.files }} files · {{ result.scout_inventory.loc }} LOC</span>
+    </div>
+    <details class="fold-body" data-auto-details open>
+      <summary>Scout inventory detail <span class="fold-meta">{{ result.scout_inventory.files }} files · {{ result.scout_inventory.loc }} LOC</span></summary>
+      <div class="inventory-grid">
+        <div>
+          <h3>Languages</h3>
+          <ul class="inventory-list">
+            {% for language, count in result.scout_inventory.by_language.items() %}<li><strong>{{ language }}</strong> {{ count }} file(s)</li>{% endfor %}
+          </ul>
         </div>
-        <div class="iteration-agent">
-          <h3>Guardian <span class="pill pill-{{ 'succeeded' if iteration.guardian.verdict == 'green' else 'warning' }}">{{ iteration.guardian.verdict }}</span></h3>
-          <p>{{ iteration.guardian.summary }}</p>
-          <ul class="verification-list compact">
-            {% for check in iteration.guardian.checks %}
-            <li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>
+        <div>
+          <h3>Custom feature slices</h3>
+          <ul class="inventory-list">
+            {% for feature in result.scout_inventory.features %}
+            <li><strong>{{ feature.name }}</strong> <span class="muted">· {{ feature.owner }}</span><br>{{ feature.cloud_target }}</li>
             {% endfor %}
           </ul>
         </div>
-        <div class="iteration-agent">
-          <h3>Critic <span class="pill pill-{{ 'succeeded' if iteration.critic.verdict == 'green' else 'warning' }}">{{ iteration.critic.verdict }}</span></h3>
-          <p>{{ iteration.critic.summary }}</p>
-          {% if iteration.critic.fix_requests %}
-          <div class="fix-request">
-            <strong>Targeted fix requests</strong>
-            <ul>
-              {% for fix_request in iteration.critic.fix_requests %}
-              <li><code>{{ fix_request.request_id }}</code> {{ fix_request.instruction }} <span class="muted">({{ fix_request['items']|join(', ') }})</span></li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-          <p class="muted">{{ iteration.critic.residual_risks|length }} human gate(s) remain visible.</p>
+        <div>
+          <h3>Hotspots</h3>
+          <ul class="inventory-list">
+            {% for hotspot in result.scout_inventory.hotspots %}<li><code>{{ hotspot.path }}</code> · {{ hotspot.findings }} finding(s)</li>{% endfor %}
+          </ul>
         </div>
       </div>
-    </article>
-    {% endfor %}
-  </div>
-</section>
-
-<div class="grid-2 codebase-lower">
-  <section class="panel">
-    <div class="panel-head"><h2>Guardian deterministic gate</h2><span class="pill pill-status {{ 'status-succeeded' if result.guardian.verdict == 'green' else 'status-failed' }}">{{ result.guardian.verdict }}</span></div>
-    <ul class="verification-list">
-      {% for check in result.guardian.checks %}
-      <li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>
-      {% endfor %}
-    </ul>
+    </details>
   </section>
-  <section class="panel">
-    <div class="panel-head"><h2>Critic hybrid review</h2><span class="pill pill-status {{ 'status-succeeded' if result.critic.verdict == 'green' else 'status-failed' }}">{{ result.critic.verdict }}</span></div>
-    <ul class="verification-list">
-      {% for check in result.critic.checks %}
-      <li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>
-      {% endfor %}
-    </ul>
-    <p class="muted">Residual risks are not hidden by the green signal. They become named human gates with an owner and next action.</p>
-  </section>
-</div>
 
-<section class="panel">
-  <div class="panel-head">
-    <h2>Source findings</h2>
-    <span class="muted">{{ result.findings|length }} findings · line evidence · stable fingerprints</span>
-  </div>
-  <div class="table-scroll" role="region" aria-label="Source findings" tabindex="0" data-table-scroll>
-    <table class="data-table compact codebase-table">
-      <caption>Code-level cloud blockers. Claim strength and standard IDs are shown where documented.</caption>
-      <thead><tr><th scope="col">ID</th><th scope="col">Rule</th><th scope="col">Severity</th><th scope="col">Category</th><th scope="col">Location</th><th scope="col">Message</th><th scope="col">Cloud target</th></tr></thead>
-      <tbody>
-        {% for finding in result.findings %}
-        <tr>
-          <td><code>{{ finding.finding_id }}</code></td>
-          <td><code class="rule-code">{{ finding.rule_id }}</code></td>
-          <td><span class="pill pill-{{ finding.severity }}">{{ finding.severity }}</span></td>
-          <td>{{ finding.category }}</td>
-          <td><code>{{ finding.path }}:{{ finding.line }}</code></td>
-          <td>{{ finding.message }}{% if finding.standard_id %}<div class="muted">{{ finding.standard_id }} · {{ finding.claim_strength }}</div>{% endif %}</td>
-          <td>{{ finding.cloud_target }}</td>
-        </tr>
+  <section class="panel" aria-labelledby="iterations-heading">
+    <div class="panel-head">
+      <h2 id="iterations-heading">Iterative patching</h2>
+      <span class="muted">{{ pluralize(result.iterations|length, 'iteration') }} · the first pass is intentionally error-first</span>
+    </div>
+    <details class="fold-body" data-auto-details open>
+      <summary>Iteration detail <span class="fold-meta">{{ pluralize(result.iterations|length, 'iteration') }} · decisions and checks</span></summary>
+      <div class="iteration-story">
+        {% for story in result.iteration_story %}
+        <div class="iteration-story-item {{ 'is-green' if story.decision == 'green' else 'is-rework' }}">
+          <strong>{{ story.headline }}</strong>
+          <p>{{ story.plain_language }}</p>
+          <p class="iteration-target-label">Target findings at this pass: <code>{{ story.target_label }}</code></p>
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-head">
-    <h2>Architect patch bundle</h2>
-    <span class="muted">{{ result.patches|length }} drafts · every patch pending human approval</span>
-  </div>
-  <div class="patch-list">
-    {% for patch in result.patches %}
-    <details class="patch-card">
-      <summary>
-        <span class="patch-id">{{ patch.patch_id }}</span>
-        <code>{{ patch.target_path }}</code>
-        <span class="muted">{{ patch.rule_ids|join(' · ') }}</span>
-        <span class="pill pill-{{ 'high' if patch.risk == 'high' else 'medium' }}">{{ patch.risk }} risk</span>
-        <span class="pill pill-neutral">{{ patch.approval }}</span>
-      </summary>
-      <div class="patch-body">
-        <p><strong>Strategy:</strong> {{ patch.strategy }}</p>
-        <p class="muted">Source: <code>{{ patch.source_path or 'generated draft' }}</code> · semantic review: {{ patch.semantic_review }} · secret-redacted diff: {{ patch.diff_redacted }}</p>
-        <pre class="diff" aria-label="Unified diff for {{ patch.target_path }}">{{ patch.diff }}</pre>
-        <a class="text-link" href="/api/codebase/cases/{{ result.case_id }}/patches/{{ patch.patch_id }}">Download patch</a>
+      </div>
+      <div class="iteration-list" data-iteration-list>
+        {% for iteration in result.iterations %}
+        {% set story = result.iteration_story[loop.index0] %}
+        <article class="iteration-card {{ 'iteration-green' if iteration.decision == 'green' else 'iteration-rework' }}" data-iteration>
+          <header>
+            <span class="iteration-number">Iteration {{ iteration.iteration }}</span>
+            <span class="pill pill-status {{ 'status-succeeded' if iteration.decision == 'green' else 'status-failed' }}">{{ iteration.decision }}</span>
+            <span class="muted iteration-target">Architect mode: {{ iteration.architect.mode }} · {{ pluralize(iteration.architect.patches, 'patch', 'patches') }} · target {{ story.target_label }}</span>
+          </header>
+          <div class="iteration-grid">
+            <div class="iteration-agent">
+              <h3>Architect</h3>
+              <p>{{ iteration.architect.summary }}</p>
+              <p class="muted">Target score {{ iteration.target.score }}/100 · {{ iteration.architect.added_files }} cloud config draft(s)</p>
+            </div>
+            <div class="iteration-agent">
+              <h3>Guardian <span class="pill pill-{{ 'succeeded' if iteration.guardian.verdict == 'green' else 'warning' }}">{{ iteration.guardian.verdict }}</span></h3>
+              <p>{{ iteration.guardian.summary }}</p>
+              <ul class="verification-list compact">
+                {% for check in iteration.guardian.checks %}<li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>{% endfor %}
+              </ul>
+            </div>
+            <div class="iteration-agent">
+              <h3>Critic <span class="pill pill-{{ 'succeeded' if iteration.critic.verdict == 'green' else 'warning' }}">{{ iteration.critic.verdict }}</span></h3>
+              <p>{{ iteration.critic.summary }}</p>
+              {% if iteration.critic.fix_requests %}
+              <div class="fix-request">
+                <strong>Targeted fix requests</strong>
+                <ul>{% for fix_request in iteration.critic.fix_requests %}<li><code>{{ fix_request.request_id }}</code> {{ fix_request.instruction }} <span class="muted">({{ fix_request['items']|join(', ') }})</span></li>{% endfor %}</ul>
+              </div>
+              {% endif %}
+              <p class="muted">{{ iteration.critic.residual_risks|length }} human gate(s) remain visible.</p>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
       </div>
     </details>
-    {% endfor %}
-  </div>
-  <div class="button-row">
-    <a class="btn" href="/api/codebase/cases/{{ result.case_id }}/bundle.zip">Download bundle (.zip)</a>
-    <a class="btn" href="/api/codebase/cases/{{ result.case_id }}/report">Migration report (.md)</a>
-    <a class="btn" href="/api/codebase/cases/{{ result.case_id }}/sarif">SARIF 2.1.0</a>
-    <a class="btn btn-ghost" href="/api/codebase/cases/{{ result.case_id }}/audit">Verify agent log</a>
-  </div>
+  </section>
+
+  <section class="panel" aria-labelledby="guardian-critic-heading">
+    <div class="panel-head">
+      <h2 id="guardian-critic-heading">Guardian checks and Critic review</h2>
+      <span class="muted">machine checks, not human gates</span>
+    </div>
+    <p class="machine-check-summary"><span class="label-machine">{{ 'Historical machine checks' if result.stale_green else 'Machine checks' }}</span>
+      {{ mc.passed }}/{{ mc.total }} passed · Guardian {{ mc.guardian.passed }}/{{ mc.guardian.total }} ·
+      Critic {{ mc.critic.passed }}/{{ mc.critic.total }}. {{ hg.total }} human gates remain separate and open.
+      {% if result.stale_green %}The upgrade invalidated this green signal; revalidation is required.{% endif %}</p>
+    <details class="fold-body" data-auto-details open>
+      <summary>Guardian and Critic detail <span class="fold-meta">deterministic checks · independent review</span></summary>
+      <div class="grid-2">
+        <div class="check-card">
+          <div class="panel-head"><h3>Guardian machine checks</h3><span class="pill pill-status {{ 'status-succeeded' if result.guardian.verdict == 'green' else 'status-failed' }}">{{ result.guardian.verdict }}</span></div>
+          <p class="check-kicker">The Guardian deterministic gate is a set of machine checks, not a human gate.</p>
+          <ul class="verification-list">
+            {% for check in result.guardian.checks %}<li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>{% endfor %}
+          </ul>
+          <p class="muted">The human review gates Guardian opens are listed under Gates, report &amp; SARIF.</p>
+        </div>
+        <div class="check-card">
+          <div class="panel-head"><h3>Critic independent machine checks</h3><span class="pill pill-status {{ 'status-succeeded' if result.critic.verdict == 'green' else 'status-failed' }}">{{ result.critic.verdict }}</span></div>
+          <ul class="verification-list">
+            {% for check in result.critic.checks %}<li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'FAIL' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>{% endfor %}
+          </ul>
+          <p class="muted">Residual risks are not hidden by the green signal. They become named human gates with an owner and next action. The Critic checks are machine checks, not approval gates.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  {% if result.llm and result.llm.annotations and result.llm.annotations.critic %}
+  {% set reasoning = result.llm.annotations.critic %}
+  <section class="panel reasoning-card">
+    <div class="panel-head"><h2>Live reasoning · Critic · {{ reasoning.model }}</h2><span class="badge badge-live">grounded</span></div>
+    <p><strong>{{ reasoning.headline }}</strong></p>
+    {% if reasoning.tradeoffs %}<ul>{% for item in reasoning.tradeoffs %}<li>{{ item.text }} <span class="muted">{% for rule_id in item.rule_ids %}<code>{{ rule_id }}</code> {% endfor %}</span></li>{% endfor %}</ul>{% endif %}
+    {% if reasoning.residual_risks %}<ul>{% for item in reasoning.residual_risks %}<li>{{ item.text }} <span class="muted">owner: {{ item.owner }}</span></li>{% endfor %}</ul>{% endif %}
+    <p class="muted">{{ reasoning.dropped_ungrounded }} ungrounded statement(s) dropped · {{ reasoning.latency_ms }} ms · {{ reasoning.usage.get('total_tokens', 0) }} tokens</p>
+  </section>
+  {% endif %}
+  {% if result.llm and result.llm.warnings %}
+  {% for warning in result.llm.warnings %}<div class="banner banner-warning"><strong>Live reasoning warning.</strong> {{ warning.message }} The deterministic verdict still stands.</div>{% endfor %}
+  {% endif %}
 </section>
 
-<div class="grid-2 codebase-lower">
+<section class="tab-panel" id="cb-findings" role="tabpanel" aria-labelledby="cb-tab-findings" data-codebase-panel="findings" hidden>
   <section class="panel">
-    <div class="panel-head"><h2>Human review gates</h2><span class="muted">open by design</span></div>
-    <div class="gate-list">
-      {% for risk in result.critic.residual_risks %}
-      <article class="gate-card gate-{{ risk.severity }}">
-        <div class="gate-head"><code>{{ risk.risk_id }}</code><span class="pill pill-{{ risk.severity }}">{{ risk.severity }}</span><span class="muted">{{ risk.category }}</span></div>
-        <p><strong>{{ risk.title }}</strong></p>
-        <p class="muted">{{ risk.action }}</p>
-        <p class="muted">Owner: {{ risk.owner }} · {{ risk.rule_ids|join(', ') }}</p>
-      </article>
-      {% endfor %}
+    <div class="panel-head">
+      <h2>Source findings</h2>
+      <span class="muted">{{ result.findings|length }} findings · line evidence · stable fingerprints</span>
     </div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head"><h2>Planner report</h2><span class="pill pill-status status-succeeded">compiled</span></div>
-    <p>{{ result.planner.executive_summary }}</p>
-    <div class="score-row">
-      <div class="score-card"><span class="score-value">{{ readiness.score_before }}</span><span class="score-label">before / 100</span></div>
-      <div class="score-card"><span class="score-value">{{ readiness.structural_score_after }}</span><span class="score-label">structural after</span></div>
-      <div class="score-card score-gated"><span class="score-value">{{ readiness.human_gate_adjusted_score }}</span><span class="score-label">after human gates</span></div>
-    </div>
-    <p class="muted">{{ readiness.score_caveat }}</p>
-    <dl class="migration-facts">
-      <div><dt>SARIF</dt><dd>{{ result.sarif.summary.results }} results · {{ result.sarif.summary.rules }} rules · version {{ result.sarif.summary.version }}</dd></div>
-      <div><dt>Audit</dt><dd>{{ result.audit|length }} events · {{ 'verified' if result.audit_verified else 'unverified' }} <span class="muted">({{ result.audit_detail }})</span></dd></div>
-      <div><dt>Report hash</dt><dd><code>{{ result.planner.report_sha256[:16] }}</code></dd></div>
-    </dl>
-  </section>
-</div>
-
-<section class="panel upgrade-panel" aria-labelledby="upgrade-heading">
-  <div class="panel-head">
-    <h2 id="upgrade-heading">Mid-migration upgrade resilience</h2>
-    <span class="muted">simulate a core release change while this assessment is active</span>
-  </div>
-  <p class="muted">A green signal is not a permanent fact. Choose a target-release change and PreFlight
-  will invalidate stale green state, identify affected patches, and offer revalidate, rollback, or defer.</p>
-  <form class="upgrade-form" method="get" action="/codebase">
-    <input type="hidden" name="case" value="{{ result.case_id }}">
-    <label for="upgrade-select">Upgrade scenario</label>
-    <select class="input" id="upgrade-select" name="upgrade">
-      {% for scenario in upgrade_scenarios %}
-      <option value="{{ scenario.scenario_id }}">{{ scenario.label }} ({{ scenario.from_version }} → {{ scenario.to_version }})</option>
-      {% endfor %}
-    </select>
-    <button class="btn btn-primary" type="submit">Evaluate upgrade</button>
-    <a class="btn" href="/codebase?case={{ result.case_id }}">Reset</a>
-  </form>
-
-  {% if impact %}
-  <div class="impact-card">
-    <div class="impact-head">
-      <div>
-        <span class="eyebrow">{{ impact.scenario.scenario_id }}</span>
-        <h3>{{ impact.scenario.label }}</h3>
-      </div>
-      <span class="pill pill-status {{ 'status-failed' if impact.status == 'revalidation_required' else 'status-succeeded' }}">{{ impact.status }}</span>
-    </div>
-    <p>{{ impact.scenario.description }}</p>
-    <p><strong>Generation {{ impact.active_assessment_generation }} → {{ impact.new_generation }}.</strong>
-    {{ impact.affected_patches|length }} patch(es) affected · {{ impact.affected_rules|join(', ') or 'none' }}.
-    Green signal invalidated: {{ 'yes' if impact.green_signal_before.unified else 'no (already not green)' }}.</p>
-    <ul class="verification-list">
-      {% for check in impact.checks %}
-      <li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'REWORK' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>
-      {% endfor %}
-    </ul>
-    <h4>Resume options</h4>
-    <div class="resume-grid">
-      {% for option in impact.resume_options %}
-      <div class="resume-card {{ 'resume-recommended' if option.recommended }}">
-        <strong>{{ option.label }}</strong>
-        <p class="muted">{{ option.detail }}</p>
-        {% if option.recommended %}<span class="badge badge-neutral">recommended</span>{% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    <div class="button-row">
-      <button class="btn btn-small btn-primary" type="button" data-upgrade-resume data-choice="revalidate" data-scenario="{{ impact.scenario.scenario_id }}">Record revalidate</button>
-      <button class="btn btn-small" type="button" data-upgrade-resume data-choice="rollback" data-scenario="{{ impact.scenario.scenario_id }}">Record rollback</button>
-      <button class="btn btn-small" type="button" data-upgrade-resume data-choice="defer" data-scenario="{{ impact.scenario.scenario_id }}">Record defer</button>
-    </div>
-    <p class="muted" data-upgrade-resume-status role="status"></p>
-  </div>
-  {% endif %}
-
-  <details class="drill-details">
-    <summary>Unexpected-scenario playbook ({{ drills|length }} named cases)</summary>
-    <div class="table-scroll" role="region" aria-label="Unexpected scenario playbook" tabindex="0" data-table-scroll>
-      <table class="data-table compact">
-        <thead><tr><th scope="col">Scenario</th><th scope="col">Detection</th><th scope="col">Handling</th><th scope="col">Recovery</th></tr></thead>
+    <p class="scroll-hint" data-scroll-hint hidden>Scroll horizontally to see all columns. <span aria-hidden="true">&rarr;</span></p>
+    <p class="table-caption">Code-level cloud blockers with rule, severity, location, stable fingerprint, message, and cloud target.</p>
+    <div class="table-scroll" role="region" aria-label="Source findings" tabindex="0" data-table-scroll>
+      <table class="data-table compact codebase-table">
+        <caption class="visually-hidden">Code-level cloud blockers with rule, severity, location, stable fingerprint, message, and cloud target.</caption>
+        <thead><tr><th>ID</th><th>Rule</th><th>Fingerprint</th><th>Severity</th><th>Category</th><th>Location</th><th>Message</th><th>Cloud target</th></tr></thead>
         <tbody>
-          {% for drill in drills %}
-          <tr><td><strong>{{ drill.label }}</strong></td><td>{{ drill.detection }}</td><td>{{ drill.handling }}</td><td>{{ drill.recovery }}</td></tr>
+          {% for finding in result.findings %}
+          <tr>
+            <td><code>{{ finding.finding_id }}</code></td>
+            <td><code class="rule-code">{{ finding.rule_id }}</code></td>
+            <td><code class="fingerprint" title="Fingerprint {{ finding.fingerprint }}">{{ finding.fingerprint[:12] }}</code></td>
+            <td><span class="pill pill-{{ finding.severity }}">{{ finding.severity }}</span></td>
+            <td>{{ finding.category }}</td>
+            <td><code>{{ finding.path }}:{{ finding.line }}</code></td>
+            <td>{{ finding.message }}{% if finding.standard_id %}<div class="muted">{{ finding.standard_id }} · {{ finding.claim_strength }}</div>{% endif %}</td>
+            <td>{{ finding.cloud_target }}</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-  </details>
+  </section>
+</section>
+
+<section class="tab-panel" id="cb-patches" role="tabpanel" aria-labelledby="cb-tab-patches" data-codebase-panel="patches" hidden>
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Architect patch bundle</h2>
+      <span class="muted">{{ result.patches|length }} drafts · every patch pending human approval</span>
+    </div>
+    <div class="patch-list">
+      {% for patch in result.patches %}
+      <details class="patch-card">
+        <summary>
+          <span class="patch-id">{{ patch.patch_id }}</span>
+          <code>{{ patch.target_path }}</code>
+          <span class="muted">{{ patch.rule_ids|join(' · ') }}</span>
+          <span class="pill pill-{{ 'high' if patch.risk == 'high' else 'medium' }}">{{ patch.risk }} risk</span>
+          <span class="pill pill-neutral">{{ patch.approval }}</span>
+        </summary>
+        <div class="patch-body">
+          <p><strong>Strategy:</strong> {{ patch.strategy }}</p>
+          <p class="muted">Source: <code>{{ patch.source_path or 'generated draft' }}</code> · semantic review: {{ 'yes' if patch.semantic_review else 'no' }} · secret-redacted diff: {{ 'yes' if patch.diff_redacted else 'no' }}</p>
+          <pre class="diff" aria-label="Unified diff for {{ patch.target_path }}">{{ patch.diff }}</pre>
+          <a class="text-link" href="/api/codebase/cases/{{ result.case_id }}/patches/{{ patch.patch_id }}">Download patch</a>
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+    <div class="button-row">
+      <a class="btn" href="/api/codebase/cases/{{ result.case_id }}/bundle.zip">Download bundle (.zip)</a>
+      <a class="btn" href="/api/codebase/cases/{{ result.case_id }}/report">Migration report (.md)</a>
+      <a class="btn" href="/api/codebase/cases/{{ result.case_id }}/sarif">SARIF 2.1.0</a>
+      <a class="btn btn-ghost" href="/api/codebase/cases/{{ result.case_id }}/audit">Verify agent log</a>
+    </div>
+  </section>
+</section>
+
+<section class="tab-panel" id="cb-gates" role="tabpanel" aria-labelledby="cb-tab-gates" data-codebase-panel="gates" hidden>
+  <div class="grid-2 codebase-lower">
+    <section class="panel" aria-labelledby="human-gates-heading">
+      <div class="panel-head"><h2 id="human-gates-heading">Human review gates</h2><span class="muted">open by design · not machine checks</span></div>
+      <p class="gate-summary-lede"><strong>{{ hg.plain_language }}</strong></p>
+      <div class="gate-summary-chips">
+        <span class="pill pill-medium">{{ hg.total }} gates open</span>
+        <span class="pill pill-high">{{ hg.high }} high impact</span>
+        <span class="pill pill-neutral">{{ hg.pending_patches }} patches pending</span>
+        <span class="pill pill-neutral">{{ hg.unassigned_owners }} unassigned owners</span>
+      </div>
+      <p class="machine-gate-note"><strong>Human approval is separate.</strong> A green machine result
+      never closes one of these gates. Each gate needs a named owner and a recorded decision.</p>
+      <div class="gate-list">
+        {% for risk in result.critic.residual_risks %}
+        <article class="gate-card gate-{{ risk.severity }}">
+          <div class="gate-head"><code>{{ risk.risk_id }}</code><span class="pill pill-{{ risk.severity }}">{{ risk.severity }}</span><span class="muted">{{ risk.category }}</span></div>
+          <p><strong>{{ risk.title }}</strong></p>
+          <p class="muted">{{ risk.action }}</p>
+          <p class="muted">Owner: {{ risk.owner_display or risk.owner }}{% if risk.rule_ids %} · {{ risk.rule_ids|join(', ') }}{% endif %}</p>
+          {% if risk.resolution_hint %}<p class="gate-resolution"><strong>Resolution:</strong> {{ risk.resolution_hint }}</p>{% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="planner-report-heading">
+      <div class="panel-head"><h2 id="planner-report-heading">Planner report</h2><span class="pill pill-status status-succeeded">compiled</span></div>
+      <p>{{ result.planner.executive_summary }}</p>
+      <div class="score-row">
+        <div class="score-card"><span class="score-value">{{ readiness.score_before }}</span><span class="score-label">before / 100</span></div>
+        <div class="score-card"><span class="score-value">{{ readiness.structural_score_after }}</span><span class="score-label">structural after</span></div>
+        <div class="score-card score-gated"><span class="score-value">{{ readiness.human_gate_adjusted_score }}</span><span class="score-label">after human gates</span></div>
+      </div>
+      <p class="muted">{{ readiness.score_caveat }}</p>
+      <dl class="migration-facts">
+        <div><dt>Machine checks</dt><dd>{{ mc.passed }}/{{ mc.total }} passed · {{ 'green' if mc.failed == 0 else 'failing' }}</dd></div>
+        <div><dt>Human gates</dt><dd>{{ hg.total }} open · {{ hg.high }} high impact</dd></div>
+        <div><dt>SARIF</dt><dd>{{ result.sarif.summary.results }} results · {{ result.sarif.summary.rules }} rules · version {{ result.sarif.summary.version }}</dd></div>
+        <div><dt>Audit</dt><dd>{{ result.audit|length }} events · {{ 'verified' if result.audit_verified else 'unverified' }} <span class="muted">({{ result.audit_detail }})</span></dd></div>
+        <div><dt>Report hash</dt><dd><code title="{{ result.planner.report_sha256 }}">{{ result.planner.report_sha256[:16] }}</code></dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="panel bundle-panel" aria-labelledby="bundle-artifacts-heading">
+    <div class="panel-head">
+      <h2 id="bundle-artifacts-heading">Report artifacts and sealed bundle</h2>
+      <span class="muted">{{ result.bundle_files|length }} artifact groups · report, SARIF, patches, targets, audit log</span>
+    </div>
+    <p class="muted">These are the report artifacts a reviewer can inspect or download. They are not
+    approvals: every patch stays pending and the audit log is hash-chained, not non-repudiation.</p>
+    <p class="scroll-hint" data-scroll-hint hidden>Scroll horizontally to see all columns. <span aria-hidden="true">&rarr;</span></p>
+    <div class="table-scroll" role="region" aria-label="Report artifacts and sealed bundle" tabindex="0" data-table-scroll>
+      <table class="data-table compact artifact-table">
+        <caption>Codebase report artifacts with role, path, contents, SHA-256, and status.</caption>
+        <thead><tr><th>Role</th><th>Path</th><th>Contents</th><th>SHA-256</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for artifact in result.bundle_files %}
+          <tr>
+            <td><span class="role-tag">{{ artifact.role_label or artifact.role }}</span></td>
+            <td><code class="bundle-path" title="{{ artifact.path }}">{{ artifact.path }}</code></td>
+            <td>
+              {% if artifact.kind == 'report' %}{{ artifact.bytes if artifact.bytes is not none else '—' }} bytes
+              {% elif artifact.kind == 'sarif' %}{{ artifact.results }} results · {{ artifact.errors }} errors · {{ artifact.warnings }} warnings
+              {% elif artifact.kind == 'patches' %}{{ artifact.count }} patches · {{ artifact.pending }} pending
+              {% elif artifact.kind == 'target' %}{{ artifact.count }} target files
+              {% elif artifact.kind == 'audit' %}{{ artifact.events }} events · {{ 'verified' if artifact.verified else 'unverified' }}
+              {% else %}—{% endif %}
+            </td>
+            <td><code title="{{ artifact.sha256 }}">{{ artifact.sha256[:16] if artifact.sha256 else '—' }}</code></td>
+            <td>
+              {% if artifact.kind == 'audit' %}
+              <span class="pill pill-status {{ 'status-succeeded' if artifact.verified else 'status-failed' }}">{{ 'verified' if artifact.verified else 'unverified' }}</span>
+              {% elif artifact.kind == 'patches' %}
+              <span class="pill pill-status status-running">{{ artifact.pending }} pending</span>
+              {% elif artifact.kind == 'target' %}
+              <span class="pill pill-status status-running">draft only</span>
+              {% else %}
+              <span class="pill pill-status status-succeeded">sealed</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+<section class="tab-panel" id="cb-upgrade" role="tabpanel" aria-labelledby="cb-tab-upgrade" data-codebase-panel="upgrade" hidden>
+  <section class="panel upgrade-panel" aria-labelledby="upgrade-heading">
+    <div class="panel-head">
+      <h2 id="upgrade-heading">Mid-migration upgrade resilience</h2>
+      <span class="muted">simulate a core release change while this assessment is active</span>
+    </div>
+    <p class="muted">A green signal is not a permanent fact. Choose a target-release change and PreFlight
+    will invalidate stale green state, identify affected patches, and offer revalidate, rollback, or defer.</p>
+    <form class="upgrade-form" method="get" action="/codebase">
+      <input type="hidden" name="case" value="{{ result.case_id }}">
+      <label for="upgrade-select">Upgrade scenario</label>
+      <select class="input" id="upgrade-select" name="upgrade">
+        {% for scenario in upgrade_scenarios %}
+        <option value="{{ scenario.scenario_id }}" {{ 'selected' if impact and impact.scenario.scenario_id == scenario.scenario_id }}>{{ scenario.label }} ({{ scenario.from_version }} → {{ scenario.to_version }})</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Evaluate upgrade</button>
+      <a class="btn" href="/codebase?case={{ result.case_id }}">Reset</a>
+    </form>
+
+    {% if impact %}
+    <div class="impact-card">
+      <div class="impact-head">
+        <div>
+          <span class="eyebrow">{{ impact.scenario.scenario_id }}</span>
+          <h3>{{ impact.scenario.label }}</h3>
+        </div>
+        <span class="pill pill-status {{ 'status-running' if impact.status == 'revalidation_required' else 'status-succeeded' }}">{{ reader_status(impact.status) }}</span>
+      </div>
+      <details class="status-technical">
+        <summary>Machine state</summary>
+        <code>{{ impact.status }}</code>
+      </details>
+      <p>{{ impact.scenario.description }}</p>
+      <p><strong>Bundle generation {{ impact.active_assessment_generation }} → {{ impact.new_generation }}.</strong>
+      {{ impact.affected_patches|length }} patch(es) affected · {{ impact.affected_rules|join(', ') or 'none' }}.
+      Green signal invalidated: {{ 'yes' if impact.green_signal_before.unified else 'no (already not green)' }}.</p>
+      <ul class="verification-list">
+        {% for check in impact.checks %}<li class="{{ 'ok' if check.ok else 'bad' }}"><strong>{{ 'PASS' if check.ok else 'REWORK' }}</strong> {{ check.name }} <span class="muted">— {{ check.detail }}</span></li>{% endfor %}
+      </ul>
+      <h4>Resume options</h4>
+      <div class="resume-grid">
+        {% for option in impact.resume_options %}
+        <div class="resume-card {{ 'resume-recommended' if option.recommended }}">
+          <strong>{{ option.label }}</strong>
+          <p class="muted">{{ option.detail }}</p>
+          {% if option.recommended %}<span class="badge badge-neutral">recommended</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="button-row">
+        <button class="btn btn-small btn-primary" type="button" data-upgrade-resume data-choice="revalidate" data-scenario="{{ impact.scenario.scenario_id }}">Record revalidate</button>
+        <button class="btn btn-small" type="button" data-upgrade-resume data-choice="rollback" data-scenario="{{ impact.scenario.scenario_id }}">Record rollback</button>
+        <button class="btn btn-small" type="button" data-upgrade-resume data-choice="defer" data-scenario="{{ impact.scenario.scenario_id }}">Record defer</button>
+        <button class="btn btn-small" type="button" data-upgrade-rerun data-scenario="{{ impact.scenario.scenario_id }}">Apply and re-run the loop</button>
+      </div>
+      <p class="muted" data-upgrade-resume-status role="status"></p>
+    </div>
+    {% endif %}
+
+    <details class="drill-details">
+      <summary>Unexpected-scenario playbook ({{ drills|length }} named cases)</summary>
+      <div class="table-scroll" role="region" aria-label="Unexpected scenario playbook" tabindex="0" data-table-scroll>
+        <table class="data-table compact">
+          <caption>Unexpected-scenario playbook with detection, handling, and recovery steps.</caption>
+          <thead><tr><th>Scenario</th><th>Detection</th><th>Handling</th><th>Recovery</th></tr></thead>
+          <tbody>{% for drill in drills %}<tr><td><strong>{{ drill.label }}</strong></td><td>{{ drill.detection }}</td><td>{{ drill.handling }}</td><td>{{ drill.recovery }}</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </details>
+  </section>
 </section>
 
 <p class="muted codebase-footnote">

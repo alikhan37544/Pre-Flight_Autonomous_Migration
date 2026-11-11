@@ -138,7 +138,7 @@
   .foot-note { color: #7F95A3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .foot-mid { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 40px; }
   .progress-track { height: 4px; flex: 1; background: #314654; overflow: hidden; }
-  .progress-bar { height: 100%; width: 6.25%; background: #42A6BF; transition: width .22s ease; }
+  .progress-bar { height: 100%; width: 4.35%; background: #42A6BF; transition: width .22s ease; }
   .foot-right { white-space: nowrap; display: flex; gap: 12px; align-items: center; }
   .foot-dot { width: 6px; height: 6px; background: #42A6BF; border-radius: 50%; display: inline-block; }
 
@@ -496,6 +496,25 @@
   .contact-line b { color: #DCE8EE; font-weight: 700; }
   .disclaimer { font-size: 9px; line-height: 1.45; color: #7D94A2; border-top: 1px solid #3A4F5D; padding-top: 10px; max-width: 125ch; }
 
+  /* Agent loop: the five-agent chain (slides 13-16) */
+  .agent-loop { display: flex; align-items: stretch; gap: 0; margin: 2px 0 0; min-width: 0; }
+  .agent-node {
+    flex: 1 1 0; min-width: 0; background: var(--paper); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); padding: 10px 10px 11px;
+  }
+  .agent-step { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; color: var(--muted-2); font-weight: 700; }
+  .agent-node h3 { font-size: clamp(.92rem, 1.02vw, 1.1rem); line-height: 1.1; margin: 2px 0 3px; letter-spacing: -.01em; }
+  .agent-handoff { font-size: max(10px, .64vw); line-height: 1.25; color: var(--teal-dark); font-weight: 800; margin: 0 0 5px; text-transform: uppercase; letter-spacing: .04em; }
+  .agent-facts { font-size: max(10px, .64vw); line-height: 1.32; color: var(--muted); margin: 0; }
+  .agent-arrow { flex: none; width: 20px; display: grid; place-items: center; color: var(--teal); font-size: 15px; font-weight: 800; }
+
+  /* Seal cards: Scribe's four seals (slide 16) */
+  .seal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .seal-card { background: var(--paper); border: 1px solid var(--border); border-top: 2px solid var(--teal); padding: 8px 9px; min-width: 0; }
+  .seal-label { display: block; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+  .seal-hash { display: block; font-family: var(--mono); font-size: clamp(.66rem, .7vw, .76rem); color: var(--teal-dark); margin: 3px 0 2px; overflow-wrap: anywhere; }
+  .seal-art { display: block; font-size: max(10px, .64vw); line-height: 1.25; color: var(--muted); }
+
   /* Notes and help */
   .notes-panel {
     position: fixed; z-index: 80; top: var(--chrome-h); right: 0; bottom: var(--foot-h);
@@ -554,6 +573,9 @@
     h2 { font-size: clamp(1.45rem, 7.2vw, 2.1rem); max-width: none; }
     .slide-lede { font-size: .92rem; }
     .cols-2, .cols-2.wide-left, .cols-3, .demo-grid, .slide--findings .demo-grid, .assistant-grid, .packet-grid, .gap-call, .eval-top, .eval-cols, .risk-cols, .title-grid { grid-template-columns: 1fr; }
+    .agent-loop { flex-direction: column; }
+    .agent-arrow { width: auto; height: 12px; transform: rotate(90deg); }
+    .seal-grid { grid-template-columns: 1fr; }
     .slide--title .slide-body { padding-top: 28px; }
     .title-display { font-size: clamp(2.5rem, 13.5vw, 4.2rem); max-width: 10ch; }
     .title-panel { margin-top: 18px; }
@@ -728,13 +750,13 @@
     <button class="chrome-btn" type="button" id="notes-toggle" aria-pressed="false" aria-controls="notes-panel">Notes <kbd>n</kbd></button>
     <button class="chrome-btn" type="button" id="help-open" aria-haspopup="dialog">Help <kbd>?</kbd></button>
     <button class="chrome-btn" type="button" id="print-button" title="Print or save as PDF">PDF</button>
-    <span class="counter" id="counter" aria-hidden="true">01 <span>/ 16</span></span>
+    <span class="counter" id="counter" aria-hidden="true">01 <span>/ 23</span></span>
   </div>
 </header>
 
 <main class="deck" id="main-deck">
   <!-- 1 -->
-  <section class="slide slide--title is-active" id="slide-1" data-section="Title" data-title="Title" aria-label="Slide 1 of 16: Title">
+  <section class="slide slide--title is-active" id="slide-1" data-section="Title" data-title="Title" aria-label="Slide 1 of 23: Title">
     <div class="slide-body">
       <div class="title-grid">
         <div>
@@ -776,7 +798,7 @@
   </section>
 
   <!-- 2 -->
-  <section class="slide" id="slide-2" data-section="The problem" data-title="The problem" aria-label="Slide 2 of 16: The problem">
+  <section class="slide" id="slide-2" data-section="The problem" data-title="The problem" aria-label="Slide 2 of 23: The problem">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -830,7 +852,7 @@
   </section>
 
   <!-- 3 -->
-  <section class="slide slide--gap" id="slide-3" data-section="The gap" data-title="Why tools leave a gap" aria-label="Slide 3 of 16: Why existing tools leave a gap">
+  <section class="slide slide--gap" id="slide-3" data-section="The gap" data-title="Why tools leave a gap" aria-label="Slide 3 of 23: Why existing tools leave a gap">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -880,7 +902,7 @@
   </section>
 
   <!-- 4 -->
-  <section class="slide" id="slide-4" data-section="Solution" data-title="The engineered solution" aria-label="Slide 4 of 16: The engineered solution">
+  <section class="slide" id="slide-4" data-section="Solution" data-title="The engineered solution" aria-label="Slide 4 of 23: The engineered solution">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -955,7 +977,7 @@
   </section>
 
   <!-- 5 -->
-  <section class="slide" id="slide-5" data-section="Evidence model" data-title="The evidence model" aria-label="Slide 5 of 16: The evidence model">
+  <section class="slide" id="slide-5" data-section="Evidence model" data-title="The evidence model" aria-label="Slide 5 of 23: The evidence model">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1057,7 +1079,7 @@
   </section>
 
   <!-- 6 -->
-  <section class="slide" id="slide-6" data-section="Demo · Workbench" data-title="Workbench: one feature, six artefact families" aria-label="Slide 6 of 16: Demo workbench">
+  <section class="slide" id="slide-6" data-section="Demo · Workbench" data-title="Workbench: one feature, six artefact families" aria-label="Slide 6 of 23: Demo workbench">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1102,7 +1124,7 @@
   </section>
 
   <!-- 7 -->
-  <section class="slide" id="slide-7" data-section="Demo · Manifest" data-title="Manifest: no silent omission" aria-label="Slide 7 of 16: Demo manifest">
+  <section class="slide" id="slide-7" data-section="Demo · Manifest" data-title="Manifest: no silent omission" aria-label="Slide 7 of 23: Demo manifest">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1147,7 +1169,7 @@
   </section>
 
   <!-- 8 -->
-  <section class="slide" id="slide-8" data-section="Demo · Reconstruction" data-title="Reconstruction: a decision queue" aria-label="Slide 8 of 16: Demo reconstruction">
+  <section class="slide" id="slide-8" data-section="Demo · Reconstruction" data-title="Reconstruction: a decision queue" aria-label="Slide 8 of 23: Demo reconstruction">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1197,7 +1219,7 @@
   </section>
 
   <!-- 9 -->
-  <section class="slide slide--findings" id="slide-9" data-section="Demo · Findings" data-title="Findings: restraint by construction" aria-label="Slide 9 of 16: Demo findings">
+  <section class="slide slide--findings" id="slide-9" data-section="Demo · Findings" data-title="Findings: restraint by construction" aria-label="Slide 9 of 23: Demo findings">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1238,7 +1260,7 @@
   </section>
 
   <!-- 10 -->
-  <section class="slide" id="slide-10" data-section="Demo · Assistant" data-title="Grounded assistant: refusal is a feature" aria-label="Slide 10 of 16: Demo grounded assistant">
+  <section class="slide" id="slide-10" data-section="Demo · Assistant" data-title="Grounded assistant: refusal is a feature" aria-label="Slide 10 of 23: Demo grounded assistant">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1281,7 +1303,7 @@
   </section>
 
   <!-- 11 -->
-  <section class="slide" id="slide-11" data-section="Demo · Evaluation" data-title="Evaluation: honest denominators" aria-label="Slide 11 of 16: Demo evaluation">
+  <section class="slide" id="slide-11" data-section="Demo · Evaluation" data-title="Evaluation: honest denominators" aria-label="Slide 11 of 23: Demo evaluation">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1404,7 +1426,7 @@
   </section>
 
   <!-- 12 -->
-  <section class="slide" id="slide-12" data-section="Demo · Packet" data-title="Packet and audit" aria-label="Slide 12 of 16: Demo packet and audit">
+  <section class="slide" id="slide-12" data-section="Demo · Packet" data-title="Packet and audit" aria-label="Slide 12 of 23: Demo packet and audit">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1456,18 +1478,470 @@
   </section>
 
   <!-- 13 -->
-  <section class="slide" id="slide-13" data-section="Engineering rigor" data-title="Engineering rigor: flaws found and fixed" aria-label="Slide 13 of 16: Engineering rigor">
+  <section class="slide" id="slide-13" data-section="Demo · Migrator" data-title="Five-agent evidence chain" aria-label="Slide 13 of 23: Five-agent evidence chain">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Demo 08 · Migrator · five-agent chain</p>
+          <h2>Five agents. One evidence chain. No authority to deploy.</h2>
+          <p class="slide-lede">The feature migrator runs five specialist agents over the completed PA-VEH-01 review: Scout, Architect, Guardian, Critic, and Scribe. Each receives the prior artifact, adds a check or an artifact, and leaves a record. The run ends <span class="mono">completed_with_gates</span> with 11 gates open — not approval, not deployment. This path is a straight handoff chain; the cyclic rework loop belongs to the codebase lab.</p>
+        </div>
+        <span class="head-badge">Straight handoff chain</span>
+      </div>
+      <div class="agent-loop" role="list" aria-label="Five-agent handoff chain from Scout to Scribe">
+        <article class="agent-node" role="listitem">
+          <span class="agent-step">01</span>
+          <h3>Scout</h3>
+          <p class="agent-handoff">review → scope</p>
+          <p class="agent-facts">300 files · 101 evidence records · 31 links on PA-VEH-01 · 24 findings · 12 dispositions</p>
+        </article>
+        <span class="agent-arrow" aria-hidden="true">→</span>
+        <article class="agent-node" role="listitem">
+          <span class="agent-step">02</span>
+          <h3>Architect</h3>
+          <p class="agent-handoff">scope → draft</p>
+          <p class="agent-facts">5 work packages · 5 target files · all <span class="mono">draft_ready</span> · all <span class="mono">pending</span></p>
+        </article>
+        <span class="agent-arrow" aria-hidden="true">→</span>
+        <article class="agent-node" role="listitem">
+          <span class="agent-step">03</span>
+          <h3>Guardian</h3>
+          <p class="agent-handoff">draft → gates</p>
+          <p class="agent-facts">11 open gates = 3 assumptions + 8 rule groups · 6 high impact</p>
+        </article>
+        <span class="agent-arrow" aria-hidden="true">→</span>
+        <article class="agent-node" role="listitem">
+          <span class="agent-step">04</span>
+          <h3>Critic</h3>
+          <p class="agent-handoff">gates → checks</p>
+          <p class="agent-facts">7/7 checks passed · verdict PASS · 0 auto-approved changes</p>
+        </article>
+        <span class="agent-arrow" aria-hidden="true">→</span>
+        <article class="agent-node" role="listitem">
+          <span class="agent-step">05</span>
+          <h3>Scribe</h3>
+          <p class="agent-handoff">checks → seal</p>
+          <p class="agent-facts">8 listed bundle files · 5 targets + plan + report + 12-event log · manifest seals them · <span class="mono">completed_with_gates</span></p>
+        </article>
+      </div>
+      <div class="cols cols-2" style="margin-top:12px">
+        <div class="panel tint">
+          <p class="eyebrow">Bounded autonomy</p>
+          <p class="small" style="margin:0">Read the snapshot, generate local drafts, verify, seal. Never deploy, edit <span class="mono">_gen</span>, approve a change, resolve an assumption, or contact a tenant.</p>
+        </div>
+        <div class="panel" style="border-left:4px solid var(--danger)">
+          <p class="eyebrow" style="color:var(--danger)">Reality boundary</p>
+          <p class="small" style="margin:0"><b>Synthetic rehearsal, not an actual migration.</b> No tenant contacted. No Gosu/Java compiled against Guidewire. No official Cloud Assurance result.</p>
+        </div>
+      </div>
+      <div class="run-strip" style="margin-top:10px">
+        <span class="big">R-DEMO-001</span><span class="sep">·</span>
+        <span class="txt"><b>completed_with_gates</b> · verification passed (7/7) · 11 gates open · no deployment</span>
+      </div>
+      <p class="source" style="margin:7px 0 0">Optional live reasoning run <span class="mono">R-20261111-052740-b001</span>: <span class="mono">mimo-v2.6-flash</span> made 3 citation-checked calls (Scout, Architect, Critic); 0 ungrounded claims passed validation; Guardian made 0 model calls. The deterministic 7/7 checks and sealed status are unchanged.</p>
+      <figure class="shot" style="margin:10px 0 0">
+        <img src="assets/agents/migrator-loop-1440x900.png" width="1440" height="900" alt="Migrator page on run R-DEMO-001: five-agent cycle Scout, Architect, Guardian, Critic, Scribe; 5 work packages, 5 target drafts, 11 human gates, 6 high impact, and 8 bundle files." style="height:clamp(110px,19vh,170px);object-fit:cover;object-position:50% 0%">
+        <figcaption>The live migrator page for <span class="mono">R-DEMO-001</span>: the same five-agent strip, 11 gates, and sealed-bundle counts shown above. The page calls it a loop; the feature path is a straight handoff chain.</figcaption>
+      </figure>
+    </div>
+    <div class="speaker-note" hidden>
+      <p><strong>Start with the chain, not the badge.</strong> “Scout, Architect, Guardian, Critic, Scribe. Each one receives the prior artifact, adds a check or an artifact, and leaves a record. Nobody can approve or deploy.”</p>
+      <p>Read the numbers as the same review the audience already saw: 300 files, 101 evidence records, 31 links on PA-VEH-01, 24 findings, 12 dispositions. Architect produces five local files; Guardian turns findings and assumptions into 11 gates; Critic runs seven package-integrity checks; Scribe seals eight listed files.</p>
+      <p>If someone calls it a loop, correct the shape: “The feature path is a straight handoff chain. The cyclic Architect ↔ Guardian/Critic rework is the codebase lab.”</p>
+      <p>Say the boundary plainly: “Synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.” The optional live run used three model calls; it did not change the deterministic checks or the sealed status.</p>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" id="slide-14" data-section="Demo · Migrator" data-title="Scout to Architect handoff" aria-label="Slide 14 of 23: Scout to Architect handoff">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Demo 09 · Migrator · Scout → Architect</p>
+          <h2>Scout hands over 31 links and 12 dispositions. Architect writes five files.</h2>
+          <p class="slide-lede">Scout resolves PA-VEH-01 from 300 files and 101 evidence records, keeping 31 links, 24 findings, and 12 dispositions attached to the handoff. Architect turns those dispositions into five local targets: schema, mapping, updater, codegen config, and API contract. The mapping file carries all 12 dispositions, so five files do not mean five trivial changes. Every target is <span class="mono">draft_ready</span> and <span class="mono">pending</span>.</p>
+        </div>
+        <span class="head-badge">5 packages · 12 dispositions</span>
+      </div>
+      <div class="run-strip" style="margin:0 0 10px">
+        <span class="big">Scout → Architect</span><span class="sep">·</span>
+        <span class="txt">300 files · 101 evidence records · 31 links on PA-VEH-01 · 24 findings · 12 dispositions · snapshot <span class="mono">bd4a8a4b338a</span></span>
+      </div>
+      <div class="matrix-wrap" style="min-width:0" tabindex="0" role="region" aria-label="Five Architect work packages; scroll horizontally at narrow widths">
+      <table class="mini-table" aria-label="Five Architect work packages" style="min-width:760px">
+        <thead><tr><th scope="col">WP</th><th scope="col">Target (basename)</th><th scope="col">Disposition</th><th scope="col">Evidence</th><th scope="col">Bytes</th><th scope="col">Gate / approval</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">WP-01</td><td class="mono">policyperiod_pa_ext-1.0.schema.json</td><td>PAVehicle → PersonalVehicle</td><td>EV-0011, EV-0018</td><td>945 B</td><td>— / <span class="mono">pending</span></td></tr>
+          <tr><td class="mono">WP-02</td><td class="mono">policyperiod_pa_ext-1.0.mapping.json</td><td>PAVehicle.Year → ModelYear</td><td>EV-0002, EV-0006</td><td>3,046 B</td><td>— / <span class="mono">pending</span></td></tr>
+          <tr><td class="mono">WP-03</td><td class="mono">policyperiod_pa_ext-1.0.updater.json</td><td>PADriver → VehicleDriver</td><td>EV-0057, EV-0061</td><td>402 B</td><td>— / <span class="mono">pending</span></td></tr>
+          <tr><td class="mono">WP-04</td><td class="mono">pa_codegen_config_ext-1.0.yaml</td><td>PALine → PersonalAutoLine</td><td>EV-0097</td><td>520 B</td><td>— / <span class="mono">pending</span></td></tr>
+          <tr style="background:#FBF1DF"><td class="mono">WP-05</td><td class="mono">pa_ext-1.0.yaml</td><td>PersonalAutoRatingFactorConfiguration → same</td><td>EV-0036</td><td>78 B</td><td><b>G-03</b> / <span class="mono">pending</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="source" style="margin:6px 0 0">Full target paths are under <span class="mono">migration/target/config/integration/</span>. All five are <span class="mono">mapped_transformed</span>, <span class="mono">draft_ready</span>, and <span class="mono">pending</span>.</p>
+      <div class="cols cols-2" style="margin-top:9px">
+        <figure class="shot" style="margin:0">
+          <img src="assets/agents/migrator-scout-1440x900.png" width="1440" height="900" alt="Migrator Scout stage on run R-DEMO-001: 31 evidence links, 101 evidence records across 300 files, 24 findings, 12 dispositions, and the first eight evidence rows handed to Architect." style="height:clamp(150px,26vh,250px);object-fit:cover;object-position:50% 0%">
+          <figcaption>Scout stage on <span class="mono">R-DEMO-001</span>: 31 evidence links on PA-VEH-01; the table shows the first 8 of 31. The package table above is built from <span class="mono">migration.json</span>, not from this screenshot.</figcaption>
+        </figure>
+        <div class="stack">
+          <div class="panel tint">
+            <p class="eyebrow">Five files, twelve dispositions</p>
+            <p class="small" style="margin:0">WP-02 is a 12-entry mapping file; WP-05 is the only package carrying a gate at handoff (G-03, 37-character APD type). Five target files are not five deployment units.</p>
+          </div>
+          <div class="run-strip" style="margin:0">
+            <span class="txt"><b>_gen</b> targets: 0 · duplicate targets: 0 · auto-approved: 0 · all five <span class="mono">pending</span></span>
+          </div>
+          <p class="tiny" style="margin:0">Work package = one target file generated from one explicit disposition. APD = Advanced Product Designer; the 37-character type exceeds the 24-character type-name import limit and needs a codegen <span class="mono">nameOverride</span>.</p>
+        </div>
+      </div>
+    </div>
+    <div class="speaker-note" hidden>
+      <p><strong>Scout is evidence-heavy on purpose.</strong> Architect never starts from a prose summary; it starts from 12 explicit dispositions and 31 evidence links. The five files are schema, mapping, updater, codegen config, and API contract.</p>
+      <p>The mapping file contains all 12 dispositions, while WP-05 carries the APD naming gate. All five are local drafts: not compiled, not deployed, not approved. The snapshot prefix is <span class="mono">bd4a8a4b338a</span>.</p>
+      <p>Say the boundary plainly: synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.</p>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide" id="slide-15" data-section="Demo · Migrator" data-title="Guardian eleven gates" aria-label="Slide 15 of 23: Guardian eleven gates">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Demo 10 · Migrator · Guardian</p>
+          <h2>Guardian turns 24 findings and 3 assumptions into 11 human gates.</h2>
+          <p class="slide-lede">Guardian does not score the draft; it opens a gate for every open assumption and every rule group that still has an unanswered finding. The 24 findings collapse into 8 rule groups of 3, plus 3 assumption gates, for 11 human decisions. Six of the 11 are high impact. The bundle cannot ship while any gate is open.</p>
+        </div>
+        <span class="head-badge attention">11 gates · 6 high</span>
+      </div>
+      <div class="stat-strip" aria-label="Guardian gate arithmetic">
+        <div class="stat"><span class="stat-value">24</span><span class="stat-label">findings</span></div>
+        <div class="stat"><span class="stat-value">8</span><span class="stat-label">rule groups × 3</span></div>
+        <div class="stat"><span class="stat-value">3</span><span class="stat-label">assumptions</span></div>
+        <div class="stat"><span class="stat-value">11</span><span class="stat-label">human gates</span></div>
+        <div class="stat signal"><span class="stat-value">6</span><span class="stat-label">high impact</span></div>
+        <div class="stat"><span class="stat-value">0</span><span class="stat-label">resolved</span></div>
+      </div>
+      <div class="demo-grid grow" style="margin-top:9px">
+        <figure class="shot" style="margin:0;height:100%;align-self:stretch;display:flex;flex-direction:column">
+          <img src="assets/agents/migrator-guardian-1440x900.png" width="1440" height="900" alt="Migrator Guardian stage on run R-DEMO-001: 3 open assumption gates G-01 to G-03 and 8 rule groups G-04 to G-11, with 6 high-impact gates and the sealed bundle below." style="flex:1;min-height:0;height:auto;object-fit:cover;object-position:50% 0%">
+        </figure>
+        <div class="stack">
+          <div class="panel" style="padding:10px 12px">
+            <p class="eyebrow">3 assumption gates</p>
+            <table class="mini-table" aria-label="Assumption gates">
+              <thead><tr><th scope="col">Gate</th><th scope="col">Decision needed</th><th scope="col">Owner</th></tr></thead>
+              <tbody>
+                <tr><td><b>G-01</b> <span class="tag danger">high</span></td><td>Which rating table or service consumes <span class="mono">Territory_Ext</span>, and is it in Retrofit scope?</td><td class="mono">unassigned</td></tr>
+                <tr><td><b>G-02</b> <span class="tag amber">med</span></td><td>Can the team provide a supported rating input export before scope is agreed?</td><td class="mono">unassigned</td></tr>
+                <tr><td><b>G-03</b> <span class="tag danger">high</span></td><td>Who owns the 37-character <span class="mono">PersonalAutoRatingFactorConfiguration</span> change, and can the <span class="mono">nameOverride</span> be validated?</td><td class="mono">unassigned</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel" style="padding:10px 12px">
+            <p class="eyebrow">8 rule groups · 24 findings</p>
+            <table class="mini-table" aria-label="Rule groups and gates">
+              <thead><tr><th scope="col">Rule group</th><th scope="col">Findings</th><th scope="col">Impact</th><th scope="col">Gate</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">PF-GW-EXC-001</td><td>3</td><td>medium</td><td>G-04</td></tr>
+                <tr><td class="mono">PF-GW-GUNIT-001</td><td>3</td><td>medium</td><td>G-05</td></tr>
+                <tr><td class="mono">PF-GW-NAM-001</td><td>3</td><td><b class="danger">high</b></td><td>G-06</td></tr>
+                <tr><td class="mono">PF-GW-PKG-001</td><td>3</td><td><b class="danger">high</b></td><td>G-07</td></tr>
+                <tr><td class="mono">PF-GW-SEC-001</td><td>3</td><td><b class="danger">high</b></td><td>G-08</td></tr>
+                <tr><td class="mono">PF-GW-SQL-001</td><td>3</td><td><b class="danger">high</b></td><td>G-09</td></tr>
+                <tr><td class="mono">PF-GW-SRV-001</td><td>3</td><td>medium</td><td>G-10</td></tr>
+                <tr><td class="mono">PF-GW-TX-001</td><td>3</td><td>medium</td><td>G-11</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-band" style="grid-template-columns:1.15fr .85fr;margin-top:8px">
+        <div class="bottom-card"><b>Independent by design</b><span>Guardian receives the 5 packages, open assumptions and findings, and the rule pack. It deliberately does not receive Scout’s narrative, Critic’s verdict, or any model-generated text.</span></div>
+        <div class="bottom-card"><b>Open is a status, not a failure</b><span>A gate is a named human decision with an owner. All 11 are unresolved; 6 are high impact.</span></div>
+      </div>
+    </div>
+    <div class="speaker-note" hidden>
+      <p><strong>The arithmetic is the story.</strong> “24 findings collapse to eight rule groups of three, and three assumptions stand alone. That is 11 human decisions, six of them high impact.”</p>
+      <p>Guardian’s independence is deliberate. It sees the packages, the open assumptions and findings, and the rule pack. It does not see Scout’s narrative or Critic’s verdict, and it receives no model-generated text.</p>
+      <p>The gates are not scoring failures, but they are not resolved either: assumption owners are unassigned and the rule groups sit with the delivery team. Nothing ships while any gate is open.</p>
+      <p>Say the boundary plainly: synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.</p>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide" id="slide-16" data-section="Demo · Migrator" data-title="Critic checks and Scribe seal" aria-label="Slide 16 of 23: Critic checks and Scribe seal">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Demo 11 · Migrator · Critic → Scribe</p>
+          <h2>Critic passes 7/7. Scribe seals 8 listed files. Neither approves.</h2>
+          <p class="slide-lede">Critic re-checks the handoff independently: packages exist, paths are safe and unique, generated JSON/YAML parses, every package is evidence-linked, and nothing was auto-approved. Scribe writes the plan, report, manifest, and 12-event log; the manifest hashes the bundle and the log records the handoffs. Sealed means tamper-evident, not approved. The status remains <span class="mono">completed_with_gates</span>, with all five changes pending.</p>
+        </div>
+        <span class="head-badge">7/7 checks · 8 files sealed</span>
+      </div>
+      <div class="cols cols-2">
+        <div class="panel" style="padding:10px 12px">
+          <p class="eyebrow">Critic · 7 machine checks</p>
+          <table class="mini-table" aria-label="Critic package-integrity checks">
+            <thead><tr><th scope="col">#</th><th scope="col">Check</th><th scope="col">Result</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>packages exist</td><td><b class="success">PASS</b> · 5 work packages</td></tr>
+              <tr><td>2</td><td>all package files generated</td><td><b class="success">PASS</b> · 5/5</td></tr>
+              <tr><td>3</td><td>no <span class="mono">_gen</span> targets</td><td><b class="success">PASS</b> · bundle is <span class="mono">_ext</span> / codegen / updater only</td></tr>
+              <tr><td>4</td><td>no duplicate targets</td><td><b class="success">PASS</b> · 5 unique</td></tr>
+              <tr><td>5</td><td>generated JSON/YAML parses</td><td><b class="success">PASS</b> · 5 files parsed</td></tr>
+              <tr><td>6</td><td>every package is evidence-linked</td><td><b class="success">PASS</b> · 5/5 linked</td></tr>
+              <tr><td>7</td><td>human approval retained</td><td><b class="success">PASS</b> · 0 auto-approved changes</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel" style="padding:10px 12px">
+          <p class="eyebrow">Scribe · four seal cards</p>
+          <div class="seal-grid">
+            <div class="seal-card"><span class="seal-label">Plan</span><span class="seal-hash">3c307f75205c</span><span class="seal-art"><span class="mono">migration-plan.json</span></span></div>
+            <div class="seal-card"><span class="seal-label">Report</span><span class="seal-hash">8770963bd2fd</span><span class="seal-art"><span class="mono">MIGRATION-REPORT.md</span></span></div>
+            <div class="seal-card"><span class="seal-label">Bundle</span><span class="seal-hash">6c5b7f5a5aec</span><span class="seal-art">8 listed files</span></div>
+            <div class="seal-card"><span class="seal-label">Agent log</span><span class="seal-hash">5c28ba80c3f75eb6</span><span class="seal-art">12 events · <b class="success">verified</b></span></div>
+          </div>
+          <p class="tiny" style="margin:7px 0 0">8 listed bundle files = 5 target drafts + plan + report + 12-event log. <span class="mono">bundle-manifest.json</span> is the seal wrapper. Sealed ≠ approved.</p>
+        </div>
+      </div>
+      <div class="cols cols-2" style="margin-top:9px">
+        <figure class="shot" style="margin:0">
+          <img src="assets/agents/migrator-critic-1440x900.png" width="1440" height="900" alt="Migrator Critic stage on run R-DEMO-001: seven independent checks, 7/7 passed, verdict PASS, and zero auto-approved changes." style="height:clamp(150px,24vh,240px);object-fit:cover;object-position:50% 45%">
+          <figcaption>Critic stage, <span class="mono">R-DEMO-001</span>: 7/7 checks passed; all changes still pending.</figcaption>
+        </figure>
+        <figure class="shot" style="margin:0">
+          <img src="assets/agents/migrator-scribe-1440x900.png" width="1440" height="900" alt="Migrator Scribe stage on run R-DEMO-001: four seal cards for the plan, report, eight-file bundle, and verified 12-event agent log." style="height:clamp(150px,24vh,240px);object-fit:cover;object-position:50% 45%">
+          <figcaption>Scribe stage, <span class="mono">R-DEMO-001</span>: plan, report, bundle, and verified agent log.</figcaption>
+        </figure>
+      </div>
+      <p class="source" style="margin:7px 0 0">Review packet audit: <b>9 seed events</b> (<b>11</b> after the two runbook decisions). Migrator log: <b>12 events</b>, a separate hash chain. Sealed is tamper-evident, not non-repudiation.</p>
+      <div class="run-strip" style="margin-top:7px">
+        <span class="big">R-DEMO-001</span><span class="sep">·</span>
+        <span class="txt"><b>completed_with_gates</b> · verification passed (7/7) · 11 gates open · 0 auto-approved · no deployment</span>
+      </div>
+    </div>
+    <div class="speaker-note" hidden>
+      <p><strong>Critic’s 7/7 is not a quality score.</strong> It is a package-integrity check: the files exist, parse, are unique, are evidence-linked, and are still pending. It says nothing about domain correctness or runtime behavior.</p>
+      <p>Scribe’s seal is tamper-evident, not an approval. The eight listed files exclude the manifest itself, which is the wrapper. The four visible hashes are the plan, the report, the bundle, and the agent log.</p>
+      <p>Keep the two audit chains separate: the review packet has 9 seed events, 11 after the two runbook decisions; the migrator log has 12 events and its own chain.</p>
+      <p>Say the boundary plainly: synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.</p>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide" id="slide-17" data-section="Demo · Codebase lab" data-title="Two migration stories" aria-label="Slide 17 of 23: Two migration stories">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Demo 12 · Codebase lab · two migration shapes</p>
+          <h2>Two synthetic insurers, two migration shapes, one bounded crew.</h2>
+          <p class="slide-lede">Cascade Mutual is a monoline Personal Auto mutual; Harbor P&amp;C is a multi-line carrier spanning Personal Auto, Homeowners, and Workers’ Comp. Both run the same five-agent codebase loop against synthetic Qusar 2026.08 snapshots with a simulated GWCP 2027.04 target — not a published release. The numbers differ because the estates differ, not because the method changes. Both end <span class="mono">green_with_human_gates</span>, with every patch pending.</p>
+        </div>
+        <span class="head-badge">Both green_with_human_gates</span>
+      </div>
+      <div class="run-strip" style="margin:0 0 10px">
+        <span class="txt">Qusar 2026.08 pre-cloud snapshot → <b>simulated</b> GWCP 2027.04 target · five-agent loop Scout → Architect ↔ Guardian / Critic → Planner · same 16-family rule pack · SARIF 2.1.0 · every patch <span class="mono">pending</span> · no deployment</span>
+      </div>
+      <div class="cols cols-2">
+        <div class="panel" style="border-top:3px solid var(--teal)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div><p class="eyebrow" style="margin-bottom:2px">Monoline Personal Auto · synthetic</p><h3 style="margin-bottom:3px">Cascade Mutual</h3></div>
+            <span class="tag">Retrofit without APD App</span>
+          </div>
+          <p class="small" style="margin-bottom:3px"><b>Illustrative synthetic footprint:</b> 420,000 policies · 38 PCF screens · 64 custom Gosu files · 7 integrations.</p>
+          <p class="tiny" style="margin-bottom:6px">Narrow surface: telematics rating, dealer feed, commission publication. Direct SQL in the rating path.</p>
+          <div class="stat-strip">
+            <div class="stat"><span class="stat-value">18</span><span class="stat-label">findings<br>10 error / 8 warning</span></div>
+            <div class="stat"><span class="stat-value">22</span><span class="stat-label">patches</span></div>
+            <div class="stat"><span class="stat-value">2</span><span class="stat-label">iterations</span></div>
+            <div class="stat signal"><span class="stat-value">10</span><span class="stat-label">human gates</span></div>
+          </div>
+          <p class="small" style="margin:6px 0 0"><span class="mono success">green_with_human_gates</span> · 13 rules fired · structural 100 / gate-adjusted <b>74</b>.</p>
+        </div>
+        <div class="panel" style="border-top:3px solid var(--teal)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div><p class="eyebrow" style="margin-bottom:2px">Multi-line regional P&amp;C · synthetic</p><h3 style="margin-bottom:3px">Harbor P&amp;C</h3></div>
+            <span class="tag">APD naming preparation</span>
+          </div>
+          <p class="small" style="margin-bottom:3px"><b>Illustrative synthetic footprint:</b> 2.6M policies · 214 PCF screens · 1,180 custom Gosu files · 42 integrations.</p>
+          <p class="tiny" style="margin-bottom:6px">Cross-application: coastal eligibility, claims gateway, vendor MQ, billing batch.</p>
+          <div class="stat-strip">
+            <div class="stat"><span class="stat-value">20</span><span class="stat-label">findings<br>11 error / 9 warning</span></div>
+            <div class="stat"><span class="stat-value">21</span><span class="stat-label">patches</span></div>
+            <div class="stat"><span class="stat-value">2</span><span class="stat-label">iterations</span></div>
+            <div class="stat signal"><span class="stat-value">11</span><span class="stat-label">human gates</span></div>
+          </div>
+          <p class="small" style="margin:6px 0 0"><span class="mono success">green_with_human_gates</span> · 15 rules fired · structural 100 / gate-adjusted <b>71</b>.</p>
+        </div>
+      </div>
+      <figure class="shot" style="margin:9px 0 0">
+        <img src="assets/agents/case-studies-outcomes-focus.png" width="1210" height="230" alt="Crop of the migration stories page: Cascade Mutual and Harbor P&C cards with synthetic footprint values, outcome strips of 18/22/2/10 and 20/21/2/11, and green-with-gates status." style="height:clamp(110px,19vh,180px);object-fit:cover;object-position:50% 12%">
+        <figcaption>Both synthetic case cards and outcome strips; footprint figures are illustrative synthetic values. Harbor’s visible “APD conversion” label is the app’s program label; the generated deliverable is type-level naming preparation only.</figcaption>
+      </figure>
+      <div class="panel tint" style="margin-top:8px;padding:7px 10px">
+        <p class="small" style="margin:0"><b>Reality boundary:</b> synthetic profiles, not customer references. No customer data, no tenant connection, no Guidewire affiliation. A code-level green is bounded; human gates remain open. Harbor’s APD draft is type-level APN naming preparation only — not full APD conversion or field mapping.</p>
+      </div>
+    </div>
+    <div class="speaker-note" hidden>
+      <p><strong>Both insurers are invented.</strong> The point is the contrast in migration shape, not a benchmark. Cascade is a monoline auto mutual with a small integration surface and a rating path where direct SQL is both a cloud concern and a latency risk. Harbor is multi-line, with claims, billing, and coastal underwriting crossing application boundaries.</p>
+      <p>That is why Harbor has more findings and gates despite fewer patches. The structural score reads 100/100 for both, but the human-gate-adjusted scores are 74 and 71; the gap is the point.</p>
+      <p>Label the footprint numbers honestly: illustrative synthetic values, not measured customer data. No customer data, no tenant, no Guidewire affiliation.</p>
+      <p>Harbor’s APD deliverable is a type-level codegen <span class="mono">nameOverride</span> draft: naming preparation only. It is not a full APD conversion and does not model field-level mapping or endpoint generation.</p>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide" id="slide-18" data-section="Demo · Codebase lab" data-title="Code-level refactor and SARIF" aria-label="Slide 18 of 23: Code-level refactor and SARIF">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Demo 13 · Codebase lab · refactor + SARIF</p>
+          <h2>The code lab closes the loop — and still leaves 10/11 human gates.</h2>
+          <p class="slide-lede">The codebase lab starts from raw Gosu, Java, XML, and GUnit rather than a completed review. Architect drafts patches, Guardian re-scans the target, Critic applies every displayed diff, and Planner compiles only after both gates agree. Cascade and Harbor each need two passes and still exit with human gates open. The output is a review bundle and SARIF, not a deployed change.</p>
+        </div>
+        <span class="head-badge">SARIF 2.1.0 · advisory</span>
+      </div>
+      <div class="run-strip" style="margin:0 0 10px">
+        <span class="txt"><b>16</b> code rule families · 2 cases · 2 iterations each · <b>Cascade</b> 18 findings / 22 patches / 10 gates · <b>Harbor</b> 20 findings / 21 patches / 11 gates · 13 / 15 SARIF rules fired</span>
+      </div>
+      <div class="demo-grid grow">
+        <div class="stack" style="min-width:0">
+          <div style="min-width:0">
+            <p class="eyebrow" style="margin-bottom:4px">Before · fixture source (excerpt)</p>
+            <div class="claim-code" style="padding:9px 11px;line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%">
+<span class="m">uses java.sql.Connection</span>
+<span class="m">uses java.sql.DriverManager</span>
+
+var conn = DriverManager.getConnection(
+  <span class="s">"jdbc:cascade:rating"</span>)
+var stmt = conn.createStatement()
+stmt.executeQuery(
+  <span class="s">"SELECT factor FROM cascade_rating " +</span>
+  <span class="s">"WHERE vin = '" + vin + "'"</span>)
+            </div>
+          </div>
+          <div style="min-width:0">
+            <p class="eyebrow" style="margin-bottom:4px">After · generated draft shape (not compiled)</p>
+            <div class="claim-code" style="padding:9px 11px;line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%">
+<span class="k">package</span> cascade.rating
+
+<span class="k">uses</span> gw.api.database.Query
+
+<span class="m">// PreFlight Architect draft: candidate Gosu Query / application API service.</span>
+<span class="m">// Confirm the entity and projected fields with the data owner before merge.</span>
+<span class="k">class</span> VehicleRatingQueryQueryService {
+  <span class="k">function</span> load() : List&lt;VehicleRating&gt; {
+    <span class="k">return</span> Query.make(VehicleRating).select().toList()
+  }
+}
+            </div>
+          </div>
+          <p class="source" style="margin:0">Source excerpt from <span class="mono">gsrc/cascade/rating/VehicleRatingQuery.gs</span>; line breaks added for display. The draft is a generated Gosu Query sketch — not compiled, and semantic equivalence is gate CR-03.</p>
+        </div>
+        <div class="stack" style="min-width:0">
+          <div class="panel" style="padding:10px 12px">
+            <p class="eyebrow">SARIF 2.1.0 · advisory by construction</p>
+            <p class="small" style="margin-bottom:4px">Tool driver <b>PreFlight CodeGuard</b>. Cascade: <b>18</b> results / <b>13</b> rules. Harbor: <b>20</b> results / <b>15</b> rules.</p>
+            <p class="tiny" style="margin-bottom:4px">Per result: <span class="mono">ruleId</span> · <span class="mono">level</span> · artifact URI · start line/column · <span class="mono">partialFingerprints.primaryLocationLineHash</span> · claim strength · remediation · redacted flag.</p>
+            <p class="tiny" style="margin:0">Run properties: <span class="mono">official_cloud_assurance: false</span> · <span class="mono">synthetic: true</span>. No source excerpts or secret values; works with <span class="mono">upload-sarif</span>.</p>
+          </div>
+          <figure class="shot" style="margin:0">
+            <img src="assets/agents/codebase-patches-1440x900.png" width="1440" height="900" alt="Codebase lab Patches tab: 22 Cascade refactor patches, each with target path, rule IDs, risk level, and pending approval." style="height:clamp(120px,18vh,190px);object-fit:cover;object-position:50% 45%">
+            <figcaption>Cascade patch bundle: 22 drafts, every patch pending human approval.</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="panel tint" style="margin-top:8px;padding:8px 11px">
+        <p class="small" style="margin:0 0 3px"><b>16 rule families.</b> 13 fired on Cascade, 15 on Harbor; 18 vs 20 SARIF results; both cases 2 passes. The lab is a structural scanner, not a compiler or data-flow engine. Drafts are not compiled; every patch remains <span class="mono">pending</span>.</p>
+        <p class="tiny" style="margin:0"><b>CDA correction:</b> Cloud Data Access is a streaming/export service to S3 Parquet, not a synchronous in-app read. Synchronous reads use Gosu Query or an application API. <b>Servlet:</b> public guidance says custom servlets are “not a recommended practice” — not “unsupported.”</p>
+      </div>
+    </div>
+    <div class="speaker-note" hidden>
+      <p><strong>The lab is a structural pre-check, not a compiler.</strong> That is why the slide says “draft” and keeps semantic equivalence visible. The same 16-family pack fires differently: 13 rules on Cascade, 15 on Harbor, producing 18 and 20 SARIF results.</p>
+      <p>Each result carries a line hash and a claim-strength label. The SARIF run marks Cloud Assurance as not run and the fixture as synthetic. It is suitable for advisory CI ingestion, not a compliance verdict.</p>
+      <p>The refactor example shows intent, not compiled equivalence. The source uses JDBC and concatenated SQL; the draft shape uses a typed Gosu Query. A human owner still has to validate entity mapping, semantics, and runtime behavior.</p>
+      <p>Correct two labels explicitly. Cloud Data Access streams and exports InsuranceSuite data to S3 as Parquet; it is not a synchronous in-app read path. Synchronous reads use Gosu Query or an application API. Custom servlets are “not a recommended practice,” not “unsupported.”</p>
+    </div>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide" id="slide-19" data-section="Demo · Codebase lab" data-title="Upgrade resilience" aria-label="Slide 19 of 23: Upgrade resilience">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Demo 14 · Codebase lab · upgrade resilience</p>
+          <h2>A green signal is release-bound, not permanent.</h2>
+          <p class="slide-lede">A migration assessment can outlive the release it was written against. PreFlight simulates five GWCP release changes and invalidates the prior green signal rather than silently reusing it. It identifies affected patches, runs scenario checks, and records one of three resume choices: revalidate, rollback, or defer. The APD scenario reruns at its simulated 20-character limit; the other four remain <span class="mono">revalidation_required</span> until their drafts are fixed.</p>
+        </div>
+        <span class="head-badge attention">5 simulated scenarios</span>
+      </div>
+      <div class="run-strip" style="margin:0 0 9px">
+        <span class="txt">On detection: assessment generation <b>1 → 2</b> · previous green invalidated · affected patches identified · every patch still <span class="mono">pending</span> · <b>simulated release scenario</b>, not a published 2027.04 release</span>
+      </div>
+      <table class="mini-table" aria-label="Five simulated GWCP release changes">
+        <thead><tr><th scope="col">Simulated release change</th><th scope="col">Effective change</th><th scope="col">Affected rules</th><th scope="col">Cascade patches</th><th scope="col">Harbor patches</th></tr></thead>
+        <tbody>
+          <tr style="background:#FBF1DF"><td><b>APD naming</b> (simulated)</td><td>24 → 20 characters</td><td class="mono">PF-CODE-APD-001</td><td>2</td><td>2</td></tr>
+          <tr><td>App Events v2</td><td>envelope adds <span class="mono">tenantId</span> / <span class="mono">eventId</span></td><td class="mono">PF-CODE-MSG-001</td><td>3</td><td>3</td></tr>
+          <tr><td>Gateway mTLS</td><td>mTLS + scoped service identity</td><td class="mono">PF-CODE-SRV-001, PF-CODE-MSG-001</td><td>7</td><td>6</td></tr>
+          <tr><td>Removed Gosu API</td><td>deprecated runtime API family removed</td><td class="mono">PF-CODE-API-001, PF-CODE-API-002</td><td>14</td><td>14</td></tr>
+          <tr><td>Cloud API version</td><td>v1 → v2 route prefix</td><td class="mono">PF-CODE-SRV-001</td><td>4</td><td>3</td></tr>
+        </tbody>
+      </table>
+      <p class="source" style="margin:5px 0 0">Scenario IDs: <span class="mono">GWCP-APD-NAMING-2027.04</span> · <span class="mono">GWCP-APP-EVENTS-V2-2027.04</span> · <span class="mono">GWCP-GATEWAY-MTLS-2027.04</span> · <span class="mono">GWCP-GOSU-API-REMOVAL-2027.04</span> · <span class="mono">GWCP-CLOUD-API-VERSION-2027.04</span>. All five simulate GWCP 2026.10 → 2027.04; the 2027.04 release and the 20-character limit are PreFlight simulations, not published Guidewire release notes.</p>
+      <div class="cols cols-2" style="margin-top:8px">
+        <div class="panel" style="padding:9px 11px">
+          <p class="eyebrow">Resume options · revalidate / rollback / defer</p>
+          <table class="mini-table" aria-label="Resume options after an upgrade">
+            <thead><tr><th scope="col">Option</th><th scope="col">What it does</th><th scope="col">Status recorded</th></tr></thead>
+            <tbody>
+              <tr><td><b>Revalidate</b> <span class="tag success">recommended</span></td><td>Re-run Architect with the new rule pack</td><td class="mono">resume_requested</td></tr>
+              <tr><td><b>Rollback</b></td><td>Return to the last green checkpoint; keep the sealed bundle</td><td class="mono">rolled_back_to_checkpoint</td></tr>
+              <tr><td><b>Defer</b></td><td>Pin the assessment release; record the risk owner</td><td class="mono">upgrade_deferred</td></tr>
+            </tbody>
+          </table>
+          <p class="tiny" style="margin:5px 0 0">All three clear the green signal and keep human approval required.</p>
+        </div>
+        <div class="stack">
+          <div class="panel tint" style="padding:8px 10px">
+            <p class="small" style="margin:0"><b>APD control:</b> same bundle, two outcomes — regenerated at the scenario’s 20-character limit → <span class="mono success">compatible</span>; the 24-character bundle → <span class="mono danger">revalidation_required</span>.</p>
+          </div>
+          <figure class="shot" style="margin:0">
+            <img src="assets/agents/codebase-upgrade-1440x900.png" width="1440" height="900" alt="Codebase lab Upgrade resilience tab: APD naming scenario GWCP-APD-NAMING-2027.04, generation 1 to 2, 2 affected patches, green signal invalidated, and revalidate/rollback/defer resume options." style="height:clamp(105px,16vh,165px);object-fit:cover;object-position:50% 38%">
+            <figcaption>Upgrade tab: generation bump, invalidated green signal, and the three recorded resume choices.</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="bottom-band" style="grid-template-columns:1.05fr .95fr;margin-top:7px">
+        <div class="bottom-card"><b>Unexpected-scenario playbook</b><span>Named states, not an unchecked green signal: source changed · corrupt file · duplicate target · analyzer crash · empty snapshot.</span></div>
+        <div class="bottom-card" style="border-top-color:var(--danger)"><b>Reality boundary</b><span>Conservative match by affected rule or path. Counts are exposure, not effort or defect counts. A human still approves every patch.</span></div>
+      </div>
+    </div>
+    <div class="speaker-note" hidden>
+      <p><strong>The 24-character APD type-name limit is documented; the 20-character 2027.04 scenario is a simulation.</strong> Do not say Guidewire is tightening the limit in 2027.04. The table is a model of release-change exposure, not a published release note.</p>
+      <p>The generation bumps from 1 to 2 on detection, and the previous green signal is invalidated rather than silently reused. The APD row affects two patches in each case. The removed-API row is broad: 14 patches in both cases, scanned across <span class="mono">gsrc/</span>, <span class="mono">java/</span>, and <span class="mono">plugins/</span>.</p>
+      <p>The three resume choices all clear the green signal and keep a human in the loop; the tool records the choice, it does not approve it. Source changes, corrupt files, duplicate targets, analyzer crashes, and empty snapshots become named states instead of an unchecked green signal.</p>
+      <p>Counts are exposure, not effort or defect counts. Say the boundary plainly: synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.</p>
+    </div>
+  </section>
+
+  <!-- 20 -->
+  <section class="slide" id="slide-20" data-section="Engineering rigor" data-title="Engineering rigor: flaws found and fixed" aria-label="Slide 20 of 23: Engineering rigor">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
           <p class="kicker">Engineering rigor</p>
           <h2>The demo is the surface. The hardening is the work.</h2>
-          <p class="slide-lede"><b>418 tests</b> and a Playwright golden path. <b>18/18</b> recorded freeze hashes recompute. A security contract with archive, XML, YAML, CSRF, CSP, and redaction tests. Adversarial review found real flaws; each row below was fixed and regression-tested.</p>
+          <p class="slide-lede"><b>481 tests</b> and a Playwright golden path. <b>18/18</b> recorded freeze hashes recompute. A security contract with archive, XML, YAML, CSRF, CSP, and redaction tests. Adversarial review found real flaws; each row below was fixed and regression-tested.</p>
         </div>
         <span class="head-badge">Internal adversarial review</span>
       </div>
       <div class="rigor-top">
-        <span class="rigor-badge"><b>418</b> tests collected</span>
+        <span class="rigor-badge"><b>481</b> tests passed</span>
         <span class="rigor-badge"><b>1</b> Playwright golden path</span>
         <span class="rigor-badge"><b>18/18</b> frozen hashes recompute</span>
         <span class="rigor-badge"><b>0</b> raw secret values in artifacts</span>
@@ -1491,14 +1965,14 @@
       </div>
     </div>
     <div class="speaker-note" hidden>
-      <p><strong>This slide is for the engineer in the room.</strong> “The demo surface is small; the hardening is not. 418 tests, a Playwright golden path, 18/18 freeze hashes, and a security contract.”</p>
+      <p><strong>This slide is for the engineer in the room.</strong> “The demo surface is small; the hardening is not. 481 tests, a Playwright golden path, 18/18 freeze hashes, and a security contract.”</p>
       <p>Pick two rows and go deep. “Concurrent decisions: we test 12 simultaneous accepts; all 12 persist, and conflicting actions return 409. Packet evidence: it used to be a 20-row sample; now it is 126 complete items plus the audit appendix. Forged excerpts used to score; now they score zero.”</p>
       <p>Be honest about the table: it is from internal adversarial review, not an external audit. Phrase the YAML and audit items as hardening controls, not published benchmarks. The point is that the flaws were found, fixed, and regression-tested. The seed run has 9 audit events; the two reviewer actions in the demo take it to 11.</p>
     </div>
   </section>
 
-  <!-- 14 -->
-  <section class="slide" id="slide-14" data-section="Novelty & prior art" data-title="What is actually novel" aria-label="Slide 14 of 16: Novelty and prior art">
+  <!-- 21 -->
+  <section class="slide" id="slide-21" data-section="Novelty & prior art" data-title="What is actually novel" aria-label="Slide 21 of 23: Novelty and prior art">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1552,8 +2026,8 @@
     </div>
   </section>
 
-  <!-- 15 -->
-  <section class="slide" id="slide-15" data-section="Viability" data-title="Viability, limitations, kill risks" aria-label="Slide 15 of 16: Viability and limitations">
+  <!-- 22 -->
+  <section class="slide" id="slide-22" data-section="Viability" data-title="Viability, limitations, kill risks" aria-label="Slide 22 of 23: Viability and limitations">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
@@ -1631,8 +2105,8 @@
     </div>
   </section>
 
-  <!-- 16 -->
-  <section class="slide slide--close" id="slide-16" data-section="Close" data-title="Close and ask" aria-label="Slide 16 of 16: Close and ask">
+  <!-- 23 -->
+  <section class="slide slide--close" id="slide-23" data-section="Close" data-title="Close and ask" aria-label="Slide 23 of 23: Close and ask">
     <div class="slide-body">
       <p class="kicker close-kicker">Close</p>
       <h2 class="close-quote">Every claim has evidence.<br>Every unknown has a name.<br><span class="accent">Every change waits for a human.</span></h2>
@@ -1663,7 +2137,7 @@
   <span class="foot-brand">PreFlight · independent research prototype</span>
   <span class="foot-note">Synthetic estate · not affiliated with Guidewire · Official Cloud Assurance: not run</span>
   <div class="foot-mid"><div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div></div>
-  <div class="foot-right"><span class="foot-dot" aria-hidden="true"></span><span>Offline</span><span id="foot-slide">01 / 16</span></div>
+  <div class="foot-right"><span class="foot-dot" aria-hidden="true"></span><span>Offline</span><span id="foot-slide">01 / 23</span></div>
 </footer>
 
 <aside class="notes-panel" id="notes-panel" aria-label="Speaker notes" aria-hidden="true" inert>
@@ -1687,7 +2161,7 @@
         <tr><td>Touch</td><td>Swipe left / right to navigate</td></tr>
       </tbody>
     </table>
-    <p class="help-note">Deep links use <code>#slide-1</code> … <code>#slide-16</code>. The deck has no external fonts, scripts, styles, or network calls. Print produces one 16:9 slide per page. Reduced-motion settings are respected.</p>
+    <p class="help-note">Deep links use <code>#slide-1</code> … <code>#slide-23</code>. The deck has no external fonts, scripts, styles, or network calls. Print produces one 16:9 slide per page. Reduced-motion settings are respected.</p>
   </div>
 </div>
 
