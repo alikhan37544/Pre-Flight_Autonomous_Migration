@@ -6,6 +6,15 @@ PreFlight is an offline, evidence-first review workstation for legacy Guidewire-
 
 > Every claim has evidence; every unknown has a name; every change waits for a human.
 
+### 10-minute demo cut
+
+- **Compact deck:** [`docs/presentation/compact-10min.html`](docs/presentation/compact-10min.html)
+- **Compact PDF:** [`docs/presentation/PreFlight-10min.pdf`](docs/presentation/PreFlight-10min.pdf)
+- **Clean demo visualization:** [`docs/presentation/demo-visual.html`](docs/presentation/demo-visual.html)
+- **Minute-by-minute runbook:** [`docs/presentation/DEMO-10MIN.md`](docs/presentation/DEMO-10MIN.md)
+
+The full 23-slide reference deck remains at [`docs/presentation/index.html`](docs/presentation/index.html).
+
 **Current demo build `v1.1.0-demo` (unreleased)** · **Synthetic demo estate** · **Official Cloud Assurance: not run**
 
 [![CI](https://github.com/alikhan37544/Pre-Flight_Autonomous_Migration/actions/workflows/ci.yml/badge.svg)](https://github.com/alikhan37544/Pre-Flight_Autonomous_Migration/actions/workflows/ci.yml)
