@@ -11,8 +11,8 @@
     "validation": "Playwright at 1920x1080, 1440x900, 1280x720, 1024x768, 390x844: 23 slides; 0 layout/overflow failures at every viewport; 0 console errors; 0 external requests; 10.5px CSS font floor (>=10.08px effective); 390 footer shows the full boundary including Official Cloud Assurance: not run; tagged PDF, 23 pages at 1200 x 675.12 pts, boundary line on every page",
     "pdf_pages": 23,
     "pdf_page_size": "1200 x 675.12 pts",
-    "pdf_sha256": "a1ae9c5739c62f4fcb52ed7c23246e07fcdb20cf1311548d3d8a656ce53593b3",
-    "pdf_bytes": 1234120,
+    "pdf_sha256": "2de0fcac48f0e77b7d46bc54f01cdb81da74010b79efb434a43e673153668645",
+    "pdf_bytes": 1291188,
     "slides_note": "13–19 are the new agent/codebase block; the former 13–16 are now 20–23.",
     "validation_file": "docs/presentation/assets/deck-23/validation.json",
     "generated_at": "2026-11-11T14:40:24Z"
@@ -554,7 +554,7 @@
       "title": "Every claim has evidence. Every unknown has a name. Every change waits for a human.",
       "key_points": [
         "Ask: one authorised estate, two blind SME annotators, hard feedback",
-        "Saundarya Singh · independent research prototype · github.com/SaundaryaSingh/Preflight-CloudMigration · MIT",
+        "Saundarya Singh · independent research prototype · github.com/alikhan37544/Pre-Flight_Autonomous_Migration · MIT",
         "Disclaimer: independent, synthetic, not affiliated, Cloud Assurance not run"
       ],
       "sources": []

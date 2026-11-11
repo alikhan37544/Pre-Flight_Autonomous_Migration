@@ -312,7 +312,7 @@ Not the algorithms. Feature location, traceability recovery, reflexion models, a
 A real estate where supported parsers miss a large share of files; blind human annotators disagreeing with the links; line-level evaluation collapsing the finding scores; or a reviewer preferring a spreadsheet to the packet. Those are the experiments that matter.
 
 **12. What do you want from us?**
-One authorised, anonymised pilot estate for one LOB; two blind SME annotators; and hard feedback on the claims, packet, and disposition model. Contact: Saundarya Singh, independent research prototype; repository `github.com/SaundaryaSingh/Preflight-CloudMigration`; MIT.
+One authorised, anonymised pilot estate for one LOB; two blind SME annotators; and hard feedback on the claims, packet, and disposition model. Contact: Saundarya Singh, independent research prototype; repository `github.com/alikhan37544/Pre-Flight_Autonomous_Migration`; MIT.
 
 ---
 

@@ -6,11 +6,11 @@ PreFlight is an offline, evidence-first review workstation for legacy Guidewire-
 
 > Every claim has evidence; every unknown has a name; every change waits for a human.
 
-**[Release `v1.0.0`](https://github.com/SaundaryaSingh/Preflight-CloudMigration/releases/tag/v1.0.0)** · **Current demo build `v1.1.0-demo` (unreleased)** · **Synthetic demo estate** · **Official Cloud Assurance: not run**
+**Current demo build `v1.1.0-demo` (unreleased)** · **Synthetic demo estate** · **Official Cloud Assurance: not run**
 
-[![CI](https://github.com/SaundaryaSingh/Preflight-CloudMigration/actions/workflows/ci.yml/badge.svg)](https://github.com/SaundaryaSingh/Preflight-CloudMigration/actions/workflows/ci.yml)
+[![CI](https://github.com/alikhan37544/Pre-Flight_Autonomous_Migration/actions/workflows/ci.yml/badge.svg)](https://github.com/alikhan37544/Pre-Flight_Autonomous_Migration/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-![Tests](https://img.shields.io/badge/tests-481%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-520%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Status](https://img.shields.io/badge/status-demo--ready-informational)
 
@@ -162,7 +162,7 @@ These are controlled synthetic-fixture measurements, not a benchmark and not a g
 Requirements: Linux/macOS, Python 3.12, `uv`, and `tmux` for the demo server.
 
 ```bash
-git clone https://github.com/SaundaryaSingh/Preflight-CloudMigration.git
+git clone https://github.com/alikhan37544/Pre-Flight_Autonomous_Migration.git
 cd Preflight-CloudMigration
 make install       # create .venv, install deps, download Chromium
 make demo          # generate fixtures, seed R-DEMO-001, start tmux server
@@ -383,7 +383,7 @@ MIT — see [`LICENSE`](LICENSE).
   title  = {PreFlight: Independent Cloud-Readiness Review for Guidewire-Style Estates},
   author = {Singh, Saundarya},
   year   = {2026},
-  url    = {https://github.com/SaundaryaSingh/Preflight-CloudMigration},
+  url    = {https://github.com/alikhan37544/Pre-Flight_Autonomous_Migration},
   note   = {Offline evidence-first review prototype; synthetic fixtures}
 }
 ```

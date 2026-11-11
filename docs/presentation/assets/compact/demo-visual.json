@@ -1,0 +1,1054 @@
+{
+  "generated_at": "2026-11-11T18:13:02+00:00",
+  "visual": "Five agents. One evidence chain.",
+  "source": "docs/presentation/demo-visual.html",
+  "source_sha256": "0e0da4f6ce37ea6284a778ecd6fc5f800b203b3d982c5a52eacf711b4b6fa376",
+  "capture_url": "http://127.0.0.1:8095/demo-visual.html",
+  "capture": {
+    "browser": "chromium",
+    "device_scale_factor": 1,
+    "full_page": false,
+    "reduced_motion": "no-preference",
+    "capture_state": "autoplay sequence complete at step 6/6; 1.6 s settle after completion",
+    "external_requests_blocked": [],
+    "browser_version": "158.0.8127.18"
+  },
+  "checks": {
+    "console_errors": 0,
+    "page_errors": 0,
+    "external_requests": 0,
+    "blocked_external_requests": 0,
+    "horizontal_overflow": false,
+    "vertical_overflow": false,
+    "mobile_readability": true,
+    "feature_rework_label": true,
+    "codebase_roles_and_arrow": true,
+    "missing_screenshots": [],
+    "all_passed": true
+  },
+  "viewports": {
+    "1920x1080": {
+      "width": 1920,
+      "height": 1080,
+      "screenshot": {
+        "path": "docs/presentation/assets/compact/demo-visual-1920x1080.png",
+        "width": 1920,
+        "height": 1080,
+        "bytes": 243127,
+        "sha256": "de1e07e1962108b75dfc22c87f66f5b721b81dee06c8f8ef4810125d9aed0dc6"
+      },
+      "metrics": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1
+        },
+        "document": {
+          "scrollWidth": 1920,
+          "clientWidth": 1920,
+          "scrollHeight": 1080,
+          "clientHeight": 1080,
+          "bodyScrollWidth": 1920,
+          "bodyClientWidth": 1920,
+          "bodyScrollHeight": 1080,
+          "bodyClientHeight": 1080
+        },
+        "stage": {
+          "scrollWidth": 1920,
+          "clientWidth": 1920,
+          "scrollHeight": 1080,
+          "clientHeight": 1080
+        },
+        "horizontalOverflow": false,
+        "verticalOverflow": false,
+        "sections": [
+          {
+            "selector": ".masthead",
+            "rect": {
+              "top": 23.8,
+              "bottom": 192.6,
+              "left": 59.5,
+              "right": 1860.5,
+              "width": 1801,
+              "height": 168.8
+            }
+          },
+          {
+            "selector": ".chain-section",
+            "rect": {
+              "top": 267.9,
+              "bottom": 636.6,
+              "left": 59.5,
+              "right": 1860.5,
+              "width": 1801,
+              "height": 368.7
+            }
+          },
+          {
+            "selector": ".lane",
+            "rect": {
+              "top": 711.9,
+              "bottom": 800.6,
+              "left": 59.5,
+              "right": 1860.5,
+              "width": 1801,
+              "height": 88.7
+            }
+          },
+          {
+            "selector": ".reality",
+            "rect": {
+              "top": 875.9,
+              "bottom": 940.9,
+              "left": 59.5,
+              "right": 1860.5,
+              "width": 1801,
+              "height": 65
+            }
+          },
+          {
+            "selector": ".foot",
+            "rect": {
+              "top": 1016.3,
+              "bottom": 1056.3,
+              "left": 59.5,
+              "right": 1860.5,
+              "width": 1801,
+              "height": 40
+            }
+          }
+        ],
+        "cards": [
+          {
+            "name": "Scout",
+            "big": "300",
+            "unit": "files",
+            "detail": "101 evidence · 31 links",
+            "foot": "PA‑VEH‑01 · 24 findings",
+            "rect": {
+              "top": 322.1,
+              "bottom": 564.6,
+              "left": 59.5,
+              "right": 400.5,
+              "width": 341,
+              "height": 242.5
+            },
+            "scrollHeight": 239,
+            "clientHeight": 239,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Architect",
+            "big": "12 → 5",
+            "unit": "dispositions → packages",
+            "detail": "5 local drafts · all pending",
+            "foot": "schema · mapping · updater · codegen · API",
+            "rect": {
+              "top": 322.1,
+              "bottom": 564.6,
+              "left": 424.5,
+              "right": 765.5,
+              "width": 341,
+              "height": 242.5
+            },
+            "scrollHeight": 239,
+            "clientHeight": 239,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Guardian",
+            "big": "11",
+            "unit": "human gates",
+            "detail": "3 assumptions + 8 rule groups · 6 high",
+            "foot": "0 resolved · no gate can auto-close",
+            "rect": {
+              "top": 322.1,
+              "bottom": 564.6,
+              "left": 789.5,
+              "right": 1130.5,
+              "width": 341,
+              "height": 242.5
+            },
+            "scrollHeight": 239,
+            "clientHeight": 239,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Critic",
+            "big": "7/7",
+            "unit": "machine checks",
+            "detail": "0 auto-approvals",
+            "foot": "package integrity · every file accounted for",
+            "rect": {
+              "top": 322.1,
+              "bottom": 564.6,
+              "left": 1154.5,
+              "right": 1495.5,
+              "width": 341,
+              "height": 242.5
+            },
+            "scrollHeight": 239,
+            "clientHeight": 239,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Scribe",
+            "big": "8",
+            "unit": "sealed files",
+            "detail": "plan · report · bundle · audit",
+            "foot": "hash-sealed · not an approval",
+            "rect": {
+              "top": 322.1,
+              "bottom": 564.6,
+              "left": 1519.5,
+              "right": 1860.5,
+              "width": 341,
+              "height": 242.5
+            },
+            "scrollHeight": 239,
+            "clientHeight": 239,
+            "verticalOverflow": false
+          }
+        ],
+        "cardsOverflow": false,
+        "step": "6",
+        "mode": "feature",
+        "title": "Five agents. One evidence chain.",
+        "subline": "Synthetic Guidewire-style migration rehearsal · every change waits for a human",
+        "sectionNote": "Straight handoff · nothing auto-approved",
+        "reworkLabel": "codebase-only rework",
+        "fifthAgent": "Scribe",
+        "gates": "11",
+        "approved": "0",
+        "pending": "all",
+        "agents": [
+          "Scout",
+          "Architect",
+          "Guardian",
+          "Critic",
+          "Scribe"
+        ],
+        "playLabel": "Replay",
+        "stepDisabled": true,
+        "phaseLabel": "Human gates open",
+        "reducedMotion": false,
+        "text": {
+          "labelMinPx": 8.5,
+          "bodyMinPx": 10.5,
+          "smallCount": 45,
+          "boundaryDisplay": "block",
+          "boundaryText": "Synthetic fixtures · local-only · no tenant contacted · not affiliated with Guidewire",
+          "boundaryVisible": true,
+          "controlsWithinViewport": true,
+          "controlsBottom": 1056.3
+        },
+        "reworkArrowVisible": true
+      },
+      "feature_mode": {
+        "reworkLabel": "codebase-only rework",
+        "sectionNote": "Straight handoff · nothing auto-approved",
+        "reworkArrowVisible": true,
+        "agents": [
+          "Scout",
+          "Architect",
+          "Guardian",
+          "Critic",
+          "Scribe"
+        ],
+        "gates": "11"
+      },
+      "network": {
+        "requests": [
+          "http://127.0.0.1:8095/demo-visual.html"
+        ],
+        "external_requests": [],
+        "blocked_external_requests": [],
+        "failed_requests": []
+      },
+      "console_errors": [],
+      "page_errors": [],
+      "checks": {
+        "screenshot_size_matches_viewport": true,
+        "console_errors_zero": true,
+        "page_errors_zero": true,
+        "external_requests_zero": true,
+        "horizontal_overflow_free": true,
+        "vertical_overflow_free": true,
+        "cards_no_overflow": true,
+        "sequence_complete": true,
+        "feature_rework_label_is_codebase_only": true,
+        "mobile_readable": true
+      }
+    },
+    "1440x900": {
+      "width": 1440,
+      "height": 900,
+      "screenshot": {
+        "path": "docs/presentation/assets/compact/demo-visual-1440x900.png",
+        "width": 1440,
+        "height": 900,
+        "bytes": 225409,
+        "sha256": "91bb212ed71a7a426874957d9e262b98cbdd248c9e53998f07fff4b9e1d0883a"
+      },
+      "metrics": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "dpr": 1
+        },
+        "document": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "scrollHeight": 900,
+          "clientHeight": 900,
+          "bodyScrollWidth": 1440,
+          "bodyClientWidth": 1440,
+          "bodyScrollHeight": 900,
+          "bodyClientHeight": 900
+        },
+        "stage": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "scrollHeight": 900,
+          "clientHeight": 900
+        },
+        "horizontalOverflow": false,
+        "verticalOverflow": false,
+        "sections": [
+          {
+            "selector": ".masthead",
+            "rect": {
+              "top": 19.8,
+              "bottom": 164,
+              "left": 44.6,
+              "right": 1395.4,
+              "width": 1350.8,
+              "height": 144.2
+            }
+          },
+          {
+            "selector": ".chain-section",
+            "rect": {
+              "top": 215.6,
+              "bottom": 547.6,
+              "left": 44.6,
+              "right": 1395.4,
+              "width": 1350.8,
+              "height": 331.9
+            }
+          },
+          {
+            "selector": ".lane",
+            "rect": {
+              "top": 599.3,
+              "bottom": 678.2,
+              "left": 44.6,
+              "right": 1395.4,
+              "width": 1350.8,
+              "height": 78.9
+            }
+          },
+          {
+            "selector": ".reality",
+            "rect": {
+              "top": 729.9,
+              "bottom": 788.5,
+              "left": 44.6,
+              "right": 1395.4,
+              "width": 1350.8,
+              "height": 58.6
+            }
+          },
+          {
+            "selector": ".foot",
+            "rect": {
+              "top": 840.2,
+              "bottom": 880.2,
+              "left": 44.6,
+              "right": 1395.4,
+              "width": 1350.8,
+              "height": 40
+            }
+          }
+        ],
+        "cards": [
+          {
+            "name": "Scout",
+            "big": "300",
+            "unit": "files",
+            "detail": "101 evidence · 31 links",
+            "foot": "PA‑VEH‑01 · 24 findings",
+            "rect": {
+              "top": 267.1,
+              "bottom": 486.4,
+              "left": 44.6,
+              "right": 297.5,
+              "width": 252.9,
+              "height": 219.3
+            },
+            "scrollHeight": 215,
+            "clientHeight": 215,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Architect",
+            "big": "12 → 5",
+            "unit": "dispositions → packages",
+            "detail": "5 local drafts · all pending",
+            "foot": "schema · mapping · updater · codegen · API",
+            "rect": {
+              "top": 267.1,
+              "bottom": 486.4,
+              "left": 319.1,
+              "right": 572,
+              "width": 252.9,
+              "height": 219.3
+            },
+            "scrollHeight": 215,
+            "clientHeight": 215,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Guardian",
+            "big": "11",
+            "unit": "human gates",
+            "detail": "3 assumptions + 8 rule groups · 6 high",
+            "foot": "0 resolved · no gate can auto-close",
+            "rect": {
+              "top": 267.1,
+              "bottom": 486.4,
+              "left": 593.6,
+              "right": 846.4,
+              "width": 252.9,
+              "height": 219.3
+            },
+            "scrollHeight": 215,
+            "clientHeight": 215,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Critic",
+            "big": "7/7",
+            "unit": "machine checks",
+            "detail": "0 auto-approvals",
+            "foot": "package integrity · every file accounted for",
+            "rect": {
+              "top": 267.1,
+              "bottom": 486.4,
+              "left": 868,
+              "right": 1120.9,
+              "width": 252.9,
+              "height": 219.3
+            },
+            "scrollHeight": 215,
+            "clientHeight": 215,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Scribe",
+            "big": "8",
+            "unit": "sealed files",
+            "detail": "plan · report · bundle · audit",
+            "foot": "hash-sealed · not an approval",
+            "rect": {
+              "top": 267.1,
+              "bottom": 486.4,
+              "left": 1142.5,
+              "right": 1395.4,
+              "width": 252.9,
+              "height": 219.3
+            },
+            "scrollHeight": 215,
+            "clientHeight": 215,
+            "verticalOverflow": false
+          }
+        ],
+        "cardsOverflow": false,
+        "step": "6",
+        "mode": "feature",
+        "title": "Five agents. One evidence chain.",
+        "subline": "Synthetic Guidewire-style migration rehearsal · every change waits for a human",
+        "sectionNote": "Straight handoff · nothing auto-approved",
+        "reworkLabel": "codebase-only rework",
+        "fifthAgent": "Scribe",
+        "gates": "11",
+        "approved": "0",
+        "pending": "all",
+        "agents": [
+          "Scout",
+          "Architect",
+          "Guardian",
+          "Critic",
+          "Scribe"
+        ],
+        "playLabel": "Replay",
+        "stepDisabled": true,
+        "phaseLabel": "Human gates open",
+        "reducedMotion": false,
+        "text": {
+          "labelMinPx": 8.5,
+          "bodyMinPx": 9.216,
+          "smallCount": 56,
+          "boundaryDisplay": "block",
+          "boundaryText": "Synthetic fixtures · local-only · no tenant contacted · not affiliated with Guidewire",
+          "boundaryVisible": true,
+          "controlsWithinViewport": true,
+          "controlsBottom": 880.2
+        },
+        "reworkArrowVisible": true
+      },
+      "feature_mode": {
+        "reworkLabel": "codebase-only rework",
+        "sectionNote": "Straight handoff · nothing auto-approved",
+        "reworkArrowVisible": true,
+        "agents": [
+          "Scout",
+          "Architect",
+          "Guardian",
+          "Critic",
+          "Scribe"
+        ],
+        "gates": "11"
+      },
+      "network": {
+        "requests": [
+          "http://127.0.0.1:8095/demo-visual.html"
+        ],
+        "external_requests": [],
+        "blocked_external_requests": [],
+        "failed_requests": []
+      },
+      "console_errors": [],
+      "page_errors": [],
+      "checks": {
+        "screenshot_size_matches_viewport": true,
+        "console_errors_zero": true,
+        "page_errors_zero": true,
+        "external_requests_zero": true,
+        "horizontal_overflow_free": true,
+        "vertical_overflow_free": true,
+        "cards_no_overflow": true,
+        "sequence_complete": true,
+        "feature_rework_label_is_codebase_only": true,
+        "mobile_readable": true
+      }
+    },
+    "390x844": {
+      "width": 390,
+      "height": 844,
+      "screenshot": {
+        "path": "docs/presentation/assets/compact/demo-visual-390x844.png",
+        "width": 390,
+        "height": 844,
+        "bytes": 124334,
+        "sha256": "c65570a09c7fab3948e6b70e56530718a91b5d367c913c54d239d8cb52e1ebdc"
+      },
+      "metrics": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "document": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "scrollHeight": 844,
+          "clientHeight": 844,
+          "bodyScrollWidth": 390,
+          "bodyClientWidth": 390,
+          "bodyScrollHeight": 844,
+          "bodyClientHeight": 844
+        },
+        "stage": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "scrollHeight": 844,
+          "clientHeight": 844
+        },
+        "horizontalOverflow": false,
+        "verticalOverflow": false,
+        "sections": [
+          {
+            "selector": ".masthead",
+            "rect": {
+              "top": 9,
+              "bottom": 155.6,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 146.6
+            }
+          },
+          {
+            "selector": ".chain-section",
+            "rect": {
+              "top": 162,
+              "bottom": 549.9,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 387.9
+            }
+          },
+          {
+            "selector": ".lane",
+            "rect": {
+              "top": 556.4,
+              "bottom": 635.6,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 79.2
+            }
+          },
+          {
+            "selector": ".reality",
+            "rect": {
+              "top": 642,
+              "bottom": 755,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 112.9
+            }
+          },
+          {
+            "selector": ".foot",
+            "rect": {
+              "top": 761.4,
+              "bottom": 835,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 73.6
+            }
+          }
+        ],
+        "cards": [
+          {
+            "name": "Scout",
+            "big": "300",
+            "unit": "files",
+            "detail": "101 evidence · 31 links",
+            "foot": "PA‑VEH‑01 · 24 findings",
+            "rect": {
+              "top": 203,
+              "bottom": 264.6,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 61.6
+            },
+            "scrollHeight": 60,
+            "clientHeight": 60,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Architect",
+            "big": "12 → 5",
+            "unit": "dispositions → packages",
+            "detail": "5 local drafts · all pending",
+            "foot": "schema · mapping · updater · codegen · API",
+            "rect": {
+              "top": 268.6,
+              "bottom": 330.2,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 61.6
+            },
+            "scrollHeight": 60,
+            "clientHeight": 60,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Guardian",
+            "big": "11",
+            "unit": "human gates",
+            "detail": "3 assumptions + 8 rule groups · 6 high",
+            "foot": "0 resolved · no gate can auto-close",
+            "rect": {
+              "top": 334.2,
+              "bottom": 395.8,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 61.6
+            },
+            "scrollHeight": 60,
+            "clientHeight": 60,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Critic",
+            "big": "7/7",
+            "unit": "machine checks",
+            "detail": "0 auto-approvals",
+            "foot": "package integrity · every file accounted for",
+            "rect": {
+              "top": 399.8,
+              "bottom": 461.4,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 61.6
+            },
+            "scrollHeight": 60,
+            "clientHeight": 60,
+            "verticalOverflow": false
+          },
+          {
+            "name": "Scribe",
+            "big": "8",
+            "unit": "sealed files",
+            "detail": "plan · report · bundle · audit",
+            "foot": "hash-sealed · not an approval",
+            "rect": {
+              "top": 465.4,
+              "bottom": 526.9,
+              "left": 13,
+              "right": 377,
+              "width": 364,
+              "height": 61.6
+            },
+            "scrollHeight": 60,
+            "clientHeight": 60,
+            "verticalOverflow": false
+          }
+        ],
+        "cardsOverflow": false,
+        "step": "6",
+        "mode": "feature",
+        "title": "Five agents. One evidence chain.",
+        "subline": "Synthetic Guidewire-style migration rehearsal · every change waits for a human",
+        "sectionNote": "Straight handoff · nothing auto-approved",
+        "reworkLabel": "codebase-only rework",
+        "fifthAgent": "Scribe",
+        "gates": "11",
+        "approved": "0",
+        "pending": "all",
+        "agents": [
+          "Scout",
+          "Architect",
+          "Guardian",
+          "Critic",
+          "Scribe"
+        ],
+        "playLabel": "Replay",
+        "stepDisabled": true,
+        "phaseLabel": "Human gates open",
+        "reducedMotion": false,
+        "text": {
+          "labelMinPx": 11,
+          "bodyMinPx": 14,
+          "smallCount": 0,
+          "boundaryDisplay": "block",
+          "boundaryText": "Synthetic fixtures · local-only · no tenant contacted · not affiliated with Guidewire",
+          "boundaryVisible": true,
+          "controlsWithinViewport": true,
+          "controlsBottom": 835
+        },
+        "reworkArrowVisible": true
+      },
+      "feature_mode": {
+        "reworkLabel": "codebase-only rework",
+        "sectionNote": "Straight handoff · nothing auto-approved",
+        "reworkArrowVisible": true,
+        "agents": [
+          "Scout",
+          "Architect",
+          "Guardian",
+          "Critic",
+          "Scribe"
+        ],
+        "gates": "11"
+      },
+      "network": {
+        "requests": [
+          "http://127.0.0.1:8095/demo-visual.html"
+        ],
+        "external_requests": [],
+        "blocked_external_requests": [],
+        "failed_requests": []
+      },
+      "console_errors": [],
+      "page_errors": [],
+      "checks": {
+        "screenshot_size_matches_viewport": true,
+        "console_errors_zero": true,
+        "page_errors_zero": true,
+        "external_requests_zero": true,
+        "horizontal_overflow_free": true,
+        "vertical_overflow_free": true,
+        "cards_no_overflow": true,
+        "sequence_complete": true,
+        "feature_rework_label_is_codebase_only": true,
+        "mobile_readable": true
+      }
+    }
+  },
+  "codebase_mode_checks": {
+    "1920x1080": {
+      "mode": "codebase",
+      "agents": [
+        {
+          "name": "Scout",
+          "big": "18 / 20",
+          "unit": "findings",
+          "detail": "Cascade 18 / Harbor 20",
+          "foot": "16 code rule families"
+        },
+        {
+          "name": "Architect",
+          "big": "22 / 21",
+          "unit": "patches",
+          "detail": "2 passes per case",
+          "foot": "every patch pending"
+        },
+        {
+          "name": "Guardian",
+          "big": "13",
+          "unit": "machine checks",
+          "detail": "structural re-scan",
+          "foot": "rework gate · no auto-approval"
+        },
+        {
+          "name": "Critic",
+          "big": "7",
+          "unit": "checks",
+          "detail": "10 / 11 human gates · 0 auto-approvals",
+          "foot": "Cascade / Harbor"
+        },
+        {
+          "name": "Planner",
+          "big": "2",
+          "unit": "outputs",
+          "detail": "report + SARIF · no compile",
+          "foot": "all patches pending"
+        }
+      ],
+      "gates": "21",
+      "reworkLabel": "rework path · 2 passes",
+      "reworkArrowVisible": true,
+      "requiredFacts": {
+        "scout_cascade_18": true,
+        "scout_harbor_20": true,
+        "architect_patches_22_21": true,
+        "architect_two_passes": true,
+        "guardian_13_machine_checks": true,
+        "critic_7_checks": true,
+        "critic_ten_eleven_gates": true,
+        "planner_report_sarif": true,
+        "planner_no_compile": true
+      },
+      "horizontalOverflow": false,
+      "verticalOverflow": false,
+      "cardsOverflow": false,
+      "step": "6",
+      "all_required_facts": true
+    },
+    "1440x900": {
+      "mode": "codebase",
+      "agents": [
+        {
+          "name": "Scout",
+          "big": "18 / 20",
+          "unit": "findings",
+          "detail": "Cascade 18 / Harbor 20",
+          "foot": "16 code rule families"
+        },
+        {
+          "name": "Architect",
+          "big": "22 / 21",
+          "unit": "patches",
+          "detail": "2 passes per case",
+          "foot": "every patch pending"
+        },
+        {
+          "name": "Guardian",
+          "big": "13",
+          "unit": "machine checks",
+          "detail": "structural re-scan",
+          "foot": "rework gate · no auto-approval"
+        },
+        {
+          "name": "Critic",
+          "big": "7",
+          "unit": "checks",
+          "detail": "10 / 11 human gates · 0 auto-approvals",
+          "foot": "Cascade / Harbor"
+        },
+        {
+          "name": "Planner",
+          "big": "2",
+          "unit": "outputs",
+          "detail": "report + SARIF · no compile",
+          "foot": "all patches pending"
+        }
+      ],
+      "gates": "21",
+      "reworkLabel": "rework path · 2 passes",
+      "reworkArrowVisible": true,
+      "requiredFacts": {
+        "scout_cascade_18": true,
+        "scout_harbor_20": true,
+        "architect_patches_22_21": true,
+        "architect_two_passes": true,
+        "guardian_13_machine_checks": true,
+        "critic_7_checks": true,
+        "critic_ten_eleven_gates": true,
+        "planner_report_sarif": true,
+        "planner_no_compile": true
+      },
+      "horizontalOverflow": false,
+      "verticalOverflow": false,
+      "cardsOverflow": false,
+      "step": "6",
+      "all_required_facts": true
+    },
+    "390x844": {
+      "mode": "codebase",
+      "agents": [
+        {
+          "name": "Scout",
+          "big": "18 / 20",
+          "unit": "findings",
+          "detail": "Cascade 18 / Harbor 20",
+          "foot": "16 code rule families"
+        },
+        {
+          "name": "Architect",
+          "big": "22 / 21",
+          "unit": "patches",
+          "detail": "2 passes per case",
+          "foot": "every patch pending"
+        },
+        {
+          "name": "Guardian",
+          "big": "13",
+          "unit": "machine checks",
+          "detail": "structural re-scan",
+          "foot": "rework gate · no auto-approval"
+        },
+        {
+          "name": "Critic",
+          "big": "7",
+          "unit": "checks",
+          "detail": "10 / 11 human gates · 0 auto-approvals",
+          "foot": "Cascade / Harbor"
+        },
+        {
+          "name": "Planner",
+          "big": "2",
+          "unit": "outputs",
+          "detail": "report + SARIF · no compile",
+          "foot": "all patches pending"
+        }
+      ],
+      "gates": "21",
+      "reworkLabel": "rework path · 2 passes",
+      "reworkArrowVisible": true,
+      "requiredFacts": {
+        "scout_cascade_18": true,
+        "scout_harbor_20": true,
+        "architect_patches_22_21": true,
+        "architect_two_passes": true,
+        "guardian_13_machine_checks": true,
+        "critic_7_checks": true,
+        "critic_ten_eleven_gates": true,
+        "planner_report_sarif": true,
+        "planner_no_compile": true
+      },
+      "horizontalOverflow": false,
+      "verticalOverflow": false,
+      "cardsOverflow": false,
+      "step": "6",
+      "all_required_facts": true
+    }
+  },
+  "feature_mode_checks": {},
+  "interaction_checks": {
+    "reduced_motion_initial_step": "6",
+    "reduced_motion_initial_lit_agents": 5,
+    "reduced_motion_all_five_lit": true,
+    "reset_step": "0",
+    "arrow_right_step": "2",
+    "mode_after_toggle": "codebase",
+    "mode_gates_after_toggle": "21",
+    "mode_fifth_agent_after_toggle": "Planner",
+    "mode_required_facts": {
+      "scout_cascade_18": true,
+      "scout_harbor_20": true,
+      "architect_patches_22_21": true,
+      "architect_two_passes": true,
+      "guardian_13_machine_checks": true,
+      "critic_7_checks": true,
+      "critic_ten_eleven_gates": true,
+      "planner_report_sarif": true,
+      "planner_no_compile": true
+    },
+    "mode_rework_arrow_visible": true
+  },
+  "accessibility_checks": {
+    "h1_count": 1,
+    "duplicate_ids": [],
+    "buttons": [
+      {
+        "text": "Feature chain",
+        "ariaLabel": null,
+        "pressed": "true",
+        "disabled": false,
+        "height": 24
+      },
+      {
+        "text": "Codebase loop",
+        "ariaLabel": null,
+        "pressed": "false",
+        "disabled": false,
+        "height": 24
+      },
+      {
+        "text": "Replay",
+        "ariaLabel": "Replay sequence",
+        "pressed": null,
+        "disabled": false,
+        "height": 30
+      },
+      {
+        "text": "Step",
+        "ariaLabel": null,
+        "pressed": null,
+        "disabled": true,
+        "height": 30
+      },
+      {
+        "text": "Reset",
+        "ariaLabel": null,
+        "pressed": null,
+        "disabled": false,
+        "height": 30
+      }
+    ],
+    "buttons_without_name": 0,
+    "live_region": {
+      "role": "status",
+      "aria_live": "polite",
+      "atomic": "true"
+    },
+    "main_tabindex": -1,
+    "focus_visible_rule": true,
+    "min_button_height": 24,
+    "first_tab_focus": {
+      "tag": "A",
+      "className": "skip-link",
+      "text": "Skip to the visualization",
+      "outline": "rgb(182, 98, 0) solid 3px"
+    },
+    "second_tab_focus": {
+      "tag": "BUTTON",
+      "id": "mode-feature",
+      "text": "Feature chain",
+      "outline": "rgb(182, 98, 0) solid 3px"
+    }
+  }
+}

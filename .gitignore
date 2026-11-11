@@ -18,3 +18,5 @@ data/.locks/
 codebase/
 
 docs/audits/screenshots/
+
+*.zip

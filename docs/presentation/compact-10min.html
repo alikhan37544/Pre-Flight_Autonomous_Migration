@@ -1,0 +1,1615 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B6B85'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='14' font-weight='700' fill='white' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
+<title>PreFlight — Evidence before the estimate · 10-minute cut</title>
+<style>
+  :root {
+    --ink: #1B2833;
+    --ink-2: #243846;
+    --ink-3: #314959;
+    --canvas: #F6F8FA;
+    --paper: #FFFFFF;
+    --teal: #0B6B85;
+    --teal-dark: #075268;
+    --teal-soft: #E6F2F5;
+    --teal-line: #B8D8E0;
+    --border: #D5DEE5;
+    --border-strong: #B9C7D2;
+    --muted: #52636F;
+    --muted-2: #5B6B78;
+    --amber: #8A5A12;
+    --amber-bg: #FBF1DF;
+    --amber-line: #E7C98F;
+    --danger: #8E2F2F;
+    --danger-bg: #FAEDEC;
+    --success: #2E6A4E;
+    --success-bg: #EAF4EE;
+    --violet: #5B4B8A;
+    --violet-bg: #F0EDF7;
+    --chrome-h: 52px;
+    --foot-h: 36px;
+    --pad-x: clamp(20px, 4vw, 68px);
+    --radius: 4px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { height: 100%; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100%; overflow: hidden;
+    background: var(--ink); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.45;
+    text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid #E0A83B; outline-offset: 3px; }
+  .visually-hidden {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .skip-link {
+    position: fixed; z-index: 100; left: 12px; top: -60px;
+    background: var(--paper); color: var(--ink); padding: 10px 14px;
+    border: 2px solid var(--teal); font-weight: 700; text-decoration: none;
+  }
+  .skip-link:focus { top: 10px; }
+
+  /* Chrome */
+  .chrome {
+    position: fixed; z-index: 60; inset: 0 0 auto 0; height: var(--chrome-h);
+    display: flex; align-items: center; gap: 16px; padding: 0 18px;
+    background: var(--ink); color: #F3F7F9; border-bottom: 1px solid #0E1921;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .brand-mark {
+    width: 28px; height: 28px; display: grid; place-items: center; flex: none;
+    background: var(--teal); color: #fff; font-weight: 800; font-size: 11px;
+    letter-spacing: .02em; border: 1px solid #2D91AA;
+  }
+  .brand-name { font-size: 15px; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; }
+  .brand-divider { width: 1px; height: 18px; background: #3B4C5A; flex: none; }
+  .chrome-mid { flex: 1; min-width: 0; text-align: center; }
+  .section-label {
+    font-size: 11px; letter-spacing: .13em; text-transform: uppercase;
+    color: #8FB8C6; font-weight: 800; white-space: nowrap;
+  }
+  .chrome-actions { display: flex; align-items: center; gap: 6px; flex: none; }
+  .chrome-btn {
+    background: transparent; color: #D8E4EA; border: 1px solid #3B4C5A;
+    padding: 5px 8px; font-size: 11px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px; border-radius: 2px;
+  }
+  .chrome-btn:hover { background: #253845; color: #fff; border-color: #5A7484; }
+  .chrome-btn[aria-pressed="true"] { background: var(--teal); border-color: #2D91AA; color: #fff; }
+  .chrome-btn kbd { font-family: var(--mono); font-size: 11px; color: #AFC4CF; }
+  .chrome-btn[aria-pressed="true"] kbd { color: #D8F0F6; }
+
+  /* Deck */
+  .deck { position: fixed; inset: var(--chrome-h) 0 0 0; background: var(--canvas); overflow: hidden; }
+  .slide {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    background: var(--canvas); overflow: hidden;
+  }
+  .slide.is-active { display: flex; }
+  .slide.is-active .slide-body { animation: slide-enter .32s cubic-bezier(.2, .7, .3, 1) both; }
+  @keyframes slide-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide-body {
+    width: 100%; max-width: 1680px; height: 100%; margin: 0 auto;
+    padding: clamp(16px, 2.35vh, 28px) var(--pad-x) clamp(10px, 1.3vh, 16px);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .slide-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 22px; margin-bottom: clamp(8px, 1.2vh, 14px); flex: none;
+  }
+  .slide-head-main { min-width: 0; }
+  .kicker {
+    font-size: 11px; line-height: 1.2; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--teal); font-weight: 800; margin: 0 0 4px;
+  }
+  h1, h2, h3, p { margin-top: 0; }
+  h2 {
+    font-size: clamp(25px, 2.45vw, 41px); line-height: 1.07; letter-spacing: -.025em;
+    margin: 0 0 6px; max-width: 34ch; font-weight: 800;
+  }
+  .lede {
+    margin: 0; color: var(--muted); line-height: 1.42;
+    font-size: clamp(15px, 1.02vw, 17px); max-width: 92ch;
+  }
+  .head-badge {
+    flex: none; align-self: flex-start; border: 1px solid var(--border-strong);
+    background: var(--paper); color: var(--muted); font-size: 11px;
+    font-weight: 800; letter-spacing: .07em; text-transform: uppercase; padding: 5px 8px;
+  }
+  .head-badge.attention { border-color: var(--amber-line); background: var(--amber-bg); color: var(--amber); }
+
+  /* Slide footer: repeated on every slide and every printed page */
+  .slide-foot {
+    flex: none; height: var(--foot-h); display: flex; align-items: center; gap: 12px;
+    padding: 0 var(--pad-x); background: var(--ink); color: #9FB2BF;
+    border-top: 1px solid #0E1921; font-size: 11px; line-height: 1.25;
+  }
+  .foot-brand { color: #D6E2E9; font-weight: 700; white-space: nowrap; }
+  .foot-boundary { color: #F0D7A6; font-weight: 800; white-space: nowrap; }
+  .foot-progress { flex: 1; min-width: 36px; height: 4px; background: #314654; overflow: hidden; }
+  .foot-bar { height: 100%; width: 0; background: #42A6BF; transition: width .22s ease; }
+  .foot-time { color: #B9CCD6; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+  .foot-time b { color: #EAF2F6; font-weight: 700; }
+  .foot-page { color: #EAF2F6; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+
+  /* Shared pieces */
+  .card {
+    background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 13px 15px; min-width: 0;
+  }
+  .card.tint { background: #EEF4F6; border-color: #C9D9DF; }
+  .card.dark { background: var(--ink); border-color: var(--ink); color: #F2F6F8; }
+  .card h3 { font-size: clamp(17px, 1.2vw, 21px); line-height: 1.18; margin: 0 0 6px; letter-spacing: -.01em; }
+  .card p:last-child { margin-bottom: 0; }
+  .eyebrow {
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800;
+    color: var(--teal); margin: 0 0 5px;
+  }
+  .card.dark .eyebrow { color: #7BC4D6; }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; line-height: 1.4; }
+  .label { font-size: 11px; line-height: 1.3; }
+  .mono { font-family: var(--mono); }
+  .accent { color: var(--teal); }
+  .warn { color: var(--amber); }
+  .danger { color: var(--danger); }
+  .success { color: var(--success); }
+  .nowrap { white-space: nowrap; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px;
+    border: 1px solid var(--border-strong); border-radius: 2px;
+    font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted); background: var(--paper); white-space: nowrap;
+  }
+  .tag.teal { border-color: var(--teal-line); background: var(--teal-soft); color: var(--teal-dark); }
+  .tag.amber { border-color: var(--amber-line); background: var(--amber-bg); color: var(--amber); }
+  .tag.green { border-color: #BCDCC9; background: var(--success-bg); color: var(--success); }
+  .tag.red { border-color: #E7BDB8; background: var(--danger-bg); color: var(--danger); }
+  .tag.dark { border-color: #3C5362; background: #243846; color: #D8E8EE; }
+  .strip {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border: 1px solid var(--border); border-left: 3px solid var(--teal);
+    background: #EFF5F7; padding: 8px 11px; font-size: 14px; line-height: 1.35;
+  }
+  .strip.amber { border-left-color: var(--amber); background: var(--amber-bg); }
+  .strip b { color: var(--ink); }
+  @media (min-width: 901px) { .slide-body .anchor-bottom { margin-top: auto; } }
+  .two-col { display: grid; grid-template-columns: 1.35fr .9fr; gap: 14px; min-height: 0; }
+  .two-col.even { grid-template-columns: 1fr 1fr; }
+  .grow { flex: 1; min-height: 0; }
+  .meta { font-family: var(--mono); font-size: 11px; color: var(--muted-2); line-height: 1.5; }
+  .boundary {
+    border: 1px solid var(--amber-line); border-left: 4px solid var(--amber);
+    background: var(--amber-bg); color: #51360C; padding: 9px 12px;
+    font-size: 14px; line-height: 1.4;
+  }
+  .boundary b { color: var(--amber); }
+
+  /* 1 Title */
+  .title-grid { display: grid; grid-template-columns: 1.45fr .8fr; gap: clamp(22px, 4vw, 64px); align-items: center; flex: 1; }
+  .title-kicker { display: flex; align-items: center; gap: 10px; color: var(--teal); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 12px; }
+  .title-kicker .line { width: 34px; height: 2px; background: var(--teal); display: inline-block; }
+  h1.title-display {
+    font-size: clamp(40px, 5vw, 78px); line-height: .99; letter-spacing: -.045em;
+    margin: 0 0 14px; font-weight: 800; max-width: 13ch;
+  }
+  .title-sub { font-size: clamp(16px, 1.15vw, 19px); line-height: 1.42; color: var(--muted); margin: 0 0 14px; max-width: 64ch; }
+  .promise-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .promise {
+    display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border);
+    background: #fff; padding: 5px 8px; font-size: 14px; color: var(--ink); font-weight: 600;
+  }
+  .promise i { width: 7px; height: 7px; background: var(--teal); display: inline-block; flex: none; }
+  .title-boundary { max-width: 74ch; margin-bottom: 12px; }
+  .title-aside { align-self: center; }
+  .packet-card { background: #fff; border: 1px solid var(--border-strong); border-top: 4px solid var(--teal); padding: 14px 16px; position: relative; }
+  .packet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 9px; border-bottom: 1px solid var(--border); margin-bottom: 5px; }
+  .packet-title { font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
+  .packet-id { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .packet-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid #E8EEF2; font-size: 14px; }
+  .packet-row:last-of-type { border-bottom: 0; }
+  .packet-row b { font-family: var(--mono); font-size: 14px; }
+  .packet-stamp { margin-top: 9px; border: 1px dashed var(--amber-line); background: var(--amber-bg); color: var(--amber); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-align: center; padding: 6px; text-transform: uppercase; }
+  .packet-note { font-size: 14px; line-height: 1.35; color: var(--muted); margin: 9px 0 0; }
+
+  /* 2 Problem */
+  .problem-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; flex: 1; min-height: 0; }
+  .equation { display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--ink); color: #F2F6F8; padding: 17px 14px; text-align: center; }
+  .equation .side { font-size: 14px; color: #AFC4CF; }
+  .equation .side b { display: block; font-size: clamp(19px, 1.5vw, 25px); color: #fff; margin-bottom: 2px; }
+  .equation .neq { color: #F0C97E; font-size: 30px; font-weight: 800; }
+  .problem-flow { display: grid; gap: 8px; margin-top: 10px; }
+  .flow-row { display: grid; grid-template-columns: 27px 1fr; gap: 9px; align-items: start; border: 1px solid var(--border); background: #fff; padding: 9px 10px; }
+  .flow-num { width: 27px; height: 27px; display: grid; place-items: center; background: var(--teal-soft); color: var(--teal-dark); font-weight: 800; font-size: 12px; }
+  .flow-row b { font-size: 14px; }
+  .flow-row p { margin: 1px 0 0; font-size: 14px; color: var(--muted); line-height: 1.35; }
+  .promise-stack { display: grid; gap: 9px; align-content: start; }
+  .promise-card { border: 1px solid var(--border); background: #fff; padding: 11px 13px; display: grid; grid-template-columns: 31px 1fr; gap: 10px; }
+  .promise-card .pn { font-family: var(--mono); font-size: 13px; color: var(--teal); font-weight: 700; padding-top: 1px; }
+  .promise-card b { font-size: 16px; display: block; margin-bottom: 2px; }
+  .promise-card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.35; }
+  .problem-bottom { margin-top: 10px; }
+
+  /* 3 Chain */
+  .chain-wrap { display: flex; align-items: stretch; gap: 6px; }
+  .agent-card { flex: 1; min-width: 0; background: #fff; border: 1px solid var(--border); border-top: 3px solid var(--teal); padding: 10px 10px 9px; position: relative; }
+  .agent-card:nth-child(3) { border-top-color: #2D7D8F; }
+  .agent-card:nth-child(5) { border-top-color: #3D5A6C; }
+  .agent-card:nth-child(7) { border-top-color: var(--amber); }
+  .agent-card:nth-child(9) { border-top-color: var(--violet); }
+  .agent-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .agent-num { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .agent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); animation: agent-pulse 3.2s ease-in-out infinite; }
+  .agent-card:nth-child(3) .agent-dot { animation-delay: .4s; background: #2D7D8F; }
+  .agent-card:nth-child(5) .agent-dot { animation-delay: .8s; background: #3D5A6C; }
+  .agent-card:nth-child(7) .agent-dot { animation-delay: 1.2s; background: var(--amber); }
+  .agent-card:nth-child(9) .agent-dot { animation-delay: 1.6s; background: var(--violet); }
+  @keyframes agent-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(11,107,133,.20); opacity: .8; }
+    50% { box-shadow: 0 0 0 6px rgba(11,107,133,0); opacity: 1; }
+  }
+  .agent-card h3 { font-size: clamp(17px, 1.2vw, 20px); margin: 0 0 1px; }
+  .agent-role { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); font-weight: 800; margin: 0 0 7px; }
+  .agent-counts { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 14px; line-height: 1.25; }
+  .agent-counts b { font-family: var(--mono); font-size: 14px; }
+  .agent-out { margin-top: 6px; padding-top: 6px; border-top: 1px solid #E8EEF2; font-size: 14px; color: var(--muted); line-height: 1.35; }
+  .chain-arrow { flex: none; display: grid; place-items: center; width: 14px; color: var(--teal); font-size: 20px; font-weight: 800; }
+  .chain-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .chain-note { border-left: 3px solid var(--teal); background: #EFF5F7; padding: 8px 11px; font-size: 14px; line-height: 1.38; }
+  .chain-note.amber { border-left-color: var(--amber); background: var(--amber-bg); }
+  .chain-note b { display: block; margin-bottom: 1px; }
+  .status-strip { margin-top: 9px; }
+
+  /* 4 Handoff */
+  .handoff-layout { display: grid; grid-template-columns: 1.7fr .85fr; gap: 14px; flex: 1; min-height: 0; align-items: start; }
+  table.handoff { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border); table-layout: fixed; height: auto; }
+  table.handoff th { background: var(--ink); color: #EAF2F6; text-align: left; padding: 6px 8px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 800; }
+  table.handoff td { border-top: 1px solid #E4EBEF; padding: 6px 8px; vertical-align: top; font-size: 14px; line-height: 1.3; }
+  table.handoff td:first-child { font-weight: 800; color: var(--ink); }
+  table.handoff .why { color: var(--muted); font-size: 14px; }
+  table.handoff .num { font-family: var(--mono); font-weight: 700; }
+  .handoff-aside { display: grid; gap: 10px; align-content: start; }
+  .handoff-aside .card { padding: 11px 12px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border); background: #fff; }
+  .compare > div { padding: 9px 10px; }
+  .compare > div + div { border-left: 1px solid var(--border); }
+  .compare b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .compare span { display: block; font-size: 11px; color: var(--muted); line-height: 1.35; }
+  .why-pending { border-left: 3px solid var(--amber); background: var(--amber-bg); padding: 10px 11px; font-size: 14px; line-height: 1.38; }
+  .why-pending b { color: var(--amber); }
+
+  /* 5 Codebase */
+  .case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .case-card { background: #fff; border: 1px solid var(--border); border-top: 4px solid var(--teal); padding: 12px 14px; }
+  .case-card.harbor { border-top-color: var(--violet); }
+  .case-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 9px; }
+  .case-head h3 { font-size: clamp(19px, 1.45vw, 25px); margin: 0 0 2px; }
+  .case-head .tag { margin-top: 2px; }
+  .case-sub { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 800; margin: 0; }
+  .case-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .case-stat { border: 1px solid #E4EBEF; background: #F9FBFC; padding: 6px 7px; }
+  .case-stat b { display: block; font-family: var(--mono); font-size: clamp(22px, 1.9vw, 31px); line-height: 1; letter-spacing: -.03em; }
+  .case-stat span { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-top: 3px; }
+  .case-stat small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .case-note { font-size: 14px; color: var(--muted); margin: 9px 0 0; line-height: 1.4; }
+  .outcome-shot { margin-top: 9px; border: 1px solid var(--border); background: #fff; padding: 5px; }
+  .outcome-shot img { display: block; width: 100%; height: auto; }
+  .outcome-shot figcaption { font-size: 14px; color: var(--muted); padding: 3px 2px 0; }
+  .codebase-strip { margin-top: 9px; }
+
+  /* 6 Code */
+  .code-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; flex: 1; min-height: 0; }
+  .code-panel { background: #fff; border: 1px solid var(--border); padding: 10px 12px; min-width: 0; }
+  .code-panel h3 { font-size: clamp(16px, 1.15vw, 20px); margin: 0 0 7px; }
+  .code-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 5px 0 3px; }
+  .code-label.after { color: var(--teal); }
+  pre.code {
+    margin: 0; padding: 7px 9px; background: #F7FAFB; border: 1px solid #DDE7EC;
+    border-left: 3px solid #B9C7D2; color: var(--ink); font-family: var(--mono);
+    font-size: 14px; line-height: 1.33; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  pre.code.after { border-left-color: var(--teal); background: #F2F8F9; }
+  .code-note { font-size: 11px; line-height: 1.38; color: var(--muted); margin: 5px 0 0; }
+  .k { color: var(--teal-dark); font-weight: 700; }
+  .s { color: #8A5A12; }
+  .m { color: #667785; }
+  .code-strip { margin-top: 9px; }
+  .glossary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 9px; }
+  .gloss { border-top: 2px solid var(--teal-line); padding-top: 5px; font-size: 14px; line-height: 1.32; color: var(--muted); }
+  .gloss b { display: block; color: var(--ink); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 1px; }
+
+  /* 7 Upgrade */
+  .upgrade-grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 14px; flex: 1; min-height: 0; }
+  .gen-flow { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; margin-bottom: 9px; }
+  .gen-card { border: 1px solid var(--border); background: #F9FBFC; padding: 9px 10px; text-align: center; }
+  .gen-card span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 800; }
+  .gen-card b { display: block; font-size: clamp(14px, 1.05vw, 17px); margin-top: 2px; }
+  .gen-card small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .gen-card.stale { border-color: #E7BDB8; background: var(--danger-bg); }
+  .gen-card.stale b { color: var(--danger); text-decoration: line-through; text-decoration-thickness: 2px; }
+  .gen-arrow { text-align: center; color: var(--teal); font-weight: 800; }
+  .scenario-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .upgrade-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 9px; }
+  .upgrade-mini div { border: 1px solid #E4EBEF; background: #F9FBFC; padding: 7px 8px; font-size: 14px; line-height: 1.3; }
+  .upgrade-mini b { display: block; font-family: var(--mono); font-size: 11px; color: var(--teal); margin-bottom: 2px; }
+  .option-stack { display: grid; gap: 7px; align-content: start; }
+  .option { display: grid; grid-template-columns: 92px 1fr; gap: 9px; border: 1px solid var(--border); background: #fff; padding: 8px 10px; }
+  .option b { font-size: 14px; }
+  .option span { display: block; font-size: 14px; color: var(--muted); line-height: 1.35; }
+  .option code { font-family: var(--mono); font-size: 11px; color: var(--teal-dark); }
+  .exposure-strip { margin-top: 9px; }
+
+  /* 8 Evidence */
+  .evidence-grid { display: grid; grid-template-columns: .95fr 1.1fr; gap: 14px; flex: 1; min-height: 0; }
+  .evidence-card { background: #fff; border: 1px solid var(--border); border-top: 4px solid var(--teal); padding: 11px 13px; }
+  .kv { display: grid; grid-template-columns: 86px 1fr; gap: 4px 8px; margin: 7px 0 0; font-size: 14px; line-height: 1.35; }
+  .kv dt { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 800; padding-top: 1px; }
+  .kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .kv dd code { font-family: var(--mono); font-size: 14px; }
+  .excerpt-hash { margin-top: 8px; border: 1px dashed var(--teal-line); background: var(--teal-soft); padding: 6px 8px; font-family: var(--mono); font-size: 14px; color: var(--teal-dark); overflow-wrap: anywhere; }
+  .evidence-limits { margin: 3px 0 0; padding-left: 17px; font-size: 14px; line-height: 1.38; color: var(--muted); }
+  .evidence-limits li { margin-bottom: 3px; }
+  .audit-stack { display: grid; gap: 9px; align-content: start; }
+  .audit-stack .card { padding: 10px 12px; }
+  .hash-chain { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 6px 0; }
+  .hash-node { border: 1px solid #3C5362; background: #243846; color: #D8E8EE; padding: 3px 6px; font-family: var(--mono); font-size: 11px; }
+  .hash-arrow { color: #7BC4D6; font-size: 13px; }
+  .event-state { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-top: 6px; padding-top: 5px; border-top: 1px solid #E4EBEF; font-size: 14px; line-height: 1.35; }
+  .event-state b { color: var(--teal-dark); }
+  pre.verify {
+    margin: 5px 0 0; padding: 7px 9px; background: #0F1C25; border: 1px solid #2E4656;
+    color: #D8E8EE; font-family: var(--mono); font-size: 14px; line-height: 1.35;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  pre.verify .ok { color: #9FD5B8; }
+  .evidence-strip { margin-top: 9px; }
+
+  /* 9 Demo visual */
+  .demo-body { max-width: none; padding: 0; }
+  .demo-body .demo-visual {
+    margin: 0; padding: 14px var(--pad-x) 10px;
+    background-color: #112029;
+    background-image: linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: #EAF2F6; border-top: 1px solid #2A4250; border-bottom: 1px solid #2A4250;
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+  }
+  .dv-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 8px; }
+  .dv-head h3 { font-size: clamp(20px, 1.55vw, 27px); margin: 0; color: #fff; letter-spacing: -.02em; }
+  .dv-head .eyebrow { color: #7BC4D6; margin-bottom: 2px; }
+  .demo-link { color: #8FD3E1; font-size: 14px; font-weight: 800; text-decoration: none; border-bottom: 1px solid #3C6674; white-space: nowrap; padding-bottom: 1px; }
+  .demo-link:hover { color: #fff; border-bottom-color: #8FD3E1; }
+  .dv-lane { border: 1px solid #2C4655; background: rgba(255,255,255,.025); padding: 7px 9px; margin-bottom: 7px; }
+  .lane-title { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: #8FB8C6; font-weight: 800; margin-bottom: 5px; }
+  .flow { display: flex; align-items: stretch; gap: 4px; }
+  .dnode { flex: 1; min-width: 0; border: 1px solid #355160; background: #1A2E3A; padding: 6px 7px; position: relative; }
+  .dnode b { display: block; font-size: 14px; color: #fff; line-height: 1.2; }
+  .dnode span { display: block; font-size: 11px; color: #B7CCD6; line-height: 1.35; }
+  .dnode .big { display: inline; font-family: var(--mono); font-size: 17px; color: #fff; font-weight: 800; }
+  .dnode .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #42A6BF; margin-right: 5px; animation: agent-pulse 3.2s ease-in-out infinite; }
+  .dconn { flex: none; width: 18px; display: grid; place-items: center; color: #4C8EA3; font-size: 16px; }
+  .dconn::before { content: ""; width: 100%; height: 2px; background: linear-gradient(90deg, rgba(66,166,191,.15), rgba(66,166,191,.9), rgba(66,166,191,.15)); background-size: 200% 100%; animation: connector-shimmer 4.5s linear infinite; }
+  @keyframes connector-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  .dv-code .dnode { border-color: #4A405E; background: #241F31; }
+  .dv-code .dnode b { color: #E9E0FA; }
+  .dv-code .dnode span { color: #C8BEDD; }
+  .dv-code .dconn::before { background: linear-gradient(90deg, rgba(139,119,190,.15), rgba(180,160,230,.9), rgba(139,119,190,.15)); background-size: 200% 100%; }
+  .authority-band { flex: 1; min-height: 82px; display: flex; align-items: center; justify-content: center; gap: 12px; margin: 7px 0 5px; }
+  .auth-node { border: 1px solid #355160; background: #162832; padding: 9px 14px; min-width: 250px; }
+  .auth-node .eyebrow { color: #7BC4D6; margin-bottom: 2px; }
+  .auth-node b { display: block; color: #fff; font-size: 16px; line-height: 1.2; }
+  .auth-node span { display: block; color: #B7CCD6; font-size: 11px; margin-top: 2px; }
+  .auth-node.human { border-color: #E7C98F; background: #2B2419; }
+  .auth-node.human .eyebrow { color: #F0C97E; }
+  .auth-node.human b { color: #FBE7C2; }
+  .auth-arrow { color: #F0C97E; font-size: 24px; font-weight: 800; }
+  .loopback { display: grid; grid-template-rows: 18px auto; justify-items: center; gap: 1px; margin-top: 1px; color: #B7A8D9; font-size: 11px; line-height: 1.2; }
+  .loopback svg { width: 100%; height: 18px; overflow: visible; }
+  .loopback path { fill: none; stroke: currentColor; stroke-width: 2; }
+  .loopback-label { white-space: nowrap; }
+  .dv-foot { display: flex; flex-wrap: wrap; gap: 5px 9px; align-items: center; margin-top: auto; padding-top: 5px; border-top: 1px solid #2C4655; font-size: 11px; color: #B7CCD6; }
+  .dv-foot b { color: #fff; font-family: var(--mono); }
+  .dv-foot .amber { color: #F0C97E; font-weight: 800; }
+  .dv-note { font-size: 11px; color: #8FB8C6; margin: 5px 0 0; }
+
+  /* 10 Rigor */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 9px; }
+  .stat-card { border: 1px solid var(--border); background: #fff; padding: 9px 11px; min-width: 0; }
+  .stat-card .stat-num { font-size: clamp(25px, 2.35vw, 39px); font-weight: 800; line-height: 1; letter-spacing: -.04em; }
+  .stat-card .stat-num.text { font-size: clamp(18px, 1.4vw, 23px); letter-spacing: -.02em; }
+  .stat-card .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 800; margin-top: 4px; line-height: 1.3; }
+  .rigor-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; flex: 1; min-height: 0; }
+  .rigor-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }
+  .rigor-list li { display: grid; grid-template-columns: 16px 1fr; gap: 6px; font-size: 14px; line-height: 1.35; }
+  .rigor-list li::before { content: "✓"; color: var(--teal); font-weight: 800; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .rigor-strip { margin-top: 9px; }
+
+  /* 11 Boundary */
+  .boundary-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; flex: 1; min-height: 0; }
+  .boundary-left { display: grid; gap: 8px; align-content: start; }
+  .boundary-left .card { padding: 9px 11px; }
+  .boundary-left ul { margin: 0; padding-left: 16px; font-size: 14px; line-height: 1.35; }
+  .boundary-left li { margin-bottom: 2px; }
+  .ladder { padding: 10px 12px; }
+  .rung { display: grid; grid-template-columns: 25px 1fr auto; gap: 7px; align-items: start; padding: 7px 0; border-bottom: 1px solid #E4EBEF; }
+  .rung:last-child { border-bottom: 0; }
+  .rung .n { font-family: var(--mono); font-size: 11px; color: var(--muted); padding-top: 2px; }
+  .rung b { display: block; font-size: 14px; line-height: 1.25; }
+  .rung span.d { display: block; font-size: 11px; color: var(--muted); line-height: 1.35; margin-top: 1px; }
+  .rung.current { background: var(--teal-soft); margin: 0 -6px; padding: 7px 6px; border-bottom-color: var(--teal-line); }
+  .rung.current b { color: var(--teal-dark); }
+  .official-badge { border: 1px solid var(--amber-line); background: var(--amber-bg); color: var(--amber); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 5px 7px; text-align: center; margin-bottom: 7px; }
+  .ladder-note { margin: 8px 0 0; padding: 7px 9px; background: var(--amber-bg); border-left: 3px solid var(--amber-line); color: #51360C; font-size: 14px; line-height: 1.35; }
+  .ladder-note b { color: var(--amber); }
+
+  /* 12 Close */
+  .close-wrap { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1200px; }
+  .close-lines { font-size: clamp(32px, 3.6vw, 58px); line-height: 1.08; letter-spacing: -.035em; margin: 0 0 10px; max-width: 30ch; }
+  .close-sub { font-size: clamp(16px, 1.1vw, 18px); color: var(--muted); max-width: 70ch; margin: 0 0 16px; }
+  .ask-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .ask { border: 1px solid var(--border); background: #fff; padding: 10px 12px; }
+  .ask b { display: block; font-size: 15px; margin-bottom: 2px; }
+  .ask span { display: block; font-size: 14px; color: var(--muted); line-height: 1.35; }
+  .ask-line { font-size: 15px; line-height: 1.4; border-left: 4px solid var(--teal); background: #EFF5F7; padding: 8px 11px; margin: 0 0 8px; }
+  .close-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 11px; color: var(--muted); }
+  .close-meta b { color: var(--ink); }
+  .disclaimer { font-size: 11px; line-height: 1.4; color: var(--muted); margin: 7px 0 0; }
+
+  /* Notes and help */
+  .notes-panel {
+    position: fixed; z-index: 80; top: var(--chrome-h); right: 0; bottom: 0; width: min(430px, 92vw);
+    background: #14242E; color: #D8E4EA; border-left: 1px solid #3A4F5D;
+    transform: translateX(102%); visibility: hidden; pointer-events: none;
+    transition: transform .22s ease, visibility 0s linear .22s; display: flex; flex-direction: column;
+  }
+  .notes-panel.open { transform: translateX(0); visibility: visible; pointer-events: auto; transition: transform .22s ease, visibility 0s; }
+  .notes-head { padding: 11px 14px; border-bottom: 1px solid #3A4F5D; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .notes-head h2 { font-size: 12px; margin: 0; letter-spacing: .08em; text-transform: uppercase; color: #8FD3E1; }
+  .notes-close { background: transparent; border: 1px solid #4B6270; color: #DCE8EE; width: 28px; height: 28px; cursor: pointer; }
+  .notes-body { padding: 14px; overflow-y: auto; font-size: 14px; line-height: 1.5; color: #C9D9E1; }
+  .notes-body p { margin: 0 0 10px; }
+  .notes-body strong { color: #FFFFFF; }
+  .notes-body code { font-family: var(--mono); font-size: 14px; color: #F0D7A6; }
+  .help-backdrop {
+    position: fixed; z-index: 90; inset: 0; display: none; align-items: center; justify-content: center;
+    padding: 18px; background: rgba(8, 18, 24, .72);
+  }
+  .help-backdrop.open { display: flex; }
+  .help { width: min(560px, 96vw); max-height: 88vh; overflow-y: auto; background: var(--paper); color: var(--ink); border: 1px solid var(--border-strong); padding: 18px; }
+  .help-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .help h2 { font-size: 22px; margin: 0; }
+  .help-close { border: 1px solid var(--border-strong); background: var(--paper); width: 32px; height: 32px; cursor: pointer; font-weight: 800; }
+  .help table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .help th, .help td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  .help th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .help kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--border-strong); background: #F3F6F8; padding: 2px 5px; border-radius: 2px; white-space: nowrap; }
+  .help-note { font-size: 11px; color: var(--muted); line-height: 1.45; margin-top: 10px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  }
+
+  @media (min-width: 1700px) {
+    .dv-head h3 { font-size: 30px; }
+    .lane-title { font-size: 12px; }
+    .dnode { padding: 10px 12px; }
+    .dnode b { font-size: 16px; }
+    .dnode span { font-size: 13px; }
+    .dnode .big { font-size: 21px; }
+    .dv-lane { padding: 10px 12px; margin-bottom: 9px; }
+    .auth-node b { font-size: 18px; }
+    .auth-node span { font-size: 12px; }
+    .dv-foot { font-size: 12px; }
+    .dv-note { font-size: 12px; }
+  }
+
+  @media (max-width: 1100px) {
+    .agent-counts { flex-direction: column; gap: 1px; }
+  }
+
+  @media (max-width: 1200px), (max-height: 780px) {
+    :root { --chrome-h: 46px; --foot-h: 32px; --pad-x: clamp(18px, 3.4vw, 40px); }
+    .chrome { gap: 10px; padding: 0 12px; }
+    .brand-mark { width: 25px; height: 25px; font-size: 11px; }
+    .brand-name { font-size: 13px; }
+    .chrome-btn { padding: 4px 6px; font-size: 11px; }
+    .slide-body { padding-top: 12px; padding-bottom: 8px; }
+    .slide-head { margin-bottom: 7px; }
+    h2 { font-size: clamp(23px, 2.3vw, 28px); }
+    .lede { font-size: 14px; }
+    .slide-foot { font-size: 11px; gap: 9px; }
+    .card { padding: 10px 11px; }
+    .agent-card { padding: 8px 8px 7px; }
+    .case-card { padding: 9px 10px; }
+    .stat-card { padding: 7px 9px; }
+    .option { padding: 6px 8px; grid-template-columns: 82px 1fr; }
+    .glossary { gap: 5px; }
+    .gloss { font-size: 14px; }
+  }
+
+  @media (max-width: 900px) {
+    html { scroll-padding-top: 58px; }
+    body { overflow: auto; background: var(--canvas); }
+    .chrome { position: sticky; top: 0; height: 50px; }
+    .slide { scroll-margin-top: 58px; }
+    .deck { position: static; inset: auto; overflow: visible; background: var(--canvas); }
+    .slide { position: relative; inset: auto; display: none; min-height: calc(100dvh - 50px); overflow: visible; }
+    .slide.is-active { display: flex; }
+    .slide-body { width: 100%; max-width: none; height: auto; min-height: calc(100dvh - 50px); padding: 18px 16px 14px; }
+    .demo-body { padding: 0; }
+    .title-grid { grid-template-columns: 1fr; gap: 18px; align-items: start; }
+    .title-aside { display: block; }
+    h1.title-display { font-size: clamp(34px, 9vw, 54px); max-width: 15ch; }
+    h2 { font-size: 26px; }
+    .lede { font-size: 15px; }
+    .slide-head { gap: 10px; }
+    .head-badge { font-size: 11px; padding: 4px 6px; }
+    .problem-grid, .two-col, .chain-notes, .handoff-layout, .case-grid, .code-columns, .upgrade-grid, .evidence-grid, .rigor-grid, .boundary-grid, .ask-grid { grid-template-columns: 1fr; }
+    .chain-wrap { flex-direction: column; gap: 5px; }
+    .chain-arrow { width: 100%; height: 14px; font-size: 16px; transform: rotate(90deg); }
+    .gen-flow { grid-template-columns: 1fr; gap: 4px; }
+    .gen-arrow { transform: rotate(90deg); line-height: 1; }
+    .upgrade-mini { grid-template-columns: 1fr; }
+    table.handoff, table.handoff thead, table.handoff tbody, table.handoff tr, table.handoff td { display: block; width: 100%; }
+    table.handoff thead { display: none; }
+    table.handoff tr { border: 1px solid var(--border); margin-bottom: 8px; background: #fff; }
+    table.handoff td { border-top: 0; padding: 6px 10px; }
+    table.handoff td:first-child { background: var(--teal-soft); font-size: 15px; }
+    table.handoff td:before { content: attr(data-label) " · "; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 800; }
+    table.handoff td:first-child:before { display: none; }
+    .agent-card { border-top-width: 3px; }
+    .agent-counts { font-size: 14px; }
+    .agent-out { font-size: 14px; }
+    .problem-flow { margin-top: 8px; }
+    .equation { padding: 13px 10px; }
+    .equation .neq { font-size: 25px; }
+    .case-stats { grid-template-columns: repeat(2, 1fr); }
+    .stat-row { grid-template-columns: 1fr 1fr; }
+    .glossary { grid-template-columns: 1fr 1fr; }
+    .gloss { font-size: 14px; }
+    .outcome-shot { display: none; }
+    .demo-body .demo-visual { margin: 0; padding: 12px 16px 10px; }
+    .flow { flex-direction: column; }
+    .dconn { width: 100%; height: 12px; }
+    .dconn::before { width: 2px; height: 100%; background: linear-gradient(180deg, rgba(66,166,191,.15), rgba(66,166,191,.9), rgba(66,166,191,.15)); background-size: 100% 200%; animation: none; }
+    .dv-code .dconn::before { background: linear-gradient(180deg, rgba(139,119,190,.15), rgba(180,160,230,.9), rgba(139,119,190,.15)); background-size: 100% 200%; }
+    .dv-head { flex-direction: column; gap: 5px; }
+    .demo-link { white-space: normal; }
+    .authority-band { flex-direction: column; gap: 5px; }
+    .auth-node { min-width: 0; width: 100%; }
+    .auth-arrow { transform: rotate(90deg); line-height: 1; }
+    .loopback { display: flex; justify-content: flex-start; }
+    .loopback svg { display: none; }
+    .loopback-label { white-space: normal; }
+    .slide-foot { height: auto; min-height: 58px; flex-wrap: wrap; padding: 7px 16px; gap: 5px 10px; }
+    .foot-brand { font-size: 11px; }
+    .foot-boundary { order: 1; width: 100%; font-size: 11px; white-space: normal; }
+    .foot-progress { order: 4; flex-basis: 100%; min-width: 100%; }
+    .foot-time, .foot-page { order: 3; font-size: 11px; }
+    .foot-page { margin-left: auto; }
+    .notes-panel { top: 50px; bottom: 0; }
+    .outcome-shot, .shot { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .slide-head { display: block; }
+    .slide-head-main { width: 100%; }
+    .head-badge { display: inline-block; margin-top: 7px; }
+    h2, .lede { max-width: none; }
+  }
+
+  @media (max-width: 440px) {
+    .chrome-mid, .brand-divider { display: none; }
+    .chrome { gap: 7px; }
+    .chrome-actions { margin-left: auto; }
+    .chrome-btn kbd { display: none; }
+    .chrome-btn { padding: 4px 6px; }
+    .title-kicker { font-size: 11px; }
+    .promise { font-size: 14px; }
+    .case-head { flex-direction: column; gap: 4px; }
+    .stat-row { grid-template-columns: 1fr; }
+    .glossary { grid-template-columns: 1fr; }
+    .option { grid-template-columns: 1fr; gap: 2px; }
+    .close-lines { font-size: 31px; }
+  }
+
+  @page { size: 1600px 900px; margin: 0; }
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html, body { height: auto; overflow: visible; background: #fff; }
+    .chrome, .notes-panel, .help-backdrop, .skip-link { display: none !important; }
+    .deck { position: static; overflow: visible; background: var(--canvas); }
+    .slide {
+      display: flex !important; position: relative; inset: auto;
+      width: 1600px; height: 900px; overflow: hidden; page-break-after: always; break-after: page;
+      background: var(--canvas);
+    }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    .slide-body { width: 100%; max-width: none; height: 100%; padding: 26px 54px 12px; animation: none !important; }
+    .demo-body { padding: 0; }
+    .slide-foot {
+      height: 38px; display: flex !important; background: #fff !important;
+      color: #1B2833 !important; border-top: 2px solid #1B2833 !important;
+    }
+    .foot-brand, .foot-time, .foot-page { color: #1B2833 !important; }
+    .foot-time b { color: #1B2833 !important; }
+    .foot-boundary {
+      color: #51360C !important; background: #FBF1DF !important;
+      border: 1px solid #8A5A12; padding: 1px 5px;
+    }
+    .foot-progress { background: #D5DEE5 !important; border: 1px solid #B9C7D2; }
+    .foot-bar { background: #0B6B85 !important; }
+    .slide.is-active .slide-body { animation: none !important; }
+    .demo-body .demo-visual {
+      margin: 0; padding: 14px 54px 10px;
+      background: #fff !important; background-image: none !important;
+      color: #1B2833 !important; border-top: 1px solid #1B2833; border-bottom: 1px solid #1B2833;
+    }
+    .dv-head h3, .lane-title, .dnode b, .dnode span, .dnode .big,
+    .dv-foot, .dv-foot b, .dv-note, .auth-node b, .auth-node span { color: #1B2833 !important; }
+    .dv-head .eyebrow, .auth-node .eyebrow, .demo-link { color: #0B6B85 !important; }
+    .dnode { background: #F6F8FA !important; border-color: #B9C7D2 !important; }
+    .dv-code .dnode { background: #F0EDF7 !important; border-color: #B9A8D6 !important; }
+    .dv-code .dnode b, .dv-code .dnode span, .dv-code .dnode .big { color: #3F2F63 !important; }
+    .dconn::before { background: #0B6B85 !important; }
+    .dv-code .dconn::before { background: #5B4B8A !important; }
+    .loopback { color: #5B4B8A !important; }
+    .auth-node { background: #F6F8FA !important; border-color: #B9C7D2 !important; }
+    .auth-node.human { background: #FBF1DF !important; border-color: #8A5A12 !important; }
+    .auth-node.human b { color: #51360C !important; }
+    .auth-node.human .eyebrow, .dv-foot .amber { color: #8A5A12 !important; }
+    .dv-foot { border-top-color: #B9C7D2 !important; }
+    .boundary {
+      background: #fff !important; color: #1B2833 !important;
+      border: 1px solid #8A5A12 !important; border-left: 4px solid #8A5A12 !important;
+    }
+    .boundary b { color: #8A5A12 !important; }
+    .outcome-shot, .shot { display: block !important; }
+    .notes-panel, .help-backdrop { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#slide-1">Skip to first slide</a>
+
+<header class="chrome" aria-label="Deck controls">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">PF</div>
+    <span class="brand-name">PreFlight</span>
+    <span class="brand-divider" aria-hidden="true"></span>
+    <span class="brand-name" style="font-size:11px;color:#8FA9B8;font-weight:600">10-minute cut</span>
+  </div>
+  <div class="chrome-mid"><span class="section-label" id="section-label">Title</span></div>
+  <div class="chrome-actions">
+    <button class="chrome-btn" type="button" id="notes-toggle" aria-pressed="false" aria-controls="notes-panel">Notes <kbd>n</kbd></button>
+    <button class="chrome-btn" type="button" id="help-open" aria-haspopup="dialog">Help <kbd>?</kbd></button>
+    <button class="chrome-btn" type="button" id="print-button" title="Print / save as PDF">PDF <kbd>p</kbd></button>
+  </div>
+</header>
+
+<main class="deck" id="deck">
+  <!-- 1 -->
+  <section class="slide is-active" id="slide-1" data-section="Title" data-title="Title: evidence before the estimate" data-start="0" data-end="35" aria-label="Slide 1 of 12: Title">
+    <div class="slide-body">
+      <div class="title-grid">
+        <div>
+          <div class="title-kicker"><span class="line" aria-hidden="true"></span><span>Independent cloud-readiness review</span></div>
+          <h1 class="title-display">PreFlight:<br><span class="accent">evidence before the estimate</span></h1>
+          <p class="title-sub">An offline review of a Guidewire-style policy estate. It inventories what exists, links every claim to file evidence, and names every unknown — before a migration estimate is signed.</p>
+          <div class="promise-row" aria-label="The three promises">
+            <span class="promise"><i aria-hidden="true"></i>Claim → evidence</span>
+            <span class="promise"><i aria-hidden="true"></i>Unknown → named question</span>
+            <span class="promise"><i aria-hidden="true"></i>Change → pending human</span>
+          </div>
+          <div class="boundary title-boundary"><b>Reality boundary:</b> a synthetic rehearsal, not an actual migration. No tenant. No compile. Not official Cloud Assurance.</div>
+          <p class="meta">10 minutes · 12 slides · run R-DEMO-001 · 300 synthetic files · offline</p>
+        </div>
+        <aside class="title-aside" aria-label="Review packet preview">
+          <div class="packet-card">
+            <div class="packet-head">
+              <div><div class="packet-title">Review packet</div><div class="packet-id">PKT-R-DEMO-001</div></div>
+              <span class="tag teal">synthetic</span>
+            </div>
+            <div class="packet-row"><span>Files hashed</span><b>300</b></div>
+            <div class="packet-row"><span>Evidence records</span><b>101</b></div>
+            <div class="packet-row"><span>Links on PA-VEH-01</span><b>31</b></div>
+            <div class="packet-row"><span>Findings / dispositions</span><b>24 / 12</b></div>
+            <div class="packet-row"><span>Human gates open</span><b>11</b></div>
+            <div class="packet-stamp">Official Cloud Assurance: not run</div>
+            <p class="packet-note">Local draft. Not a quote, certification, or deployment. Every change is pending.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>00:00</b> elapsed · <b>10:00</b> left</span>
+      <span class="foot-page">01 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 0:00–0:35 · 35 seconds.</strong> Open cold. “This is PreFlight: an offline review of a synthetic Guidewire-style estate. The thesis is simple — a migration estimate is only as good as the inventory underneath it.”</p>
+      <p>Point at the packet preview. “Three promises: every claim resolves to evidence, every unknown becomes a named question with an owner, and every change starts pending and waits for a human.”</p>
+      <p><strong>Say the boundary in the first 20 seconds:</strong> “Synthetic rehearsal, not an actual migration. No tenant, no compile, not official Cloud Assurance.” Then move on. Do not let the opening become a disclaimer speech.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" id="slide-2" data-section="The problem" data-title="The problem: scope hidden under an estimate" data-start="35" data-end="80" aria-label="Slide 2 of 12: The problem">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">The problem</p>
+          <h2>The estimate is the promise. The inventory is the proof.</h2>
+          <p class="lede">Scope hides under a migration number: files never classified, features never traced, and unknowns nobody owns. When the inventory moves, the estimate moves with it.</p>
+        </div>
+        <span class="head-badge attention">Estimate-moving scope</span>
+      </div>
+      <div class="problem-grid">
+        <div>
+          <div class="equation" aria-label="An estimate is not an inventory">
+            <div class="side"><b>Estimate</b>a number with a date</div>
+            <div class="neq" aria-hidden="true">≠</div>
+            <div class="side"><b>Inventory</b>the files, links, and gaps behind it</div>
+          </div>
+          <div class="problem-flow">
+            <div class="flow-row"><span class="flow-num">01</span><div><b>What exists?</b><p>Files, hashes, parser status, and exclusions. Nothing quietly dropped.</p></div></div>
+            <div class="flow-row"><span class="flow-num">02</span><div><b>Which feature does it serve?</b><p>PCF → entity → typelist → template / Gosu → tests, linked across artefacts.</p></div></div>
+            <div class="flow-row"><span class="flow-num">03</span><div><b>What is still unknown?</b><p>An owner, an impact range, and the one question that would close the gap.</p></div></div>
+          </div>
+        </div>
+        <div class="promise-stack" aria-label="The three promises">
+          <p class="eyebrow" style="margin-bottom:0">The three promises</p>
+          <div class="promise-card"><span class="pn">01</span><div><b>Every claim has evidence.</b><p>Path, locator, excerpt hash, method, and a claim-strength label. If it cannot be pointed to, it is not a finding.</p></div></div>
+          <div class="promise-card"><span class="pn">02</span><div><b>Every unknown has a name.</b><p>An assumption with an owner, an impact range, and a question that can be answered or rejected.</p></div></div>
+          <div class="promise-card"><span class="pn">03</span><div><b>Every change waits for a human.</b><p>Drafts start pending. No agent approves a change, resolves an assumption, or deploys anything.</p></div></div>
+        </div>
+      </div>
+      <div class="strip problem-bottom anchor-bottom"><b>What changes:</b> scope becomes countable · dispositions become explicit · unknowns become questions. The estimate gets a defensible inventory underneath it.</div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>00:35</b> elapsed · <b>09:25</b> left</span>
+      <span class="foot-page">02 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 0:35–1:20 · 45 seconds.</strong> Hook: “The estimate is the promise. The inventory is the proof.” The vendor number is not the risk by itself; the hidden scope underneath it is.</p>
+      <p>Walk the three questions, not the tool list: what exists, which feature it serves, and what is still unknown. Then land the three promises. The third one matters most: every change waits for a human.</p>
+      <p>Do not say the demo measures estimate variance. It does not. It makes scope inspectable before an estimate is signed.</p>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" id="slide-3" data-section="Five-agent handoff" data-title="Five-agent handoff chain" data-start="80" data-end="155" aria-label="Slide 3 of 12: Five-agent handoff chain">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">The five-agent handoff chain</p>
+          <h2>Five agents. One evidence chain. No authority to deploy.</h2>
+          <p class="lede">The feature path is a straight handoff chain, not a loop. Each agent receives the prior artifact, adds a check or an artifact, and leaves a record. The run ends with human gates open — not approval.</p>
+        </div>
+        <span class="head-badge">R-DEMO-001</span>
+      </div>
+      <div class="chain-wrap" aria-label="Scout to Architect to Guardian to Critic to Scribe">
+        <div class="agent-card">
+          <div class="agent-top"><span class="agent-num">01</span><span class="agent-dot" aria-hidden="true"></span></div>
+          <h3>Scout</h3>
+          <p class="agent-role">Inventory &amp; evidence</p>
+          <div class="agent-counts"><span><b>300</b> files</span><span><b>101</b> evidence</span><span><b>31</b> links</span></div>
+          <div class="agent-out">24 findings · 12 dispositions</div>
+        </div>
+        <div class="chain-arrow" aria-hidden="true">›</div>
+        <div class="agent-card">
+          <div class="agent-top"><span class="agent-num">02</span><span class="agent-dot" aria-hidden="true"></span></div>
+          <h3>Architect</h3>
+          <p class="agent-role">Draft work packages</p>
+          <div class="agent-counts"><span><b>5</b> packages</span><span><b>5</b> targets</span><span><b>0</b> approved</span></div>
+          <div class="agent-out">schema · mapping · updater · codegen · API</div>
+        </div>
+        <div class="chain-arrow" aria-hidden="true">›</div>
+        <div class="agent-card">
+          <div class="agent-top"><span class="agent-num">03</span><span class="agent-dot" aria-hidden="true"></span></div>
+          <h3>Guardian</h3>
+          <p class="agent-role">Open human gates</p>
+          <div class="agent-counts"><span><b>11</b> gates</span><span><b>3 + 8</b></span><span><b>6</b> high</span></div>
+          <div class="agent-out">3 assumptions + 8 rule groups · 0 resolved</div>
+        </div>
+        <div class="chain-arrow" aria-hidden="true">›</div>
+        <div class="agent-card">
+          <div class="agent-top"><span class="agent-num">04</span><span class="agent-dot" aria-hidden="true"></span></div>
+          <h3>Critic</h3>
+          <p class="agent-role">Independent checks</p>
+          <div class="agent-counts"><span><b>7/7</b> checks</span><span><b>PASS</b></span><span><b>0</b> auto-approved</span></div>
+          <div class="agent-out">Existence · parse · uniqueness · links · approval</div>
+        </div>
+        <div class="chain-arrow" aria-hidden="true">›</div>
+        <div class="agent-card">
+          <div class="agent-top"><span class="agent-num">05</span><span class="agent-dot" aria-hidden="true"></span></div>
+          <h3>Scribe</h3>
+          <p class="agent-role">Seal the bundle</p>
+          <div class="agent-counts"><span><b>8</b> sealed files</span><span><b>12</b> events</span><span><b>1</b> manifest</span></div>
+          <div class="agent-out">completed_with_gates · sealed ≠ approved</div>
+        </div>
+      </div>
+      <div class="chain-notes">
+        <div class="chain-note"><b>Chain, not loop.</b> The feature path ends in Scribe. The codebase lab is the cyclic variant, with Scout → Architect ↔ Guardian / Critic → Planner.</div>
+        <div class="chain-note amber"><b>Scribe vs Planner.</b> Scribe seals the feature packet and log. Planner assembles the codebase patch plan and SARIF. Neither compiles or deploys.</div>
+      </div>
+      <div class="strip status-strip"><b>Status:</b> completed_with_gates · 11 open human gates · 0 resolved · 0 auto-approved · 0 deployed. <span class="muted">“Green” is a bounded agent verdict, never deployment approval.</span></div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>01:20</b> elapsed · <b>08:40</b> left</span>
+      <span class="foot-page">03 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 1:20–2:35 · 75 seconds.</strong> Name the chain: Scout → Architect → Guardian → Critic → Scribe. Read the exact counts: Scout 300 files, 101 evidence records, 31 links on PA-VEH-01; Architect 5 packages; Guardian 11 gates = 3 assumptions + 8 rule groups, 6 high; Critic 7/7 checks; Scribe 8 sealed files.</p>
+      <p><strong>Correct the shape if needed.</strong> “This feature path is a straight handoff chain, not a loop. The codebase lab is the cyclic variant, and its fifth agent is Planner, not Scribe.”</p>
+      <p><strong>Say the authority boundary.</strong> “The chain can read, draft, gate, check, and seal. It cannot approve, resolve an assumption, compile, or contact a tenant. It ends completed_with_gates — not approved, not deployed.”</p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" id="slide-4" data-section="Feature demo" data-title="Feature demo: receive, produce, remain pending" data-start="155" data-end="230" aria-label="Slide 4 of 12: Feature demo">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Feature demo · what moved through the chain</p>
+          <h2>Each agent received evidence. Each left a review artifact — not an approval.</h2>
+          <p class="lede">Scout turns a snapshot into evidence. Architect turns dispositions into five local files. Guardian opens gates, Critic checks package integrity, Scribe seals the bundle. Every change remains pending.</p>
+        </div>
+        <span class="head-badge">5 packages · 11 gates · 7/7</span>
+      </div>
+      <div class="handoff-layout">
+        <table class="handoff" aria-label="What each feature-migrator agent received and produced">
+          <thead><tr><th scope="col" style="width:15%">Agent</th><th scope="col" style="width:27%">Received</th><th scope="col" style="width:32%">Produced</th><th scope="col" style="width:26%">Why it is still pending</th></tr></thead>
+          <tbody>
+            <tr><td>Scout</td><td data-label="Received">300-file snapshot, rule pack</td><td data-label="Produced"><span class="num">101</span> evidence · <span class="num">31</span> links · <span class="num">24</span> findings · <span class="num">12</span> dispositions</td><td class="why" data-label="Why pending">Findings are candidates, not confirmed violations.</td></tr>
+            <tr><td>Architect</td><td data-label="Received">12 dispositions with evidence IDs</td><td data-label="Produced"><span class="num">5</span> packages · <span class="num">5</span> target files · all <span class="mono">draft_ready</span></td><td class="why" data-label="Why pending">All approvals <span class="mono">pending</span>; 0 <span class="mono">_gen</span> writes.</td></tr>
+            <tr><td>Guardian</td><td data-label="Received">Packages, 3 assumptions, 8 rule groups</td><td data-label="Produced"><span class="num">11</span> gates · <span class="num">6</span> high · <span class="num">0</span> resolved</td><td class="why" data-label="Why pending">A gate is a named human decision, not a score.</td></tr>
+            <tr><td>Critic</td><td data-label="Received">5 packages + evidence links</td><td data-label="Produced"><span class="num">7/7</span> integrity checks · verdict <span class="mono">PASS</span></td><td class="why" data-label="Why pending">Checks existence, parse, uniqueness — not correctness.</td></tr>
+            <tr><td>Scribe</td><td data-label="Received">Verified bundle + 12-event log</td><td data-label="Produced"><span class="num">8</span> sealed files · manifest · <span class="mono">completed_with_gates</span></td><td class="why" data-label="Why pending">Sealed means tamper-evident, not approved.</td></tr>
+          </tbody>
+        </table>
+        <aside class="handoff-aside">
+          <div class="compare" aria-label="Scribe versus Planner">
+            <div><b>Scribe</b><span>Feature path. Seals 5 targets + plan + report + log. 8 listed files. No compile.</span></div>
+            <div><b>Planner</b><span>Codebase path. Assembles patches + plan + SARIF. No compile; gates stay open.</span></div>
+          </div>
+          <div class="why-pending"><b>Why every change is pending.</b> Approval is a human action. The agents can draft, gate, check, and seal. None can approve, resolve an assumption, or deploy.</div>
+          <div class="card tint" style="padding:9px 10px">
+            <p class="eyebrow">Two different 11s</p>
+            <p class="small" style="margin:0"><b>11 human gates</b> in the migrator chain (3 assumptions + 8 rule groups). <b>11 audit events</b> in the post-decision review packet. The seed packet has 9 events and 3 assumptions; after two decisions it has 11 events and 4 assumptions. They are not interchangeable.</p>
+          </div>
+          <p class="meta">8 listed bundle files = 5 target drafts + plan + report + 12-event log. The manifest is the seal wrapper.</p>
+        </aside>
+      </div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>02:35</b> elapsed · <b>07:25</b> left</span>
+      <span class="foot-page">04 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 2:35–3:50 · 75 seconds.</strong> Walk the ledger, not every cell. “Scout turns 300 files into 101 evidence records; 31 links attach to PA-VEH-01. Architect turns 12 dispositions into 5 packages. Guardian opens 11 gates. Critic runs 7 checks. Scribe seals 8 listed files.”</p>
+      <p><strong>Why every change is pending.</strong> “Approval is a human action. The Critic checks package integrity — existence, parse, uniqueness, links, and no auto-approval. It does not prove the patch is correct. The Scribe seals a tamper-evident bundle; it does not sign off.”</p>
+      <p><strong>Scribe vs Planner.</strong> “Scribe is the feature-packet sealer. Planner is the codebase-patch planner and SARIF assembler. Neither compiles or deploys.” If asked about the two 11s: “11 human gates in the migrator chain; 11 audit events in the post-decision review packet. The seed packet has 9 events and 3 assumptions; after two decisions it has 11 events and 4 assumptions. They are different counts.”</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" id="slide-5" data-section="Codebase lab" data-title="Codebase lab: Cascade versus Harbor" data-start="230" data-end="290" aria-label="Slide 5 of 12: Codebase lab">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Codebase lab · two migration shapes</p>
+          <h2>Two estates, same crew, different blocker mix.</h2>
+          <p class="lede">Cascade is monoline Personal Auto with a narrow integration surface. Harbor is multi-line P&amp;C with claims, billing, and coastal underwriting crossing application boundaries. Both end machine-green with human gates open.</p>
+        </div>
+        <span class="head-badge">Synthetic Qusar 2026.08 snapshots</span>
+      </div>
+      <div class="case-grid">
+        <article class="case-card" aria-label="Cascade Mutual results">
+          <div class="case-head">
+            <div><p class="case-sub">Monoline Personal Auto · synthetic</p><h3>Cascade Mutual</h3></div>
+            <span class="tag green">green_with_human_gates</span>
+          </div>
+          <div class="case-stats">
+            <div class="case-stat"><b>18</b><span>findings</span><small>10 error · 8 warning</small></div>
+            <div class="case-stat"><b>22</b><span>patches</span><small>all pending</small></div>
+            <div class="case-stat"><b>2</b><span>iterations</span><small>error-first, then full</small></div>
+            <div class="case-stat"><b>10</b><span>human gates</span><small>all open</small></div>
+          </div>
+          <p class="case-note">Structural score 100/100; human-gate-adjusted 74/100. The gap is the point. Every patch is a reviewable diff, not a deployment.</p>
+        </article>
+        <article class="case-card harbor" aria-label="Harbor P&amp;C results">
+          <div class="case-head">
+            <div><p class="case-sub">Multi-line regional P&amp;C · synthetic</p><h3>Harbor P&amp;C</h3></div>
+            <span class="tag green">green_with_human_gates</span>
+          </div>
+          <div class="case-stats">
+            <div class="case-stat"><b>20</b><span>findings</span><small>11 error · 9 warning</small></div>
+            <div class="case-stat"><b>21</b><span>patches</span><small>all pending</small></div>
+            <div class="case-stat"><b>2</b><span>iterations</span><small>error-first, then full</small></div>
+            <div class="case-stat"><b>11</b><span>human gates</span><small>all open</small></div>
+          </div>
+          <p class="case-note">Structural score 100/100; human-gate-adjusted 71/100. APD deliverable is type-level naming preparation only — not full APD conversion or field mapping.</p>
+        </article>
+      </div>
+      <figure class="outcome-shot">
+        <img src="data:image/png;base64,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" width="1138" height="80" alt="Outcome strips from the synthetic case-studies page: Cascade Mutual 18 findings, 22 patches, 2 passes, 10 human gates; Harbor P and C 20 findings, 21 patches, 2 passes, 11 human gates.">
+        <figcaption>App outcome strips for the same synthetic runs: Cascade 18/22/2/10 · Harbor 20/21/2/11. The app says “blockers found” and “patches drafted”; this deck says findings and patches.</figcaption>
+      </figure>
+      <div class="strip codebase-strip anchor-bottom"><b>16 rule families</b> · SARIF 2.1.0 advisory · 13 rules fired on Cascade, 15 on Harbor · <b>machine green ≠ deployment approval</b> · 0 compiled · 0 deployed.</div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>03:50</b> elapsed · <b>06:10</b> left</span>
+      <span class="foot-page">05 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 3:50–4:50 · 60 seconds.</strong> “Cascade is monoline Personal Auto: 18 findings, 22 patches, 2 iterations, 10 human gates. Harbor is multi-line P&amp;C: 20 findings, 21 patches, 2 iterations, 11 gates. Same crew, different estate.”</p>
+      <p><strong>Read the green honestly.</strong> “Both are machine-green — green_with_human_gates. The structural score is 100, but the human-gate-adjusted score is 74 for Cascade and 71 for Harbor. The gap is the point.”</p>
+      <p>“The codebase lab is a structural scanner, not a compiler or data-flow engine. Sixteen rule families; 13 fired on Cascade, 15 on Harbor. Every patch is pending.”</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" id="slide-6" data-section="Code-level refactor" data-title="Code-level refactor and SARIF" data-start="290" data-end="355" aria-label="Slide 6 of 12: Code-level refactor">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Code-level refactor · drafts, not deployables</p>
+          <h2>The lab shows the target shape. It does not compile it.</h2>
+          <p class="lede">One source pattern becomes a candidate Gosu Query service. A legacy JMS plugin or servlet becomes an App Events publication or Cloud API route draft. Sixteen rule families drive the scanner; SARIF 2.1.0 carries advisory results.</p>
+        </div>
+        <span class="head-badge attention">Drafts are not compiled</span>
+      </div>
+      <div class="code-columns">
+        <section class="code-panel" aria-label="Gosu and SQL before and after">
+          <h3>SQL → Gosu Query</h3>
+          <div class="code-label">Before · direct JDBC + concatenated SQL</div>
+          <pre class="code"><span class="m">var conn = DriverManager.getConnection(</span>
+<span class="s">  "jdbc:cascade:rating")</span>
+<span class="m">var stmt = conn.createStatement()</span>
+<span class="m">stmt.executeQuery(</span>
+<span class="s">  "SELECT factor FROM cascade_rating " +</span>
+<span class="s">  "WHERE vin = '" + vin + "'")</span></pre>
+          <div class="code-label after">Draft · typed Gosu Query / application API</div>
+          <pre class="code after"><span class="k">class</span> VehicleRatingQueryService {
+  <span class="k">function</span> load() : List&lt;VehicleRating&gt; {
+    <span class="k">return</span> Query.make(VehicleRating)
+      .select().toList()
+  }
+}</pre>
+          <p class="code-note"><b>Corrected class name:</b> <span class="mono">VehicleRatingQueryService</span>. The app generator currently appends <span class="mono">QueryService</span> again, producing <span class="mono">VehicleRatingQueryQueryService</span>; the doubled name is a generator artifact. Semantic equivalence is a human gate; the draft is not compiled.</p>
+        </section>
+        <section class="code-panel" aria-label="JMS and servlet before and after">
+          <h3>JMS + servlet → App Events / Cloud API</h3>
+          <div class="code-label">Before · legacy transport + custom servlet</div>
+          <pre class="code"><span class="k">class</span> PolicyMessagingPlugin
+  <span class="k">implements</span> IMessageTransport { … }
+<span class="k">class</span> DealerFeedServlet
+  <span class="k">extends</span> HttpServlet { … }</pre>
+          <div class="code-label after">Draft · event publication + API route</div>
+          <pre class="code after">app_events:
+  name: policy-messaging-publication
+  delivery: at-least-once
+cloud_api:
+  base_path: /ext/v1/dealer-feed
+  auth: service-user</pre>
+          <p class="code-note"><b>Not a drop-in.</b> App Events is asynchronous and at-least-once; ordering, consumer acknowledgement, route auth, and consumer cut-over remain human gates. The generated configuration is a local draft, not deployable.</p>
+        </section>
+      </div>
+      <div class="strip code-strip anchor-bottom"><b>16 rule families</b> · <b>SARIF 2.1.0</b> advisory: <span class="mono">official_cloud_assurance: false</span> · <span class="mono">synthetic: true</span> · 18 Cascade / 20 Harbor results · every patch <span class="mono">pending</span>.</div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>04:50</b> elapsed · <b>05:10</b> left</span>
+      <span class="foot-page">06 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 4:50–5:55 · 65 seconds.</strong> “Two examples, both drafts. Left: direct JDBC and concatenated SQL becomes a candidate Gosu Query service. Right: a legacy JMS transport and custom servlet become an App Events publication and a Cloud API route shape.”</p>
+      <p><strong>Correct the class name explicitly.</strong> “The readable draft class is VehicleRatingQueryService. The generator currently appends QueryService again, producing VehicleRatingQueryQueryService; that doubled name is a generator artifact, not the intended draft.”</p>
+      <p><strong>Say what is not proven.</strong> “Nothing is compiled. The SQL rewrite needs semantic-equivalence review. App Events is asynchronous and at-least-once, not a JMS drop-in; ordering, acknowledgement, route auth, and consumer cut-over are human gates. SARIF 2.1.0 is advisory: official_cloud_assurance false, synthetic true.”</p>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" id="slide-7" data-section="Upgrade resilience" data-title="Upgrade resilience: generation 1 to 2" data-start="355" data-end="405" aria-label="Slide 7 of 12: Upgrade resilience">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Upgrade resilience · simulated release scenario</p>
+          <h2>A green signal is release-bound. Revalidate, roll back, or defer.</h2>
+          <p class="lede">An assessment can outlive the release it was written against. PreFlight bumps the assessment generation, invalidates the stale green signal, and records one of three resume choices. A human still decides.</p>
+        </div>
+        <span class="head-badge attention">Simulated, not a published release</span>
+      </div>
+      <div class="upgrade-grid">
+        <div class="card">
+          <p class="eyebrow">Detection · generation 1 → 2</p>
+          <div class="gen-flow">
+            <div class="gen-card"><span>Generation 1</span><b class="success">green</b><small>release-bound</small></div>
+            <div class="gen-arrow" aria-hidden="true">→</div>
+            <div class="gen-card"><span>Scenario</span><b>APD 24→20</b><small>2 patches each</small></div>
+            <div class="gen-arrow" aria-hidden="true">→</div>
+            <div class="gen-card stale"><span>Generation 2</span><b>green invalidated</b><small>revalidation_required</small></div>
+          </div>
+          <p class="small" style="margin-bottom:6px"><b>Simulated scenario:</b> <span class="mono">GWCP-APD-NAMING-2027.04</span> moves the APD type-name limit from 24 to 20 characters. The 2027.04 release and the 20-character limit are PreFlight simulations, not published Guidewire release notes.</p>
+          <div class="scenario-chips" aria-label="Five simulated release scenarios">
+            <span class="tag">APD naming · 2 / 2</span><span class="tag">App Events v2 · 3 / 3</span><span class="tag">Gateway mTLS · 7 / 6</span><span class="tag">Removed Gosu API · 14 / 14</span><span class="tag">Cloud API v2 · 4 / 3</span>
+          </div>
+          <div class="upgrade-mini" aria-label="What happens when a release change is detected">
+            <div><b>01 · detect</b>A simulated release change arrives with a new rule pack.</div>
+            <div><b>02 · invalidate</b>The prior green becomes stale; affected patches are matched.</div>
+            <div><b>03 · decide</b>A human chooses revalidate, rollback, or defer.</div>
+          </div>
+        </div>
+        <div class="option-stack" aria-label="Three resume choices">
+          <p class="eyebrow" style="margin:0">Resume choices · all clear the green</p>
+          <div class="option"><b>Revalidate</b><span>Re-run Architect with the new rule pack. Records <code>resume_requested</code>.</span></div>
+          <div class="option"><b>Rollback</b><span>Return to the last green checkpoint; keep the sealed bundle. Records <code>rolled_back_to_checkpoint</code>.</span></div>
+          <div class="option"><b>Defer</b><span>Pin the assessment release and record the risk owner. Records <code>upgrade_deferred</code>.</span></div>
+        </div>
+      </div>
+      <div class="strip amber exposure-strip anchor-bottom"><b>Non-cumulative exposure:</b> Cascade has 30 patch-exposures across 22 patches; Harbor has 28 across 21. One patch can appear in more than one scenario — never sum the rows to contradict the estate totals. Counts are exposure, not effort or defect counts.</div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>05:55</b> elapsed · <b>04:05</b> left</span>
+      <span class="foot-page">07 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 5:55–6:45 · 50 seconds.</strong> “A green signal is release-bound. The simulated APD scenario moves the type-name limit from 24 to 20 characters. Detection bumps the assessment from generation 1 to 2 and invalidates the old green rather than silently reusing it.”</p>
+      <p><strong>Give the exposure arithmetic.</strong> “Two patches are exposed in each case for APD naming. Across all five scenarios, Cascade has 30 patch-exposures across 22 patches; Harbor 28 across 21. They are not cumulative — one patch can appear in more than one scenario.”</p>
+      <p><strong>Close on the human choice.</strong> “Revalidate, roll back, or defer. The tool records the choice; it does not approve it. The 2027.04 release and the 20-character limit are simulations, not published Guidewire release notes.”</p>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" id="slide-8" data-section="Evidence &amp; audit" data-title="Evidence and audit" data-start="405" data-end="450" aria-label="Slide 8 of 12: Evidence and audit">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Evidence &amp; audit · the trust model</p>
+          <h2>A claim is only as strong as its locator, its hash, and its open question.</h2>
+          <p class="lede">PreFlight does not store “a finding.” It stores a claim with a source pointer, an excerpt hash, a method, a confidence label, and — where evidence runs out — an assumption with an owner. The packet and audit live in two separate chains.</p>
+        </div>
+        <span class="head-badge">Tamper-evident · local</span>
+      </div>
+      <div class="evidence-grid">
+        <div class="evidence-card" aria-label="Evidence record anatomy">
+          <p class="eyebrow">Evidence card · EV-0001</p>
+          <dl class="kv">
+            <dt>Path</dt><dd><code>config/web/pcf/policy/PAVehicleDV.pcf</code></dd>
+            <dt>Locator</dt><dd><code>xpath /PCF/Screen/TypeKeyInput[1]:4</code></dd>
+            <dt>Method</dt><dd>xml_xpath · confidence <b>parsed</b></dd>
+            <dt>Claim</dt><dd><span class="tag teal">verified-doc</span> · caps what may be inferred</dd>
+            <dt>Links</dt><dd><b>101</b> evidence records · <b>31</b> on PA-VEH-01</dd>
+          </dl>
+          <div class="excerpt-hash">excerpt_sha256 · d76bf9908b1f…</div>
+          <p class="small" style="margin:7px 0 0">The excerpt is re-read from the snapshot and hashed. A fabricated or drifting excerpt fails the locator-support audit. 101/101 links passed.</p>
+          <p class="eyebrow" style="margin:10px 0 3px">What the record does not prove</p>
+          <ul class="evidence-limits">
+            <li>That the excerpt is semantically sufficient.</li>
+            <li>That the decision is correct — only that it is inspectable.</li>
+            <li>That official Cloud Assurance ran. It did not.</li>
+          </ul>
+        </div>
+        <div class="audit-stack">
+          <div class="card">
+            <p class="eyebrow">Packet + audit traceability</p>
+            <div class="hash-chain" aria-label="Hash chain from event to head">
+              <span class="hash-node">event 1</span><span class="hash-arrow">→</span><span class="hash-node">hash 1</span><span class="hash-arrow">→</span><span class="hash-node">event 2</span><span class="hash-arrow">→</span><span class="hash-node">…</span><span class="hash-arrow">→</span><span class="hash-node">head</span>
+            </div>
+            <p class="small" style="margin:0">Packet hash binds the rendered packet; content digests bind findings, mappings, and evidence. Audit head: <span class="mono">read live</span>. Tamper-evident, not non-repudiation.</p>
+            <div class="event-state">
+              <span><b>Review chain</b> 9 seed → 11 post-decision</span>
+              <span><b>Migrator chain</b> 12 events</span>
+            </div>
+          </div>
+          <div class="card dark">
+            <p class="eyebrow">Verify locally</p>
+            <pre class="verify">$ preflight verify-audit R-DEMO-001
+<span class="ok">OK (9 events, head …)</span>
+$ preflight verify-packet R-DEMO-001
+<span class="ok">OK - packet hash, content digests, audit chain verified</span>
+$ preflight verify-migration R-DEMO-001
+<span class="ok">OK - 12 events verified</span></pre>
+          </div>
+        </div>
+      </div>
+      <div class="strip evidence-strip anchor-bottom"><b>Traceability:</b> 5 packages → 11 human gates → 7/7 machine checks → 8 sealed files. <b>0 auto-approved.</b> Every change waits for a reviewer.</div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>06:45</b> elapsed · <b>03:15</b> left</span>
+      <span class="foot-page">08 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 6:45–7:30 · 45 seconds.</strong> “This is the trust model. The evidence card has a path, a locator, an excerpt hash, a method, and a claim-strength label. The excerpt is re-read from the snapshot; 101 of 101 links passed the locator-support audit.”</p>
+      <p><strong>Keep the two chains separate.</strong> “The packet hash binds the rendered packet; content digests bind findings, mappings, and evidence. The audit chain has 9 seed events, 11 after two reviewer decisions. The migrator log is a separate 12-event chain.”</p>
+      <p><strong>Run or show the verify commands.</strong> “verify-audit, verify-packet, and verify-migration all pass locally. The 7/7 Critic check result lives in migration.json; the log verifier confirms 12 events. This is tamper-evident, not non-repudiation: there is no external timestamp, signature, or notary.”</p>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" id="slide-9" data-section="Demo visualization" data-title="Demo visualization" data-start="450" data-end="495" aria-label="Slide 9 of 12: Demo visualization">
+    <div class="slide-body demo-body">
+      <div class="demo-visual">
+        <div class="dv-head">
+          <div>
+            <p class="eyebrow">Clean demo visualization · full-bleed map</p>
+            <h3>One evidence chain, two migration shapes, zero deployment.</h3>
+          </div>
+          <a class="demo-link" href="demo-visual.html" title="Full companion visualization at docs/presentation/demo-visual.html">Open full visualization ↗</a>
+        </div>
+        <div class="dv-lane">
+          <div class="lane-title">Feature chain · R-DEMO-001 · PA-VEH-01</div>
+          <div class="flow">
+            <div class="dnode"><b><span class="dot" aria-hidden="true"></span>Scout</b><span><span class="big">300</span> files</span><span><span class="big">101</span> evidence</span><span><span class="big">31</span> links</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Architect</b><span><span class="big">5</span> packages</span><span><span class="big">5</span> targets</span><span>all pending</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Guardian</b><span><span class="big">11</span> gates</span><span><span class="big">3 + 8</span></span><span><span class="big">6</span> high</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Critic</b><span><span class="big">7/7</span> checks</span><span>PASS</span><span>0 auto-approved</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Scribe</b><span><span class="big">8</span> sealed files</span><span>12-event log</span><span>sealed ≠ approved</span></div>
+          </div>
+        </div>
+        <div class="dv-lane dv-code">
+          <div class="lane-title">Codebase lab · same five roles, cyclic rework</div>
+          <div class="flow">
+            <div class="dnode"><b>Scout</b><span>Cascade <span class="big">18</span> findings</span><span>Harbor <span class="big">20</span> findings</span><span>synthetic snapshots</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Architect</b><span class="nowrap"><span class="big">22</span> / <span class="big">21</span> patches</span><span><span class="big">2</span> passes each</span><span>all pending</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Guardian</b><span><span class="big">13</span> machine checks</span><span>deterministic</span><span>gates open</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Critic</b><span><span class="big">7</span> checks</span><span><span class="big">10/11</span> human gates open</span><span>no auto-approval</span></div>
+            <div class="dconn" aria-hidden="true"></div>
+            <div class="dnode"><b>Planner</b><span>report + <span class="big">SARIF 2.1.0</span></span><span>review bundle</span><span>no compile</span></div>
+          </div>
+          <div class="loopback" aria-label="Rework to Architect if a machine check fails">
+            <svg viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
+              <defs><marker id="loopArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="currentColor" stroke="none"/></marker></defs>
+              <path d="M 720 3 C 720 18, 280 18, 280 5" marker-end="url(#loopArrow)"/>
+            </svg>
+            <span class="loopback-label">↺ rework to Architect if a machine check fails</span>
+          </div>
+        </div>
+        <div class="authority-band">
+          <div class="auth-node"><p class="eyebrow">Agents can</p><b>read · draft · gate · check · seal</b><span>No approval authority</span></div>
+          <div class="auth-arrow" aria-hidden="true">→</div>
+          <div class="auth-node human"><p class="eyebrow">A human decides</p><b>approve · resolve · deploy</b><span>0 auto-approved · 0 deployed</span></div>
+        </div>
+        <div class="dv-foot">
+          <span><b>11</b> feature gates</span><span><b>6</b> high</span><span><b>10/11</b> codebase gates</span><span><b>7/7</b> checks</span><span><b>8</b> sealed files</span><span><b>0</b> deployed</span><span class="amber">Official Cloud Assurance: not run</span>
+        </div>
+        <p class="dv-note">Subtle pulse on agent dots; connector shimmer. Motion is disabled under <span class="mono">prefers-reduced-motion</span>. Counts are synthetic and run-specific.</p>
+      </div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>07:30</b> elapsed · <b>02:30</b> left</span>
+      <span class="foot-page">09 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 7:30–8:15 · 45 seconds.</strong> Use this as the visual recap. “Top lane: the feature chain. 300 files, 101 evidence records, 31 links, 5 packages, 11 gates with 6 high, 7/7 checks, 8 sealed files. Bottom lane: the same five roles in the codebase lab — Scout 18 Cascade / 20 Harbor findings; Architect 22 / 21 patches in 2 passes; Guardian 13 deterministic machine checks; Critic 7 checks with 10/11 human gates open; Planner report + SARIF 2.1.0, no compile. The return arrow means rework to Architect if a machine check fails. Zero deployments.”</p>
+      <p><strong>Point at the link.</strong> “The full companion visualization is at docs/presentation/demo-visual.html.” If the companion file is not deployed in the room, stay on this slide; the counts and the boundary are all here.</p>
+      <p>“The only motion is a gentle agent pulse and connector shimmer; reduced-motion turns it off. Nothing here is live data.”</p>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" id="slide-10" data-section="Engineering rigor" data-title="Engineering rigor" data-start="495" data-end="530" aria-label="Slide 10 of 12: Engineering rigor">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Engineering rigor</p>
+          <h2>The demo is the surface. The checks are the work.</h2>
+          <p class="lede">The prototype is real code with tests, freeze hashes, audits, and a security contract. It stays offline: no external calls, no telemetry, no live tenant. Live reasoning is gated to synthetic fixtures.</p>
+        </div>
+        <span class="head-badge">Offline · no telemetry</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num text">current pytest suite</div><div class="stat-label">520 passed at this snapshot · 2026-11-11</div></div>
+        <div class="stat-card"><div class="stat-num">18/18</div><div class="stat-label">recorded freeze hashes recompute</div></div>
+        <div class="stat-card"><div class="stat-num">0</div><div class="stat-label">external calls · telemetry · live tenant</div></div>
+        <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">adversarial flaws found, fixed, regression-tested</div></div>
+      </div>
+      <div class="rigor-grid">
+        <div class="card">
+          <p class="eyebrow">Audits and checks</p>
+          <ul class="rigor-list">
+            <li>Independent layman + visual audit, round 1. This compact cut addresses the mobile-header, print-contrast, stale-evidence, and table-density findings.</li>
+            <li>Internal adversarial review: 8 flaws fixed, including concurrent mapping writes, secret leakage, YAML alias bombs, and forged evidence scoring.</li>
+            <li>Playwright golden path; 18/18 frozen hashes; 101/101 evidence links supported.</li>
+            <li>Security contract: archive, XML, YAML, CSRF, CSP, redaction, and mobile overflow tests.</li>
+          </ul>
+        </div>
+        <div class="card tint">
+          <p class="eyebrow">Controls kept visible</p>
+          <div class="chips">
+            <span class="tag">127.0.0.1 bind</span><span class="tag">Host / Origin allowlist</span><span class="tag">CSRF token</span><span class="tag">CSP self-only</span><span class="tag">Zip-slip / bomb rejection</span><span class="tag">XML entities off</span><span class="tag">YAML tags rejected</span><span class="tag">Hash-chained audit</span><span class="tag">No telemetry</span><span class="tag">Synthetic-only live gate</span>
+          </div>
+          <p class="small" style="margin:8px 0 0"><b>Not a compiler, not a tenant connector, not official Cloud Assurance.</b> The green signal is an internal structural verdict with human gates open.</p>
+        </div>
+      </div>
+      <div class="strip rigor-strip anchor-bottom"><b>Offline by construction:</b> no external fonts, scripts, CDNs, or network calls in this deck · read-only snapshot · no customer data · no credentials.</div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>08:15</b> elapsed · <b>01:45</b> left</span>
+      <span class="foot-page">10 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 8:15–8:50 · 35 seconds.</strong> “The demo is the surface; the checks are the work. The current pytest suite has 520 passing tests at this snapshot.”</p>
+      <p><strong>Pick two proofs.</strong> “18 of 18 recorded freeze hashes recompute. 101 of 101 evidence links pass. The adversarial review found real flaws — concurrent mapping writes, secret leakage, YAML alias bombs, forged evidence scoring — and each was fixed and regression-tested.”</p>
+      <p>“No external calls, no telemetry, no live tenant. Live reasoning is gated to synthetic fixtures. The security controls are visible: local bind, Host/Origin allowlist, CSRF, CSP, archive and parser defenses.”</p>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" id="slide-11" data-section="Reality boundary" data-title="Reality boundary and proof ladder" data-start="530" data-end="575" aria-label="Slide 11 of 12: Reality boundary and proof ladder">
+    <div class="slide-body">
+      <div class="slide-head">
+        <div class="slide-head-main">
+          <p class="kicker">Reality boundary &amp; proof ladder</p>
+          <h2>Real software. Synthetic estate. Unproven migration.</h2>
+          <p class="lede">The scanner, evidence links, unified diffs, SARIF exporter, hash chain, and tests are genuinely implemented. The estate, insurer names, code, release scenarios, and evaluation slice are synthetic. Nothing was compiled, deployed, or officially assured.</p>
+        </div>
+        <span class="head-badge attention">Current stage: 1 of 5</span>
+      </div>
+      <div class="boundary-grid">
+        <div class="boundary-left">
+          <div class="card">
+            <p class="eyebrow success">What is real</p>
+            <ul><li>Deterministic scanner, evidence graph, unified diffs</li><li>SARIF 2.1.0 advisory export and hash-chained audit</li><li>Two synthetic migration archetypes and the test suite</li></ul>
+          </div>
+          <div class="card">
+            <p class="eyebrow danger">What is not</p>
+            <ul><li>No real insurer snapshot, tenant, data model, or production data</li><li>No Gosu/Java compile, runtime, or integration test</li><li>No official Cloud Assurance; no deployment or cutover</li></ul>
+          </div>
+          <div class="card tint">
+            <p class="eyebrow">What would make it a real migration</p>
+            <div class="chips"><span class="tag">real read-only snapshot</span><span class="tag">compile / test</span><span class="tag">official Cloud Assurance</span><span class="tag">SME sign-off</span><span class="tag">production cutover + rollback</span></div>
+          </div>
+        </div>
+        <div class="card ladder" aria-label="Five-stage proof ladder">
+          <div class="official-badge">Official Cloud Assurance: not run</div>
+          <div class="rung current"><span class="n">01</span><div><b>Synthetic rehearsal</b><span class="d">Method is repeatable and evidence-linked. Current stage.</span></div><span class="tag teal">now</span></div>
+          <div class="rung"><span class="n">02</span><div><b>Real read-only snapshot</b><span class="d">Authorised estate, chain of custody, blind SME sample.</span></div><span class="tag">next</span></div>
+          <div class="rung"><span class="n">03</span><div><b>Compile / test in Guidewire dev</b><span class="d">Target release, compiler logs, GUnit, smoke tests.</span></div><span class="tag">not done</span></div>
+          <div class="rung"><span class="n">04</span><div><b>Official Cloud Assurance + SME sign-off</b><span class="d">Official report, threshold, violation triage, named owners.</span></div><span class="tag">not done</span></div>
+          <div class="rung"><span class="n">05</span><div><b>Production cutover + rollback</b><span class="d">Deployment, reconciliation, rollback test, hypercare, outcomes.</span></div><span class="tag">not done</span></div>
+        </div>
+      </div>
+      <div class="glossary terms-8" aria-label="Plain-language glossary">
+        <div class="gloss"><b>PCF</b>Page configuration XML.</div>
+        <div class="gloss"><b>Gosu</b>Guidewire’s JVM language.</div>
+        <div class="gloss"><b>Typelist</b>Reusable code list.</div>
+        <div class="gloss"><b>Entity</b>Data-model object.</div>
+        <div class="gloss"><b>APD</b>Advanced Product Designer.</div>
+        <div class="gloss"><b>JMS / JDBC</b>Legacy messaging / direct SQL.</div>
+        <div class="gloss"><b>SARIF</b>Static-analysis results format.</div>
+        <div class="gloss"><b>LOB</b>Line of business.</div>
+      </div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>08:50</b> elapsed · <b>01:10</b> left</span>
+      <span class="foot-page">11 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 8:50–9:35 · 45 seconds.</strong> “Real software, synthetic estate, unproven migration. What is real: the scanner, evidence links, diffs, SARIF, hash chain, and tests. What is not: the estate, tenant, compile, runtime, official assurance, and migration execution.”</p>
+      <p><strong>Walk the ladder, not the whole memo.</strong> “Stage 1 is where we are: synthetic rehearsal. Stage 2 is a real read-only snapshot with blind SME validation. Stage 3 is compile and test in a Guidewire developer environment. Stage 4 is official Cloud Assurance plus SME sign-off. Stage 5 is production cutover with rollback.”</p>
+      <p><strong>Make the next step concrete.</strong> “The cheapest credible next step is one real read-only snapshot and a blind SME sample — not another synthetic metric. Do not claim later stages from earlier evidence.”</p>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" id="slide-12" data-section="Close" data-title="Close: the three-line standard and ask" data-start="575" data-end="600" aria-label="Slide 12 of 12: Close">
+    <div class="slide-body">
+      <div class="close-wrap">
+        <p class="kicker">Close · the standard and the ask</p>
+        <h2 class="close-lines">Every claim has evidence.<br>Every unknown has a name.<br><span class="accent">Every change waits for a human.</span></h2>
+        <p class="close-sub">That is the standard PreFlight is trying to make ordinary: an estimate you can inspect, challenge, and sign — with the unknowns written down instead of discovered at week five.</p>
+        <div class="ask-grid">
+          <div class="ask"><b>Pilot estate</b><span>One authorised, read-only snapshot of one LOB. The next experiment is a real inventory, not another synthetic fixture.</span></div>
+          <div class="ask"><b>Blind SME review</b><span>Two domain experts annotate a sample independently; disagreements are adjudicated. That is the human IAA the current evaluation lacks.</span></div>
+          <div class="ask"><b>Hard feedback</b><span>Attack the claims, the packet, and the disposition model. The fastest way to improve this is to try to break it.</span></div>
+        </div>
+        <p class="ask-line"><b>Pilot ask:</b> one authorised read-only estate · two blind SME annotators · hard feedback. No customer data needed for the first conversation.</p>
+        <div class="close-meta">
+          <span><b>Saundarya Singh</b> · independent research prototype</span>
+          <span><b>Repository</b> github.com/alikhan37544/Pre-Flight_Autonomous_Migration</span>
+          <span><b>License</b> MIT</span>
+          <span><b>Deck</b> docs/presentation/compact-10min.html</span>
+        </div>
+        <p class="disclaimer">Independent academic research prototype. Not affiliated with, endorsed by, or certified by Guidewire Software, Inc. All fixtures are synthetic. Findings are pattern-based heuristics, not official Cloud Standards checks or legal/compliance advice. <b>Official Cloud Assurance: not run.</b></p>
+      </div>
+    </div>
+    <footer class="slide-foot" aria-label="Slide footer">
+      <span class="foot-brand">PreFlight · synthetic rehearsal</span>
+      <span class="foot-boundary">Official Cloud Assurance: not run</span>
+      <div class="foot-progress" aria-hidden="true"><div class="foot-bar"></div></div>
+      <span class="foot-time"><b>09:35</b> elapsed · <b>00:25</b> left</span>
+      <span class="foot-page">12 / 12</span>
+    </footer>
+    <div class="speaker-note" hidden>
+      <p><strong>Timing: 9:35–10:00 · 25 seconds.</strong> Slow down and close on the standard: “Every claim has evidence. Every unknown has a name. Every change waits for a human.”</p>
+      <p><strong>The ask.</strong> “One authorised read-only estate, two blind SME annotators, and hard feedback. The next experiment is a real inventory, not another synthetic fixture.”</p>
+      <p><strong>Final boundary.</strong> “Independent research prototype, not affiliated with Guidewire, synthetic fixtures, official Cloud Assurance not run.” Then stop. Do not add a feature list.</p>
+    </div>
+  </section>
+</main>
+
+<aside class="notes-panel" id="notes-panel" aria-label="Speaker notes" aria-hidden="true" inert>
+  <div class="notes-head"><h2>Speaker notes</h2><button class="notes-close" type="button" id="notes-close" aria-label="Close speaker notes" tabindex="-1">×</button></div>
+  <div class="notes-body" id="notes-body"></div>
+</aside>
+
+<div class="help-backdrop" id="help-backdrop">
+  <div class="help" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="help-head"><h2 id="help-title">Keyboard &amp; presentation help</h2><button class="help-close" type="button" id="help-close" aria-label="Close help">×</button></div>
+    <table>
+      <thead><tr><th scope="col">Key</th><th scope="col">Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>→</kbd> <kbd>↓</kbd> <kbd>Space</kbd> <kbd>PageDown</kbd></td><td>Next slide</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>PageUp</kbd></td><td>Previous slide</td></tr>
+        <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>First / last slide</td></tr>
+        <tr><td><kbd>n</kbd></td><td>Toggle speaker notes</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Open / close this help</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Close help or notes</td></tr>
+        <tr><td><kbd>p</kbd> or Ctrl/Cmd + <kbd>p</kbd></td><td>Print / save as PDF</td></tr>
+        <tr><td>Touch</td><td>Swipe left / right to navigate</td></tr>
+      </tbody>
+    </table>
+    <p class="help-note">Deep links use <code>#slide-1</code> … <code>#slide-12</code>. The deck has no external fonts, scripts, styles, or network calls. Print produces one 16:9 slide per page. Reduced-motion settings are respected. Timing hints are in the speaker notes and in each slide footer.</p>
+  </div>
+</div>
+
+<div class="visually-hidden" id="live-region" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(function () {
+  "use strict";
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var total = slides.length;
+  var current = 0;
+  var notesOpen = false;
+  var helpOpen = false;
+  var notesPanel = document.getElementById("notes-panel");
+  var notesBody = document.getElementById("notes-body");
+  var notesToggle = document.getElementById("notes-toggle");
+  var notesClose = document.getElementById("notes-close");
+  var helpBackdrop = document.getElementById("help-backdrop");
+  var helpOpenButton = document.getElementById("help-open");
+  var helpCloseButton = document.getElementById("help-close");
+  var sectionLabel = document.getElementById("section-label");
+  var live = document.getElementById("live-region");
+  var lastFocus = null;
+  var touchX = null;
+  var touchY = null;
+  var TOTAL_SECONDS = 600;
+
+  function pad(n) { return n < 10 ? "0" + n : String(n); }
+  function mmss(seconds) {
+    var s = Math.max(0, Math.min(TOTAL_SECONDS, Math.round(seconds)));
+    return pad(Math.floor(s / 60)) + ":" + pad(s % 60);
+  }
+  function startFor(slide) { return parseInt(slide.getAttribute("data-start"), 10) || 0; }
+  function endFor(slide) { return parseInt(slide.getAttribute("data-end"), 10) || 0; }
+
+  function renderSlideFoot(slide, index) {
+    var start = startFor(slide);
+    var bar = slide.querySelector(".foot-bar");
+    var time = slide.querySelector(".foot-time");
+    var page = slide.querySelector(".foot-page");
+    if (bar) bar.style.width = (Math.max(0, Math.min(TOTAL_SECONDS, start)) / TOTAL_SECONDS * 100).toFixed(2) + "%";
+    if (time) time.innerHTML = "<b>" + mmss(start) + "</b> elapsed · <b>" + mmss(TOTAL_SECONDS - start) + "</b> left";
+    if (page) page.textContent = pad(index + 1) + " / " + pad(total);
+  }
+
+  function notesFor(index) {
+    var note = slides[index].querySelector(".speaker-note");
+    return note ? note.innerHTML : "<p>No speaker notes for this slide.</p>";
+  }
+  function renderNotes(index) {
+    notesBody.innerHTML = notesFor(index);
+    notesBody.scrollTop = 0;
+  }
+  function updateChrome(index) {
+    var slide = slides[index];
+    sectionLabel.textContent = slide.getAttribute("data-section") || "";
+    live.textContent = "Slide " + (index + 1) + " of " + total + ": " + (slide.getAttribute("data-title") || "");
+    if (notesOpen) renderNotes(index);
+  }
+  function show(index, updateHash) {
+    index = Math.max(0, Math.min(total - 1, index));
+    if (index === current && slides[index].classList.contains("is-active")) {
+      updateChrome(index);
+      return;
+    }
+    slides[current].classList.remove("is-active");
+    slides[current].setAttribute("aria-hidden", "true");
+    current = index;
+    slides[current].classList.add("is-active");
+    slides[current].removeAttribute("aria-hidden");
+    updateChrome(current);
+    renderSlideFoot(slides[current], current);
+    if (updateHash !== false) {
+      var hash = "#slide-" + (current + 1);
+      if (window.location.hash !== hash) {
+        try { history.replaceState(null, "", hash); }
+        catch (err) { window.location.hash = hash; }
+      }
+    }
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      slides[current].scrollIntoView({ block: "start" });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }
+  function next() { show(current + 1); }
+  function prev() { show(current - 1); }
+
+  function openNotes() {
+    notesOpen = true;
+    notesPanel.classList.add("open");
+    notesPanel.setAttribute("aria-hidden", "false");
+    notesPanel.inert = false;
+    notesClose.removeAttribute("tabindex");
+    notesToggle.setAttribute("aria-pressed", "true");
+    renderNotes(current);
+    requestAnimationFrame(function () { notesClose.focus(); });
+  }
+  function closeNotes(returnFocus) {
+    notesOpen = false;
+    notesPanel.classList.remove("open");
+    notesPanel.setAttribute("aria-hidden", "true");
+    notesPanel.inert = true;
+    notesClose.setAttribute("tabindex", "-1");
+    notesToggle.setAttribute("aria-pressed", "false");
+    if (returnFocus) notesToggle.focus();
+  }
+  function toggleNotes() { notesOpen ? closeNotes(true) : openNotes(); }
+
+  function openHelp() {
+    if (helpOpen) return;
+    lastFocus = document.activeElement;
+    helpOpen = true;
+    helpBackdrop.classList.add("open");
+    helpCloseButton.focus();
+  }
+  function closeHelp() {
+    if (!helpOpen) return;
+    helpOpen = false;
+    helpBackdrop.classList.remove("open");
+    if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
+    else helpOpenButton.focus();
+  }
+
+  function keydown(event) {
+    var tag = (event.target && event.target.tagName) || "";
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+    if (helpOpen) {
+      if (event.key === "Tab") {
+        var focusable = helpBackdrop.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+        if (focusable.length) {
+          var first = focusable[0];
+          var last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
+      }
+      if (event.key === "Escape" || event.key === "?") { event.preventDefault(); closeHelp(); }
+      return;
+    }
+    if (event.key === "Escape" && notesOpen) { event.preventDefault(); closeNotes(true); return; }
+    if (event.key === " " && /^(BUTTON|A|SUMMARY)$/.test(tag)) return;
+    switch (event.key) {
+      case "ArrowRight": case "ArrowDown": case "PageDown": case " ":
+        event.preventDefault(); next(); break;
+      case "ArrowLeft": case "ArrowUp": case "PageUp":
+        event.preventDefault(); prev(); break;
+      case "Home":
+        event.preventDefault(); show(0); break;
+      case "End":
+        event.preventDefault(); show(total - 1); break;
+      case "?":
+        event.preventDefault(); helpOpen ? closeHelp() : openHelp(); break;
+      case "n": case "N":
+        event.preventDefault(); toggleNotes(); break;
+      case "p": case "P":
+        if (!event.metaKey && !event.ctrlKey) { event.preventDefault(); window.print(); }
+        break;
+      default: break;
+    }
+  }
+
+  function hashToIndex() {
+    var match = (window.location.hash || "").match(/slide-(\d+)/);
+    if (!match) return 0;
+    var value = parseInt(match[1], 10) - 1;
+    return isNaN(value) ? 0 : Math.max(0, Math.min(total - 1, value));
+  }
+
+  document.getElementById("print-button").addEventListener("click", function () { window.print(); });
+  notesToggle.addEventListener("click", toggleNotes);
+  notesClose.addEventListener("click", function () { closeNotes(true); });
+  helpOpenButton.addEventListener("click", openHelp);
+  helpCloseButton.addEventListener("click", closeHelp);
+  helpBackdrop.addEventListener("click", function (event) { if (event.target === helpBackdrop) closeHelp(); });
+
+  window.addEventListener("keydown", keydown);
+  window.addEventListener("hashchange", function () { show(hashToIndex(), false); });
+
+  document.getElementById("deck").addEventListener("touchstart", function (event) {
+    if (event.touches.length !== 1) return;
+    touchX = event.touches[0].clientX;
+    touchY = event.touches[0].clientY;
+  }, { passive: true });
+
+  document.getElementById("deck").addEventListener("touchend", function (event) {
+    if (touchX === null || event.changedTouches.length !== 1) return;
+    var dx = event.changedTouches[0].clientX - touchX;
+    var dy = event.changedTouches[0].clientY - touchY;
+    touchX = null; touchY = null;
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      if (dx < 0) next(); else prev();
+    }
+  }, { passive: true });
+
+  slides.forEach(function (slide, index) {
+    if (index !== 0) slide.setAttribute("aria-hidden", "true");
+    renderSlideFoot(slide, index);
+  });
+
+  if (!window.location.hash) {
+    try { history.replaceState(null, "", "#slide-1"); }
+    catch (err) { window.location.hash = "#slide-1"; }
+  }
+  show(hashToIndex(), false);
+})();
+</script>
+</body>
+</html>

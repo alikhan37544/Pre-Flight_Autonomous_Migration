@@ -1,0 +1,1342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Five-agent PreFlight rehearsal: a projector-ready evidence chain with human decision gates.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A6B80'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='14' font-weight='700' fill='white' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
+<title>PreFlight — Five agents. One evidence chain.</title>
+<style>
+  :root {
+    --canvas: #F4F7F8;
+    --paper: #FFFFFF;
+    --ink: #12242E;
+    --ink-2: #243E4B;
+    --muted: #516773;
+    --muted-2: #5B7280;
+    --line: #D3DFE5;
+    --line-strong: #B2C4CD;
+    --teal: #0A6B80;
+    --teal-dark: #064E5E;
+    --teal-soft: #E4F1F4;
+    --teal-glow: rgba(10, 107, 128, .18);
+    --amber: #8F570A;
+    --amber-dark: #6E4307;
+    --amber-soft: #FAF0DE;
+    --amber-line: #E2C58D;
+    --green: #2D6A4E;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --stage-pad-x: clamp(18px, 3.1vw, 60px);
+    --stage-pad-y: clamp(16px, 2.2vh, 28px);
+    --gap: clamp(10px, 1.45vh, 20px);
+    --focus: #B66200;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.4;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .sr-only {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+  }
+  .skip-link {
+    position: fixed; z-index: 100; left: 14px; top: -80px;
+    padding: 10px 14px; background: var(--paper); color: var(--ink);
+    border: 2px solid var(--teal); font-weight: 800; text-decoration: none;
+  }
+  .skip-link:focus { top: 14px; }
+
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--gap);
+    padding: var(--stage-pad-y) var(--stage-pad-x);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .stage::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(1100px 500px at 50% -12%, rgba(10, 107, 128, .09), transparent 68%),
+      radial-gradient(900px 420px at 50% 112%, rgba(143, 87, 10, .045), transparent 72%),
+      var(--canvas);
+  }
+  .stage::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .55;
+    background-image:
+      linear-gradient(to right, rgba(18, 36, 46, .035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(18, 36, 46, .035) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 88%, transparent 100%);
+  }
+
+  /* Masthead */
+  .masthead { text-align: center; flex: none; }
+  .meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    text-align: left;
+    margin-bottom: clamp(12px, 2.1vh, 26px);
+  }
+  .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .brand-mark {
+    width: 26px; height: 26px;
+    display: grid; place-items: center;
+    background: var(--teal);
+    color: #fff;
+    border: 1px solid #2A8AA0;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    flex: none;
+  }
+  .brand-name { font-size: 12.5px; font-weight: 800; letter-spacing: -.005em; white-space: nowrap; }
+  .brand-sub {
+    font-size: 9px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--muted); border-left: 1px solid var(--line-strong); padding-left: 10px;
+    white-space: nowrap;
+  }
+  .meta-right {
+    display: flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em;
+    color: var(--muted); text-transform: uppercase; white-space: nowrap;
+  }
+  .meta-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); flex: none; }
+  .meta-sep { color: var(--line-strong); }
+
+  .kicker {
+    margin: 0 0 8px;
+    font-size: clamp(9px, .68vw, 10.5px);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: .19em;
+    text-transform: uppercase;
+    color: var(--teal);
+  }
+  h1 {
+    margin: 0 auto;
+    font-size: clamp(2.15rem, 3.35vw, 4rem);
+    line-height: 1.03;
+    letter-spacing: -.045em;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+  .subline {
+    margin: 10px auto 0;
+    max-width: 74ch;
+    color: var(--muted);
+    font-size: clamp(.8rem, .95vw, 1.02rem);
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  /* Section bar */
+  .chain-section { flex: none; min-width: 0; }
+  .section-bar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-heading { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .section-heading h2 {
+    margin: 0;
+    font-size: 10.5px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  .section-note { font-size: 10.5px; line-height: 1.2; color: var(--muted); }
+  .mode-toggle {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    flex: none;
+  }
+  .mode-toggle button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    min-height: 24px;
+    padding: 5px 9px;
+    font-size: 9px;
+    line-height: 1.1;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .mode-toggle button[aria-pressed="true"] {
+    background: var(--ink);
+    color: #fff;
+  }
+  .mode-toggle button:hover { color: var(--ink); }
+  .mode-toggle button[aria-pressed="true"]:hover { color: #fff; }
+
+  /* Chain */
+  .chain {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(14px, 1.5vw, 24px);
+    list-style: none;
+    margin: clamp(10px, 1.5vh, 18px) 0 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .agent {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: clamp(182px, 22.5vh, 238px);
+    padding: clamp(11px, 1.15vw, 16px) clamp(11px, 1.1vw, 16px) clamp(10px, 1vw, 14px);
+    background: rgba(255, 255, 255, .9);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--line-strong);
+    transition: opacity .48s ease, filter .48s ease, transform .48s ease, border-color .48s ease, box-shadow .48s ease;
+  }
+  .js .agent {
+    opacity: .34;
+    filter: grayscale(.35);
+    transform: translateY(2px);
+  }
+  .js .agent.is-lit {
+    opacity: 1;
+    filter: none;
+    transform: translateY(0);
+    border-top-color: var(--teal);
+  }
+  .js .agent.is-current {
+    box-shadow: 0 18px 34px -28px rgba(6, 60, 74, .75), 0 0 0 1px rgba(10, 107, 128, .1);
+  }
+  .agent::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    right: calc(clamp(14px, 1.5vw, 24px) * -1 / 2 - 4.5px);
+    top: 50%;
+    width: 8px; height: 8px;
+    border-top: 1.5px solid var(--line-strong);
+    border-right: 1.5px solid var(--line-strong);
+    transform: translateY(-50%) rotate(45deg);
+    transition: border-color .48s ease;
+  }
+  .agent:last-child::after { display: none; }
+  .js .agent.is-lit::after { border-color: var(--teal); }
+  .agent-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .agent-step {
+    display: inline-grid; place-items: center;
+    min-width: 25px; height: 20px;
+    padding: 0 5px;
+    border: 1px solid var(--line-strong);
+    font-family: var(--mono);
+    font-size: 9.5px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--muted);
+    transition: background .35s ease, color .35s ease, border-color .35s ease;
+  }
+  .js .agent.is-current .agent-step,
+  .js .agent.is-lit .agent-step {
+    color: var(--teal-dark);
+    border-color: var(--teal);
+  }
+  .js .agent.is-current .agent-step {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+  }
+  .agent-phase {
+    font-size: 9.5px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    white-space: nowrap;
+  }
+  .agent h3 {
+    margin: clamp(7px, 1vh, 12px) 0 0;
+    font-size: clamp(1.02rem, 1.4vw, 1.48rem);
+    line-height: 1.05;
+    letter-spacing: -.025em;
+    font-weight: 800;
+  }
+  .agent-big {
+    margin: auto 0 0;
+    padding-top: clamp(9px, 1.2vh, 16px);
+    font-size: clamp(2rem, 2.75vw, 3.1rem);
+    line-height: .92;
+    letter-spacing: -.05em;
+    font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .agent-big .unit {
+    display: block;
+    margin-top: 6px;
+    font-family: var(--sans);
+    font-size: clamp(8.5px, .68vw, 10px);
+    line-height: 1.2;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--teal-dark);
+  }
+  .agent-detail {
+    margin: 8px 0 0;
+    min-height: 2.7em;
+    font-size: clamp(11px, .78vw, 13px);
+    line-height: 1.35;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+  .agent-foot {
+    margin: 9px 0 0;
+    padding-top: 9px;
+    border-top: 1px solid var(--line);
+    font-size: clamp(9.5px, .65vw, 10.5px);
+    line-height: 1.35;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /* Rework arc */
+  .chain-wrap { min-width: 0; }
+  .rework {
+    position: relative;
+    height: clamp(50px, 6.8vh, 72px);
+    margin-top: 0;
+    color: #748C98;
+    transition: color .35s ease, opacity .35s ease;
+  }
+  .rework > svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .return-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.15;
+    stroke-dasharray: 3.5 5;
+    vector-effect: non-scaling-stroke;
+  }
+  .return-node { fill: currentColor; }
+  .return-arrow { fill: currentColor; }
+  .rework-label {
+    position: absolute;
+    left: 42.5%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 5px 9px;
+    background: var(--canvas);
+    border: 1px solid var(--line-strong);
+    color: var(--ink-2);
+    font-size: 10px;
+    line-height: 1.2;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    font-weight: 800;
+    white-space: nowrap;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+    transition: color .35s ease, border-color .35s ease, background .35s ease;
+  }
+  .rework-label .return-icon { font-size: 12px; line-height: 1; color: var(--muted-2); }
+  .return-mini { display: none; color: currentColor; flex: none; }
+  .stage[data-mode="feature"] .rework { opacity: 1; }
+  .stage[data-mode="codebase"] .rework { color: var(--amber); opacity: 1; }
+  .stage[data-mode="codebase"] .rework-label {
+    color: var(--amber-dark);
+    border-color: var(--amber-line);
+    background: var(--amber-soft);
+  }
+  .stage[data-mode="codebase"] .rework-label .return-icon { color: var(--amber); }
+  .stage[data-mode="codebase"] .return-line { animation: dash-flow 2.4s linear infinite; }
+  @keyframes dash-flow { to { stroke-dashoffset: -17; } }
+
+  /* Human decision lane */
+  .lane {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) auto minmax(220px, .8fr);
+    align-items: center;
+    gap: clamp(14px, 1.8vw, 26px);
+    margin: 0;
+    padding: clamp(13px, 1.55vh, 18px) clamp(13px, 1.35vw, 20px);
+    background: var(--amber-soft);
+    border: 1px solid var(--amber-line);
+    border-left: 4px solid var(--amber);
+    transition: box-shadow .4s ease, border-color .4s ease;
+    flex: none;
+  }
+  .lane.is-open {
+    border-color: #D6AE66;
+    box-shadow: 0 0 0 1px rgba(143, 87, 10, .08), 0 14px 38px -32px rgba(110, 67, 7, .7);
+  }
+  .stage[data-step="6"] .lane {
+    animation: gate-pulse 1.35s ease-out 1;
+  }
+  @keyframes gate-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(143, 87, 10, .22); }
+    55% { box-shadow: 0 0 0 7px rgba(143, 87, 10, .08); }
+    100% { box-shadow: 0 0 0 0 rgba(143, 87, 10, 0); }
+  }
+  .lane-copy { display: flex; align-items: center; gap: clamp(9px, .9vw, 13px); min-width: 0; }
+  .lane-icon {
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    flex: none;
+    border: 1px solid var(--amber-line);
+    background: #FFF9EE;
+    color: var(--amber-dark);
+  }
+  .lane-icon svg { width: 16px; height: 16px; }
+  .lane-kicker {
+    margin: 0 0 2px;
+    font-size: 8.5px;
+    line-height: 1.15;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--amber-dark);
+  }
+  .lane h2 {
+    margin: 0;
+    font-size: clamp(.98rem, 1.28vw, 1.28rem);
+    line-height: 1.15;
+    letter-spacing: -.015em;
+    font-weight: 800;
+  }
+  .lane-desc {
+    margin: 3px 0 0;
+    font-size: clamp(10px, .7vw, 11.5px);
+    line-height: 1.3;
+    color: #6D5638;
+    text-wrap: pretty;
+  }
+  .lane-metrics { display: flex; align-items: stretch; gap: clamp(10px, 1.1vw, 16px); }
+  .lane-metric {
+    display: flex; flex-direction: column; justify-content: center;
+    min-width: 44px;
+    padding-right: clamp(10px, 1.1vw, 16px);
+    border-right: 1px solid rgba(143, 87, 10, .22);
+  }
+  .lane-metric:last-child { border-right: 0; padding-right: 0; }
+  .lane-metric b {
+    font-size: clamp(1.3rem, 1.7vw, 1.85rem);
+    line-height: .9;
+    letter-spacing: -.03em;
+    font-weight: 800;
+    color: var(--amber-dark);
+    font-variant-numeric: tabular-nums;
+  }
+  .lane-metric span {
+    margin-top: 3px;
+    font-size: 8.5px;
+    line-height: 1.1;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #765B36;
+    white-space: nowrap;
+  }
+  .lane-gates {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    min-width: 0;
+    width: 100%;
+  }
+  .gate-pips {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+    width: 100%;
+  }
+  .gate-pip {
+    position: relative;
+    flex: 1 1 0;
+    max-width: 56px;
+    height: clamp(11px, .85vw, 15px);
+    border: 1px solid var(--amber);
+    background: rgba(255, 255, 255, .55);
+    transition: background .35s ease, border-color .35s ease;
+  }
+  .gate-pip::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--amber);
+    opacity: .72;
+  }
+  .stage[data-mode="codebase"] .gate-pip { max-width: none; height: 12px; }
+  .lane.is-open .gate-pip { background: #FFF9EE; }
+  .gate-caption {
+    margin: 0;
+    font-size: 9px;
+    line-height: 1.1;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #765B36;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  /* Reality strip */
+  .reality {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(10px, 1.2vw, 16px);
+    flex: none;
+    min-width: 0;
+  }
+  .reality-card {
+    min-width: 0;
+    padding: clamp(10px, 1.15vh, 14px) clamp(12px, 1.2vw, 17px);
+    background: rgba(255, 255, 255, .82);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--teal);
+  }
+  .reality-card.not-real { border-top-color: var(--amber); }
+  .reality-head { display: flex; align-items: center; gap: 7px; margin: 0 0 5px; }
+  .reality-head svg { width: 12px; height: 12px; flex: none; }
+  .reality h2 {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.2;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--teal-dark);
+  }
+  .not-real h2 { color: var(--amber-dark); }
+  .reality-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: clamp(10.5px, .72vw, 12px);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .reality-list li { display: inline-flex; align-items: baseline; }
+  .reality-list li:not(:last-child)::after {
+    content: "·";
+    margin: 0 7px;
+    color: var(--line-strong);
+  }
+  .reality-list li::before {
+    content: "";
+    width: 4px; height: 4px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    flex: none;
+    transform: translateY(-1px);
+  }
+  .not-real .reality-list li::before { background: var(--amber); }
+  .not-real .reality-list li strong { color: var(--amber-dark); font-weight: 800; }
+
+  /* Footer + controls */
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex: none;
+    padding-top: 9px;
+    border-top: 1px solid var(--line);
+  }
+  .boundary {
+    margin: 0;
+    font-size: clamp(9px, .64vw, 10.5px);
+    line-height: 1.35;
+    letter-spacing: .03em;
+    color: var(--muted);
+  }
+  .controls-wrap { display: flex; align-items: center; gap: 10px; flex: none; }
+  .seq-status {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    line-height: 1.2;
+    letter-spacing: .05em;
+    color: var(--muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .seq-status b { color: var(--ink); font-weight: 700; }
+  .controls { display: flex; align-items: center; gap: 5px; }
+  .ctrl {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 9px;
+    background: var(--paper);
+    color: var(--ink-2);
+    border: 1px solid var(--line-strong);
+    font-size: 9.5px;
+    line-height: 1;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .ctrl:hover { background: #EDF3F5; border-color: var(--teal); color: var(--teal-dark); }
+  .ctrl:disabled { opacity: .42; cursor: not-allowed; background: var(--paper); border-color: var(--line); color: var(--muted); }
+  .ctrl.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .ctrl.primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); color: #fff; }
+  .ctrl svg { width: 11px; height: 11px; flex: none; }
+  .key-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 3px;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  kbd {
+    display: inline-block;
+    min-width: 17px;
+    padding: 2px 4px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    color: var(--ink-2);
+    font: inherit;
+    line-height: 1;
+    text-align: center;
+  }
+
+  @media (max-width: 1180px) {
+    .lane { grid-template-columns: minmax(0, 1fr) auto; }
+    .lane-copy { grid-column: 1; grid-row: 1; }
+    .lane-metrics { grid-column: 2; grid-row: 1; }
+    .lane-gates { grid-column: 1 / -1; grid-row: 2; align-items: flex-start; }
+  }
+
+  @media (max-width: 900px) {
+    .brand-sub { display: none; }
+    .stage { overflow: visible; }
+    .agent { min-height: 0; }
+    .agent-big { font-size: clamp(1.75rem, 5.2vw, 2.4rem); }
+  }
+
+  /* Compact card layout on small screens: the chain becomes a vertical checklist. */
+  @media (max-width: 720px) {
+    :root { --stage-pad-x: 13px; --stage-pad-y: 9px; --gap: 5px; }
+    .stage { justify-content: space-between; min-height: 100vh; min-height: 100svh; }
+    .meta-row { margin-bottom: 5px; gap: 8px; }
+    .brand-name { font-size: 12px; }
+    .brand-mark { width: 23px; height: 23px; font-size: 11px; }
+    .brand-sub { display: none; }
+    .meta-right { font-size: 11px; gap: 5px; }
+    .meta-sep, .meta-synthetic, .meta-local { display: none; }
+    .kicker { font-size: 11px; line-height: 1.2; letter-spacing: .1em; margin-bottom: 3px; }
+    h1 { font-size: clamp(1.78rem, 7.8vw, 2rem); line-height: 1.02; letter-spacing: -.04em; }
+    .subline { margin-top: 4px; font-size: 14px; line-height: 1.3; max-width: none; text-wrap: pretty; }
+    .section-bar { align-items: center; gap: 6px; padding-bottom: 3px; }
+    .section-heading { gap: 5px; }
+    .section-heading h2 { font-size: 11px; letter-spacing: .06em; }
+    .section-note { display: none; }
+    .mode-toggle { padding: 1px; }
+    .mode-toggle button { min-height: 28px; padding: 2px 6px; font-size: 11px; letter-spacing: .02em; }
+    .chain {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 5px;
+    }
+    .agent {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      column-gap: 7px;
+      row-gap: 1px;
+      align-items: center;
+      min-height: 0;
+      padding: 3px 8px 4px;
+      border-top-width: 1px;
+      border-left: 3px solid var(--line-strong);
+    }
+    .js .agent.is-lit { border-left-color: var(--teal); }
+    .agent::after { display: none; }
+    .agent-top { display: contents; }
+    .agent-step { grid-column: 1; grid-row: 1 / span 2; min-width: 28px; width: 28px; height: 26px; font-size: 11px; }
+    .agent-phase { display: none; }
+    .agent h3 { grid-column: 2; grid-row: 1; margin: 0; font-size: 14px; line-height: 1.15; align-self: center; }
+    .agent-big {
+      grid-column: 3; grid-row: 1;
+      display: flex; flex-direction: column; align-items: flex-end; justify-content: center;
+      margin: 0; padding: 0;
+      font-size: 21px; line-height: .9; text-align: right;
+    }
+    .agent-big .unit { margin-top: 2px; font-size: 11px; letter-spacing: .03em; text-align: right; }
+    .agent-detail { grid-column: 2 / -1; grid-row: 2; margin: 0; min-height: 0; font-size: 14px; line-height: 1.25; }
+    .agent-foot { display: none; }
+    .rework { height: 22px; margin-top: 1px; opacity: 1; display: flex; align-items: center; }
+    .rework > svg { display: none; }
+    .rework-label {
+      position: static; transform: none;
+      padding: 0; border: 0; background: transparent;
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; line-height: 1.2; letter-spacing: .04em;
+      box-shadow: none;
+    }
+    .rework-label .return-icon { font-size: 14px; }
+    .return-mini { display: inline-block; width: 46px; height: 18px; margin-left: 3px; }
+    .lane {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 3px 8px;
+      padding: 6px 9px;
+      border-left-width: 3px;
+    }
+    .lane-copy { grid-column: 1 / -1; grid-row: 1; gap: 7px; }
+    .lane-icon { width: 28px; height: 28px; }
+    .lane-icon svg { width: 14px; height: 14px; }
+    .lane-kicker { font-size: 11px; line-height: 1.15; letter-spacing: .04em; }
+    .lane h2 { font-size: 15px; line-height: 1.15; }
+    .lane-desc { display: none; }
+    .lane-metrics { grid-column: 1; grid-row: 2; gap: 6px; }
+    .lane-metric { min-width: 0; padding-right: 6px; }
+    .lane-metric b { font-size: 18px; }
+    .lane-metric span { font-size: 11px; margin-top: 2px; letter-spacing: .02em; }
+    .lane-gates { grid-column: 2; grid-row: 2; justify-self: end; align-items: flex-end; gap: 0; width: auto; }
+    .gate-pips { width: auto; gap: 2px; flex-wrap: nowrap; overflow: hidden; padding-top: 1px; }
+    .gate-pip { width: 7px; height: 7px; flex: 0 0 auto; max-width: none; }
+    .stage[data-mode="codebase"] .gate-pip { width: 5px; height: 7px; }
+    .gate-caption { display: none; }
+    .reality { grid-template-columns: 1fr; gap: 4px; }
+    .reality-card { padding: 5px 8px; border-top-width: 2px; }
+    .reality-head { margin-bottom: 1px; gap: 5px; }
+    .reality-head svg { width: 12px; height: 12px; }
+    .reality h2 { font-size: 11px; letter-spacing: .06em; }
+    .reality-list { font-size: 14px; line-height: 1.3; gap: 0; }
+    .reality-list li:not(:last-child)::after { margin: 0 3px; }
+    .reality-list li::before { display: none; }
+    .foot { flex-direction: column; align-items: flex-start; gap: 3px; padding-top: 4px; }
+    .boundary { display: block; font-size: 14px; line-height: 1.2; letter-spacing: 0; }
+    .controls-wrap { width: 100%; justify-content: space-between; gap: 6px; }
+    .seq-status { font-size: 11px; letter-spacing: .02em; }
+    .step-sep { display: none; }
+    .ctrl { height: 32px; padding: 0 8px; font-size: 11px; gap: 4px; }
+    .ctrl svg { width: 11px; height: 11px; }
+    .key-hint { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  @media print {
+    .stage { min-height: 100vh; }
+    .controls-wrap, .mode-toggle, .skip-link, .sr-only { display: none !important; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#stage">Skip to the visualization</a>
+
+<main id="stage" class="stage" data-step="0" data-mode="feature" aria-labelledby="main-title" tabindex="-1">
+  <header class="masthead">
+    <div class="meta-row">
+      <div class="brand" aria-label="PreFlight, independent research prototype">
+        <span class="brand-mark" aria-hidden="true">PF</span>
+        <span class="brand-name">PreFlight</span>
+        <span class="brand-sub">Independent research prototype</span>
+      </div>
+      <div class="meta-right">
+        <span class="meta-dot" aria-hidden="true"></span>
+        <span>R-DEMO-001</span>
+        <span class="meta-sep" aria-hidden="true">/</span>
+        <span class="meta-synthetic">Synthetic</span><span class="meta-local"> · local</span>
+      </div>
+    </div>
+    <p class="kicker" id="mode-kicker">Five-agent feature pass · human-gated</p>
+    <h1 id="main-title">Five agents. One evidence chain.</h1>
+    <p class="subline">Synthetic Guidewire-style migration rehearsal · every change waits for a human</p>
+  </header>
+
+  <section class="chain-section" aria-labelledby="chain-title">
+    <div class="section-bar">
+      <div class="section-heading">
+        <h2 id="chain-title">The evidence chain</h2>
+        <span class="section-note" id="section-note">Straight handoff · nothing auto-approved</span>
+      </div>
+      <div class="mode-toggle" role="group" aria-label="Diagram variant">
+        <button type="button" id="mode-feature" aria-pressed="true">Feature chain</button>
+        <button type="button" id="mode-codebase" aria-pressed="false">Codebase loop</button>
+      </div>
+    </div>
+
+    <div class="chain-wrap">
+      <ol class="chain" id="agent-chain" aria-label="Five agents in handoff order">
+        <li class="agent" data-step="1">
+          <div class="agent-top">
+            <span class="agent-step" aria-hidden="true">01</span>
+            <span class="agent-phase">Scope</span>
+          </div>
+          <h3>Scout</h3>
+          <p class="agent-big"><span class="num" data-field="num">300</span><span class="unit" data-field="unit">files</span></p>
+          <p class="agent-detail" data-field="detail">101 evidence · 31 links</p>
+          <p class="agent-foot" data-field="foot">PA‑VEH‑01 · 24 findings</p>
+        </li>
+        <li class="agent" data-step="2">
+          <div class="agent-top">
+            <span class="agent-step" aria-hidden="true">02</span>
+            <span class="agent-phase">Draft</span>
+          </div>
+          <h3>Architect</h3>
+          <p class="agent-big"><span class="num" data-field="num">12 → 5</span><span class="unit" data-field="unit">dispositions → packages</span></p>
+          <p class="agent-detail" data-field="detail">schema · mapping · updater · codegen · API</p>
+          <p class="agent-foot" data-field="foot">5 local drafts · all draft_ready, pending</p>
+        </li>
+        <li class="agent" data-step="3">
+          <div class="agent-top">
+            <span class="agent-step" aria-hidden="true">03</span>
+            <span class="agent-phase">Gates</span>
+          </div>
+          <h3>Guardian</h3>
+          <p class="agent-big"><span class="num" data-field="num">11</span><span class="unit" data-field="unit">human gates</span></p>
+          <p class="agent-detail" data-field="detail">3 assumptions + 8 rule groups · 6 high</p>
+          <p class="agent-foot" data-field="foot">0 resolved · no gate can auto-close</p>
+        </li>
+        <li class="agent" data-step="4">
+          <div class="agent-top">
+            <span class="agent-step" aria-hidden="true">04</span>
+            <span class="agent-phase">Checks</span>
+          </div>
+          <h3>Critic</h3>
+          <p class="agent-big"><span class="num" data-field="num">7/7</span><span class="unit" data-field="unit">machine checks</span></p>
+          <p class="agent-detail" data-field="detail">0 auto-approvals</p>
+          <p class="agent-foot" data-field="foot">package integrity · every file accounted for</p>
+        </li>
+        <li class="agent" data-step="5">
+          <div class="agent-top">
+            <span class="agent-step" aria-hidden="true">05</span>
+            <span class="agent-phase">Seal</span>
+          </div>
+          <h3 data-field="name">Scribe</h3>
+          <p class="agent-big"><span class="num" data-field="num">8</span><span class="unit" data-field="unit">sealed files</span></p>
+          <p class="agent-detail" data-field="detail">plan · report · bundle · audit</p>
+          <p class="agent-foot" data-field="foot">hash-sealed · not an approval</p>
+        </li>
+      </ol>
+
+      <div class="rework" aria-hidden="true">
+        <svg viewBox="0 0 1000 72" preserveAspectRatio="none" focusable="false">
+          <path class="return-line" d="M700 0 V20 Q700 42 678 42 H500"/>
+          <path class="return-line" d="M500 0 V20 Q500 42 478 42 H322 Q300 42 300 20 V10"/>
+          <circle class="return-node" cx="700" cy="2" r="2.1"/>
+          <circle class="return-node" cx="500" cy="2" r="2.1"/>
+          <path class="return-arrow" d="M295.5 11 L300 3 L304.5 11 Z"/>
+        </svg>
+        <span class="rework-label"><span class="return-icon" aria-hidden="true">↺</span> <span id="rework-text">codebase-only rework</span><svg class="return-mini" aria-hidden="true" focusable="false" viewBox="0 0 34 14"><path d="M31 12C31 4 26 3 18 3H7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="2.5 2.5"></path><path d="M10 0 4 3l6 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      </div>
+    </div>
+    <p class="sr-only">Rework path is codebase-only. In the codebase loop, Guardian and Critic send work back to Architect; the feature chain is a straight handoff.</p>
+  </section>
+
+  <section class="lane" id="human-lane" aria-labelledby="lane-title">
+    <div class="lane-copy">
+      <span class="lane-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="10.5" width="16" height="10" rx="1.5"></rect>
+          <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+          <circle cx="12" cy="15.5" r="1.2" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </span>
+      <div>
+        <p class="lane-kicker" id="lane-kicker">Human decision lane · feature run</p>
+        <h2 id="lane-title">The gates stay open.</h2>
+        <p class="lane-desc" id="lane-desc">No agent can approve a change, resolve an assumption, or deploy.</p>
+      </div>
+    </div>
+    <div class="lane-metrics" aria-label="Gate status">
+      <div class="lane-metric"><b data-field="gates">11</b><span>human gates</span></div>
+      <div class="lane-metric"><b data-field="approved">0</b><span>approved</span></div>
+      <div class="lane-metric"><b data-field="pending">all</b><span>pending</span></div>
+    </div>
+    <div class="lane-gates">
+      <ul class="gate-pips" id="gate-pips" aria-hidden="true"></ul>
+      <p class="gate-caption">Human decision required</p>
+    </div>
+  </section>
+
+  <section class="reality" aria-labelledby="reality-title">
+    <h2 id="reality-title" class="sr-only">Reality boundary</h2>
+    <div class="reality-card">
+      <div class="reality-head">
+        <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="#2D6A4E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.4"></circle><path d="m5.2 8.2 1.9 1.9 3.8-4.1"></path></svg>
+        <h2>What is real</h2>
+      </div>
+      <ul class="reality-list">
+        <li>scanner</li>
+        <li>rules</li>
+        <li>diffs</li>
+        <li>SARIF</li>
+        <li>hash chain</li>
+      </ul>
+    </div>
+    <div class="reality-card not-real">
+      <div class="reality-head">
+        <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="#8F570A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.4"></circle><path d="M8 4.8v4.1"></path><circle cx="8" cy="11.3" r=".9" fill="#8F570A" stroke="none"></circle></svg>
+        <h2>What is not real</h2>
+      </div>
+      <ul class="reality-list">
+        <li>synthetic fixtures</li>
+        <li>no tenant</li>
+        <li>no compile</li>
+        <li>no official Cloud Assurance</li>
+        <li><strong>not an actual migration</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p class="boundary">Synthetic fixtures · local-only · no tenant contacted · not affiliated with Guidewire</p>
+    <div class="controls-wrap">
+      <p class="seq-status" id="seq-status" aria-hidden="true">Step <b id="step-now">0</b> / 6<span class="step-sep"> · <span id="step-label">Ready</span></span></p>
+      <div class="controls" role="group" aria-label="Sequence controls">
+        <button type="button" class="ctrl primary" id="play" aria-label="Play sequence">
+          <svg id="play-icon" aria-hidden="true" viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.8 10 6 3 10.2Z"></path></svg>
+          <span id="play-text">Play</span>
+        </button>
+        <button type="button" class="ctrl" id="step">
+          <svg aria-hidden="true" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 2.5 8 6l-5.5 3.5z"></path><path d="M9.5 2.5v7"></path></svg>
+          <span>Step</span>
+        </button>
+        <button type="button" class="ctrl" id="reset">
+          <svg aria-hidden="true" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9.5 5.1A4 4 0 1 0 9.1 8.4"></path><path d="M9.6 2.2v3.1H6.5"></path></svg>
+          <span>Reset</span>
+        </button>
+      </div>
+      <span class="key-hint" aria-hidden="true"><kbd>←</kbd><kbd>→</kbd></span>
+    </div>
+  </footer>
+</main>
+
+<div class="sr-only" id="announcer" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  document.documentElement.classList.add("js");
+
+  var stage = document.getElementById("stage");
+  var agents = Array.prototype.slice.call(document.querySelectorAll(".agent"));
+  var lane = document.getElementById("human-lane");
+  var announcer = document.getElementById("announcer");
+  var step = 0;
+  var playing = false;
+  var timer = null;
+  var mode = "feature";
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var MODES = {
+    feature: {
+      kicker: "Five-agent feature pass · human-gated",
+      note: "Straight handoff · nothing auto-approved",
+      rework: "codebase-only rework",
+      laneKicker: "Human decision lane · feature run",
+      laneDesc: "No agent can approve a change, resolve an assumption, or deploy.",
+      gates: 11,
+      labels: [
+        "Ready",
+        "Scout maps the estate",
+        "Architect drafts packages",
+        "Guardian opens gates",
+        "Critic checks the package",
+        "Scribe seals the run",
+        "Human gates open"
+      ],
+      narration: [
+        "Ready. Press Play or use the arrow keys to walk the chain.",
+        "Step 1 of 6. Scout maps 300 files into 101 evidence records and 31 links on PA\u2011VEH\u201101.",
+        "Step 2 of 6. Architect turns 12 dispositions into 5 draft packages. Nothing is approved.",
+        "Step 3 of 6. Guardian opens 11 human gates; 6 are high impact.",
+        "Step 4 of 6. Critic passes 7 of 7 machine checks and makes 0 auto-approvals.",
+        "Step 5 of 6. Scribe seals 8 files: plan, report, bundle, and audit log.",
+        "Step 6 of 6. Human decision lane: 11 gates open, 0 approved, all pending."
+      ],
+      agents: [
+        {
+          phase: "Scope",
+          name: "Scout",
+          num: "300",
+          unit: "files",
+          detail: "101 evidence · 31 links",
+          foot: "PA‑VEH‑01 · 24 findings"
+        },
+        {
+          phase: "Draft",
+          name: "Architect",
+          num: "12 → 5",
+          unit: "dispositions → packages",
+          detail: "5 local drafts · all pending",
+          foot: "schema · mapping · updater · codegen · API"
+        },
+        {
+          phase: "Gates",
+          name: "Guardian",
+          num: "11",
+          unit: "human gates",
+          detail: "3 assumptions + 8 rule groups · 6 high",
+          foot: "0 resolved · no gate can auto-close"
+        },
+        {
+          phase: "Checks",
+          name: "Critic",
+          num: "7/7",
+          unit: "machine checks",
+          detail: "0 auto-approvals",
+          foot: "package integrity · every file accounted for"
+        },
+        {
+          phase: "Seal",
+          name: "Scribe",
+          num: "8",
+          unit: "sealed files",
+          detail: "plan · report · bundle · audit",
+          foot: "hash-sealed · not an approval"
+        }
+      ]
+    },
+    codebase: {
+      kicker: "Five-agent codebase loop · human-gated",
+      note: "Cyclic variant · 2 passes per case",
+      rework: "rework path · 2 passes",
+      laneKicker: "Human decision lane · codebase loop",
+      laneDesc: "Cascade 10 + Harbor 11 gates; every patch waits for a human.",
+      gates: 21,
+      labels: [
+        "Ready",
+        "Scout reviews findings",
+        "Architect drafts patches",
+        "Guardian re-scans",
+        "Critic checks patches",
+        "Planner seals outputs",
+        "Human gates open"
+      ],
+      narration: [
+        "Ready. Press Play or use the arrow keys to walk the codebase loop.",
+        "Step 1 of 6. Scout reports 18 Cascade and 20 Harbor findings.",
+        "Step 2 of 6. Architect drafts 22 Cascade and 21 Harbor patches over 2 passes per case.",
+        "Step 3 of 6. Guardian runs 13 machine checks on the re-scanned target.",
+        "Step 4 of 6. Critic runs 7 checks and leaves 10 Cascade and 11 Harbor human gates open.",
+        "Step 5 of 6. Planner seals the report and SARIF; nothing is compiled.",
+        "Step 6 of 6. Human decision lane: 21 gates open, 0 approved, all pending."
+      ],
+      agents: [
+        {
+          phase: "Scope",
+          name: "Scout",
+          num: "18 / 20",
+          unit: "findings",
+          detail: "Cascade 18 / Harbor 20",
+          foot: "16 code rule families"
+        },
+        {
+          phase: "Draft",
+          name: "Architect",
+          num: "22 / 21",
+          unit: "patches",
+          detail: "2 passes per case",
+          foot: "every patch pending"
+        },
+        {
+          phase: "Scan",
+          name: "Guardian",
+          num: "13",
+          unit: "machine checks",
+          detail: "structural re-scan",
+          foot: "rework gate · no auto-approval"
+        },
+        {
+          phase: "Checks",
+          name: "Critic",
+          num: "7",
+          unit: "checks",
+          detail: "10 / 11 human gates · 0 auto-approvals",
+          foot: "Cascade / Harbor"
+        },
+        {
+          phase: "Plan",
+          name: "Planner",
+          num: "2",
+          unit: "outputs",
+          detail: "report + SARIF · no compile",
+          foot: "all patches pending"
+        }
+      ]
+    }
+  };
+
+  function setText(selector, value) {
+    var el = document.querySelector(selector);
+    if (el) el.textContent = value;
+  }
+
+  function renderMode(nextMode, announce) {
+    mode = nextMode;
+    var data = MODES[mode];
+    stage.setAttribute("data-mode", mode);
+    document.getElementById("mode-feature").setAttribute("aria-pressed", String(mode === "feature"));
+    document.getElementById("mode-codebase").setAttribute("aria-pressed", String(mode === "codebase"));
+    setText("#mode-kicker", data.kicker);
+    setText("#section-note", data.note);
+    setText("#rework-text", data.rework);
+    setText("#lane-kicker", data.laneKicker);
+    setText("#lane-desc", data.laneDesc);
+
+    agents.forEach(function (agent, index) {
+      var info = data.agents[index];
+      setText('.agent[data-step="' + (index + 1) + '"] h3', info.name);
+      var phase = agent.querySelector(".agent-phase");
+      if (phase) phase.textContent = info.phase;
+      agent.querySelector('[data-field="num"]').textContent = info.num;
+      agent.querySelector('[data-field="unit"]').textContent = info.unit;
+      agent.querySelector('[data-field="detail"]').textContent = info.detail;
+      agent.querySelector('[data-field="foot"]').textContent = info.foot;
+    });
+
+    var gates = data.gates;
+    var approved = 0;
+    stage.querySelector('.lane-metric [data-field="gates"]').textContent = String(gates);
+    stage.querySelector('.lane-metric [data-field="approved"]').textContent = String(approved);
+    stage.querySelector('.lane-metric [data-field="pending"]').textContent = "all";
+
+    var pips = document.getElementById("gate-pips");
+    pips.innerHTML = "";
+    for (var i = 0; i < gates; i++) {
+      var pip = document.createElement("li");
+      pip.className = "gate-pip";
+      pips.appendChild(pip);
+    }
+    pips.setAttribute("aria-hidden", "true");
+    if (announce) {
+      announcer.textContent = (mode === "feature" ? "Feature chain view. " : "Codebase loop view. ") +
+        (mode === "feature"
+          ? "Five agents from Scout to Scribe; 11 human gates stay open."
+          : "Five agents from Scout to Planner; 2 passes per case, with 21 human gates open.");
+    }
+    updateControls();
+  }
+
+  function updateControls() {
+    var playText = document.getElementById("play-text");
+    var play = document.getElementById("play");
+    var icon = document.getElementById("play-icon");
+    if (playing) {
+      playText.textContent = "Pause";
+      play.setAttribute("aria-label", "Pause sequence");
+      icon.innerHTML = '<path d="M2.6 1.8h2.3v8.4H2.6zM7.1 1.8h2.3v8.4H7.1z"></path>';
+    } else {
+      playText.textContent = step >= 6 ? "Replay" : "Play";
+      play.setAttribute("aria-label", step >= 6 ? "Replay sequence" : "Play sequence");
+      icon.innerHTML = '<path d="M3 1.8 10 6 3 10.2Z"></path>';
+    }
+    document.getElementById("step-now").textContent = String(step);
+    document.getElementById("step-label").textContent = MODES[mode].labels[step];
+    document.getElementById("step").disabled = step >= 6;
+  }
+
+  function setStep(next, announce) {
+    step = Math.max(0, Math.min(6, next));
+    stage.setAttribute("data-step", String(step));
+
+    agents.forEach(function (agent, index) {
+      var order = index + 1;
+      agent.classList.toggle("is-lit", step >= order);
+      agent.classList.toggle("is-current", step === order);
+      if (step === order) {
+        agent.setAttribute("aria-current", "step");
+      } else {
+        agent.removeAttribute("aria-current");
+      }
+    });
+
+    var open = step >= 6;
+    lane.classList.toggle("is-open", open);
+
+    if (announce !== false) {
+      announcer.textContent = MODES[mode].narration[step];
+    }
+    updateControls();
+    return step;
+  }
+
+  function clearTimer() {
+    if (timer !== null) {
+      window.clearTimeout(timer);
+      timer = null;
+    }
+  }
+
+  function scheduleNext(delay) {
+    clearTimer();
+    if (!playing) return;
+    if (step >= 6) {
+      playing = false;
+      updateControls();
+      return;
+    }
+    timer = window.setTimeout(function () {
+      setStep(step + 1);
+      scheduleNext(step === 1 ? 900 : 950);
+    }, delay || 950);
+  }
+
+  function play() {
+    if (step >= 6) {
+      setStep(0, false);
+    }
+    playing = true;
+    updateControls();
+    announcer.textContent = "Playing the five-agent sequence.";
+    scheduleNext(700);
+  }
+
+  function pause() {
+    playing = false;
+    clearTimer();
+    updateControls();
+  }
+
+  function manualStep(dir) {
+    pause();
+    var next = step + dir;
+    if (next < 0) next = 0;
+    if (next > 6) next = 6;
+    setStep(next);
+  }
+
+  function reset() {
+    pause();
+    setStep(0);
+    announcer.textContent = "Sequence reset. Ready.";
+  }
+
+  document.getElementById("play").addEventListener("click", function () {
+    if (playing) {
+      pause();
+      announcer.textContent = "Sequence paused at step " + step + ".";
+    } else {
+      play();
+    }
+  });
+  document.getElementById("step").addEventListener("click", function () {
+    if (step < 6) {
+      manualStep(1);
+    }
+  });
+  document.getElementById("reset").addEventListener("click", reset);
+
+  document.getElementById("mode-feature").addEventListener("click", function () {
+    renderMode("feature", true);
+  });
+  document.getElementById("mode-codebase").addEventListener("click", function () {
+    renderMode("codebase", true);
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    var tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea" || tag === "select" || (event.target && event.target.isContentEditable)) return;
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      manualStep(1);
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      manualStep(-1);
+    }
+  });
+
+  renderMode("feature", false);
+  setStep(reduceMotion ? 6 : 0, false);
+  updateControls();
+
+  if (reduceMotion) {
+    announcer.textContent = "Five agents from Scout to Scribe. 11 human gates stay open; 0 approved; all pending. Motion is reduced.";
+  } else {
+    playing = true;
+    updateControls();
+    announcer.textContent = "Playing the five-agent sequence.";
+    scheduleNext(850);
+  }
+})();
+</script>
+</body>
+</html>

@@ -31,7 +31,7 @@
 ### What changed
 
 **Content and claims**
-- Slide 16: removed `[name]`, `[email]`, `[github / institution]`; now Saundarya Singh · independent research prototype · `github.com/SaundaryaSingh/Preflight-CloudMigration` · MIT. Added the explicit pilot ask: one authorised estate, two blind SME annotators, hard feedback.
+- Slide 16: removed `[name]`, `[email]`, `[github / institution]`; now Saundarya Singh · independent research prototype · `github.com/alikhan37544/Pre-Flight_Autonomous_Migration` · MIT. Added the explicit pilot ask: one authorised estate, two blind SME annotators, hard feedback.
 - Slide 11: six headline metrics with M2 restored. M6 is labelled `F1 1.00 (24 TP / 0 FP / 0 FN)`; 24/24 hard negatives are a separate guard count, not a seventh metric.
 - Test/freeze/audit counts: 367 tests; 18/18 recorded freeze hashes; seed 9 audit events, 11 after Accept M-01 + Reject M-12; 4 assumptions after the rejection. Updated deck, notes, README, runbook, sources, and `evidence.json`.
 - Slide 8: wording is now “Four exact documented examples + one documented 24-char mechanism applied to a synthetic long type.” Added the scope note: Cloud Retrofit without APD App; field-level `nameOverride` applies only on that path; `_ext` is a local JSON contract, not official Guidewire schema/mapping/updater syntax.

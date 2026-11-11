@@ -116,7 +116,7 @@ def build_sarif(findings: Iterable[CodeFinding], *, run_label: str = "synthetic-
                     "name": TOOL_NAME,
                     "version": tool_version,
                     "semanticVersion": tool_version,
-                    "informationUri": "https://github.com/SaundaryaSingh/Preflight-CloudMigration",
+                    "informationUri": "https://github.com/alikhan37544/Pre-Flight_Autonomous_Migration",
                     "rules": sarif_rules,
                 }
             },
