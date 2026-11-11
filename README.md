@@ -6,7 +6,7 @@ PreFlight is an offline, evidence-first review workstation for legacy Guidewire-
 
 > Every claim has evidence; every unknown has a name; every change waits for a human.
 
-**[Snapshot `v1.0.0`](https://github.com/SaundaryaSingh/Preflight-CloudMigration/releases/tag/v1.0.0)** · **Synthetic demo estate** · **Official Cloud Assurance: not run**
+**[Release `v1.0.0`](https://github.com/SaundaryaSingh/Preflight-CloudMigration/releases/tag/v1.0.0)** · **Current demo build `v1.1.0-demo` (unreleased)** · **Synthetic demo estate** · **Official Cloud Assurance: not run**
 
 [![CI](https://github.com/SaundaryaSingh/Preflight-CloudMigration/actions/workflows/ci.yml/badge.svg)](https://github.com/SaundaryaSingh/Preflight-CloudMigration/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
@@ -116,8 +116,8 @@ See [`docs/CODEBASE-MIGRATION.md`](docs/CODEBASE-MIGRATION.md) and
 
 | Item | Value |
 |---|---|
-| Version | `v1.0.0` |
-| Date | 2026-11-08 |
+| Version | `v1.1.0-demo` (unreleased); public release `v1.0.0` |
+| Date | 2026-11-10 |
 | Demo run | `R-DEMO-001` |
 | Fixture | `demo-slice-300` (300 synthetic files) |
 | Feature slice | `PA-VEH-01` Vehicle Information |
@@ -127,8 +127,8 @@ See [`docs/CODEBASE-MIGRATION.md`](docs/CODEBASE-MIGRATION.md) and
 | Assumptions | 3 |
 | Tests (current suite) | 481 passed with the current pytest suite (`pytest`, 2026-11-11) |
 | Frozen evaluation hashes | `ground_truth/FROZEN.json` |
-| Review packet | [`docs/demo/preflight-review-packet.html`](docs/demo/preflight-review-packet.html) |
-| Run summary | [`docs/demo/run-summary.json`](docs/demo/run-summary.json) |
+| Review packet | Historical capture: [`docs/demo/preflight-review-packet.html`](docs/demo/preflight-review-packet.html) (capture-time, not live) |
+| Run summary | Historical capture: [`docs/demo/run-summary.json`](docs/demo/run-summary.json) (2026-11-10, not live) |
 
 ### Measured snapshot
 
@@ -224,7 +224,7 @@ Snapshot
   → Parse         PCF, entity, typelist, product/template XML, YAML, Gosu scanner
   → Discover      feature candidates, evidence graph, confidence, gaps
   → Review        8 demo rules with masking, allowlists, hard negatives
-  → Reconstruct   12 mapping rules, local _ext draft, diff, assumptions
+  → Reconstruct   16-rule mapping pack, 12 applied dispositions, local _ext draft, diff, assumptions
   → Compare       preserved / changed / missing / added / unresolved
   → Evaluate      M1–M6, baselines, margins, per-rule table
   → Packet        six-section review artifact, hashes, audit head
@@ -321,19 +321,19 @@ Coverage includes:
 - case-study pages and codebase API/bundle downloads
 - browser golden path, offline network check, screenshots
 
-## Internal QA and adversarial review
+## Internal QA and audit record
 
-The full record is in [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
+The full QA record is in [`docs/VERIFICATION.md`](docs/VERIFICATION.md); audit scorecards are in [`docs/audits/`](docs/audits/).
 
 | Gate | Result |
 |---|---|
-| Demo-readiness panel | Four independent reviewers: 7/10 (Loop 2); demo hardening continues |
+| Audit scorecards | Audit-specific scores, scope, and dates are in [`docs/audits/`](docs/audits/). There is no single product score; read each scorecard on its own terms. |
 | Product gate | Internal QA: core flow, packet, and audit gates pass |
 | Claims / precision / reproducibility | Claims lint OK; freeze hashes 18/18 recompute |
 | Freeze hashes | 18/18 recompute |
 | Audit chain | `R-DEMO-001: OK` |
 
-The full adversarial record is historical and is being updated for the current build. It is internal QA, not an independent third-party certification.
+The records in `docs/VERIFICATION.md` and `docs/audits/` are internal QA and audit records, not an independent third-party certification. Read each record's date and scope.
 
 ## Data, security, and boundaries
 

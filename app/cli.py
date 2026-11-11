@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -23,9 +25,29 @@ def _store(args) -> RunStore:
     return RunStore(Path(args.data))
 
 
+def _is_loopback_bind(host: str) -> bool:
+    value = (host or "").strip()
+    if value.lower() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(value).is_loopback
+    except ValueError:
+        return False
+
+
 def cmd_serve(args) -> int:
+    if not _is_loopback_bind(args.host) and (
+        os.environ.get("PREFLIGHT_ALLOW_NONLOCAL") or ""
+    ).strip().lower() not in {"1", "true", "yes", "on"}:
+        print(
+            f"refusing to bind {args.host!r}: the product has no authentication. "
+            "Use a loopback host, or set PREFLIGHT_ALLOW_NONLOCAL=1 to override.",
+            file=sys.stderr,
+        )
+        return 2
     import uvicorn
 
+    print(f"PreFlight listening on {args.host}:{args.port} (remote access disabled by default)")
     uvicorn.run("app.main:app", host=args.host, port=args.port, log_level="info")
     return 0
 

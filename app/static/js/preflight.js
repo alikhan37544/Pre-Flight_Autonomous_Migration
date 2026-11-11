@@ -87,10 +87,12 @@
   function syncScrollRegion(region) {
     if (!region) return;
     const previous = region.previousElementSibling;
-    const hint = previous && previous.matches("[data-scroll-hint]") ? previous : null;
+    const parent = region.parentElement;
+    const hint = (previous && previous.matches("[data-scroll-hint]") ? previous : null)
+      || (parent ? parent.querySelector(":scope > [data-scroll-hint]") : null);
     const scrollable = region.scrollWidth > region.clientWidth + 1;
     region.classList.toggle("is-scrollable", scrollable);
-    if (hint) hint.hidden = !scrollable;
+    if (hint) hint.hidden = !(scrollable || hint.hasAttribute("data-scroll-always"));
   }
 
   function syncScrollRegions() {
@@ -99,6 +101,9 @@
 
   syncScrollRegions();
   window.addEventListener("resize", syncScrollRegions, { passive: true });
+  document.querySelectorAll("details").forEach((details) => {
+    details.addEventListener("toggle", () => window.requestAnimationFrame(syncScrollRegions));
+  });
   if (typeof ResizeObserver !== "undefined") {
     document.querySelectorAll("[data-table-scroll]").forEach((region) => {
       new ResizeObserver(() => syncScrollRegion(region)).observe(region);
@@ -1129,10 +1134,30 @@
   function codebaseTabFromUrl() {
     const params = new URLSearchParams(window.location.search);
     if (params.has("upgrade")) return "upgrade";
-    const hash = window.location.hash.replace(/^#/, "").toLowerCase();
+    const rawHash = window.location.hash.replace(/^#/, "");
+    const hash = rawHash.toLowerCase();
     const aliases = { upgrade: "upgrade", "cb-upgrade": "upgrade" };
-    const tab = aliases[hash] || hash.replace(/^cb-/, "");
+    const alias = aliases[hash];
+    if (alias) return alias;
+    const target = rawHash ? document.getElementById(rawHash) : null;
+    if (target) {
+      const panel = target.closest("[data-codebase-panel]");
+      if (panel && codebaseTabNames.includes(panel.dataset.codebasePanel)) {
+        return panel.dataset.codebasePanel;
+      }
+    }
+    const tab = hash.replace(/^cb-/, "");
     return codebaseTabNames.includes(tab) ? tab : "loop";
+  }
+  function scrollToCodebaseHashTarget() {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+    const target = document.getElementById(hash);
+    if (!target) return;
+    if (target.tagName === "DETAILS") target.open = true;
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: motionBehavior(), block: "start" });
+    });
   }
   function showCodebaseTab(name, options = {}) {
     tabButtons.forEach((button) => {
@@ -1151,6 +1176,10 @@
       url.hash = name === "loop" ? "" : name;
       window.history.replaceState({}, "", url);
     }
+    window.requestAnimationFrame(() => {
+      syncScrollRegions();
+      if (options.scrollToHash) scrollToCodebaseHashTarget();
+    });
   }
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => showCodebaseTab(button.dataset.codebaseTab, { syncHash: true }));
@@ -1171,9 +1200,9 @@
       }
     });
   }
-  if (tabButtons.length) showCodebaseTab(codebaseTabFromUrl());
+  if (tabButtons.length) showCodebaseTab(codebaseTabFromUrl(), { scrollToHash: true });
   window.addEventListener("hashchange", () => {
-    if (tabButtons.length) showCodebaseTab(codebaseTabFromUrl());
+    if (tabButtons.length) showCodebaseTab(codebaseTabFromUrl(), { scrollToHash: true });
   });
 
   function codebasePayload(live) {
@@ -1259,12 +1288,11 @@
           `/api/codebase/cases/${encodeURIComponent(codebaseCase)}/resume`,
           { scenario_id: button.dataset.scenario, choice: button.dataset.choice }
         );
-        const decision = payload.result?.status || "recorded";
         if (status) {
-          status.textContent = `Recorded ${button.dataset.choice}: ${decision}. ` +
-            "The green signal remains cleared and every patch still needs human approval.";
+          status.textContent = `Response recorded as ${button.dataset.choice}; this demo does not ` +
+            "persist it or restore the green signal. Every patch still needs human approval.";
         }
-        notify(`Upgrade response recorded: ${decision}.`);
+        notify(`Upgrade response recorded: ${button.dataset.choice}. Not persisted by this demo.`);
       } catch (error) {
         notify(error.message, true);
       } finally {

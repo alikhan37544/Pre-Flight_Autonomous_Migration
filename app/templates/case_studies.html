@@ -5,7 +5,7 @@
 <div class="page-head">
   <div>
     <div class="eyebrow">Migration stories · synthetic estates</div>
-    <h1>Two completed migrations you can explore</h1>
+    <h1>Two completed migration rehearsals you can explore</h1>
     <p class="lede">A monoline Personal Auto mutual and a multi-line P&amp;C group. Both are dummy
     insurers with invented code, real cloud constraints, and a completed five-agent rehearsal.
     Start with the story, then open the run and follow Scout → Architect → Guardian → Critic → Planner.</p>
@@ -61,7 +61,8 @@
     <dl class="glossary-grid">
       <div><dt>Gosu</dt><dd>Guidewire's JVM language for product and business logic.</dd></div>
       <div><dt>APD</dt><dd>Advanced Product Designer, Guidewire's cloud product model.</dd></div>
-      <div><dt>Cloud Data Access</dt><dd>The supported cloud read path that replaces direct SQL/JDBC.</dd></div>
+      <div><dt>Gosu Query / application API</dt><dd>The supported synchronous cloud read path for in-app code, replacing direct SQL/JDBC.</dd></div>
+      <div><dt>Cloud Data Access (CDA)</dt><dd>A streaming/export service to S3 Parquet for analytics and export — not the synchronous in-app read path.</dd></div>
       <div><dt>App Events</dt><dd>The cloud event mechanism that replaces legacy JMS/MQ transports.</dd></div>
       <div><dt>SARIF</dt><dd>A standard static-analysis report format for developer pipelines.</dd></div>
       <div><dt>Human gate</dt><dd>A decision that stays with an owner even after a green machine verdict.</dd></div>
@@ -83,14 +84,14 @@
 
     {% set outcome = summaries.get(profile.case_id) %}
     {% if outcome %}
-    <div class="case-outcome" aria-label="Completed migration outcome">
+    <div class="case-outcome" aria-label="Synthetic migration rehearsal outcome">
       <div class="outcome-stat"><span class="outcome-value">{{ outcome.findings }}</span><span class="outcome-label">blockers<span class="visually-hidden"> found</span></span></div>
       <div class="outcome-stat"><span class="outcome-value">{{ outcome.patches }}</span><span class="outcome-label">patches<span class="visually-hidden"> drafted</span></span></div>
       <div class="outcome-stat"><span class="outcome-value">{{ outcome.iterations }}</span><span class="outcome-label"><span class="visually-hidden">loop </span>iterations</span></div>
       <div class="outcome-stat"><span class="outcome-value">{{ outcome.gates }}</span><span class="outcome-label"><span class="visually-hidden">human </span>gates</span></div>
       <div class="outcome-status">
         <span class="pill pill-status {{ 'status-succeeded' if outcome.green else 'status-failed' }}">{{ 'machine-green' if outcome.green else 'blocked' }}</span>
-        <span class="outcome-label">{{ 'gates open' if outcome.green else 'human review' }}</span>
+        <span class="outcome-label">{{ 'machine checks passed · human gates open · 0 approvals' if outcome.green else 'human review required' }}</span>
       </div>
     </div>
     {% if outcome.green %}

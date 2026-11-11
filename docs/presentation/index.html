@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B6B85'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='14' font-weight='700' fill='white' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
 <title>PreFlight — Evidence before the estimate</title>
 <style>
   :root {
@@ -102,6 +103,11 @@
     display: none; overflow: hidden;
   }
   .slide.is-active { display: block; }
+  .slide.is-active .slide-body { animation: slide-enter .34s cubic-bezier(.2, .7, .3, 1) both; }
+  @keyframes slide-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .slide-body {
     width: 100%; max-width: 1640px; height: 100%; margin: 0 auto;
     padding: clamp(18px, 2.3vh, 30px) var(--pad-x) clamp(12px, 1.6vh, 20px);
@@ -110,7 +116,7 @@
   .slide-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: clamp(10px, 1.5vh, 18px); }
   .slide-head-main { min-width: 0; }
   .kicker {
-    font-size: clamp(9px, .56vw, 11px); letter-spacing: .17em; text-transform: uppercase;
+    font-size: clamp(10px, .6vw, 11.5px); letter-spacing: .17em; text-transform: uppercase;
     color: var(--teal); font-weight: 800; margin: 0 0 5px;
   }
   h1, h2, h3, p { margin-top: 0; }
@@ -120,7 +126,7 @@
   }
   .slide-lede {
     margin: 0; color: var(--muted); line-height: 1.42;
-    font-size: clamp(.83rem, .93vw, 1rem); max-width: 88ch;
+    font-size: clamp(.88rem, .96vw, 1.02rem); max-width: 88ch;
   }
   .head-badge {
     flex: none; align-self: flex-start; border: 1px solid var(--border-strong);
@@ -153,13 +159,13 @@
   .panel p { line-height: 1.42; }
   .panel p:last-child { margin-bottom: 0; }
   .eyebrow {
-    font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 800;
+    font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 800;
     color: var(--teal); margin-bottom: 6px;
   }
   .panel.ink .eyebrow { color: #7BC4D6; }
   .muted { color: var(--muted); }
-  .small { font-size: clamp(.7rem, .76vw, .8rem); line-height: 1.38; }
-  .tiny { font-size: clamp(.64rem, .68vw, .72rem); line-height: 1.35; color: var(--muted); }
+  .small { font-size: clamp(.74rem, .78vw, .82rem); line-height: 1.38; }
+  .tiny { font-size: clamp(.68rem, .7vw, .74rem); line-height: 1.35; color: var(--muted); }
   .mono { font-family: var(--mono); }
   .nowrap { white-space: nowrap; }
   .accent { color: var(--teal); }
@@ -170,7 +176,7 @@
   .tag {
     display: inline-flex; align-items: center; gap: 5px; padding: 2px 6px;
     border: 1px solid var(--border-strong); border-radius: 2px;
-    font-size: 9.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
     color: var(--muted); background: var(--paper); white-space: nowrap;
   }
   .tag.teal { border-color: var(--teal-line); background: var(--teal-soft); color: var(--teal-dark); }
@@ -179,7 +185,7 @@
   .tag.success { border-color: #B8D8C6; background: var(--success-bg); color: var(--success); }
   .tag.violet { border-color: #CFC5E6; background: var(--violet-bg); color: var(--violet); }
   .tag.ink { border-color: #3C5261; background: #22333F; color: #D9E5EB; }
-  .source { font-size: clamp(.62rem, .67vw, .71rem); color: var(--muted-2); line-height: 1.35; }
+  .source { font-size: clamp(.68rem, .72vw, .76rem); color: var(--muted-2); line-height: 1.35; }
   .source b { color: var(--muted); font-weight: 700; }
   .stat-strip { display: flex; flex-wrap: wrap; border: 1px solid var(--border); background: var(--paper); }
   .stat {
@@ -187,7 +193,7 @@
   }
   .stat:last-child { border-right: 0; }
   .stat-value { display: block; font-size: clamp(1.15rem, 1.45vw, 1.55rem); line-height: 1; font-weight: 800; letter-spacing: -.02em; }
-  .stat-label { display: block; margin-top: 4px; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; line-height: 1.25; }
+  .stat-label { display: block; margin-top: 4px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; line-height: 1.25; }
   .stat.signal .stat-value { color: var(--danger); }
   .stat.good .stat-value { color: var(--teal); }
   .cols { display: grid; gap: clamp(12px, 1.5vw, 22px); min-height: 0; }
@@ -199,7 +205,7 @@
   .stack { display: flex; flex-direction: column; gap: clamp(8px, 1.1vh, 12px); min-height: 0; }
   .grow { flex: 1; min-height: 0; }
   .bullets { margin: 0; padding-left: 17px; }
-  .bullets li { margin: 0 0 7px; line-height: 1.38; font-size: clamp(.78rem, .85vw, .92rem); }
+  .bullets li { margin: 0 0 7px; line-height: 1.38; font-size: clamp(.8rem, .86vw, .93rem); }
   .bullets li:last-child { margin-bottom: 0; }
   .bullets.tight li { margin-bottom: 4px; }
 
@@ -211,7 +217,7 @@
     background: var(--teal); color: #fff; font-weight: 800; font-size: 11px;
     border: 2px solid #fff; box-shadow: 0 0 0 1px var(--teal-line);
   }
-  .callout-body { font-size: clamp(.72rem, .79vw, .85rem); line-height: 1.36; }
+  .callout-body { font-size: clamp(.75rem, .8vw, .87rem); line-height: 1.36; }
   .callout-body b { font-weight: 800; }
   .shot {
     position: relative; background: var(--paper); border: 1px solid var(--border-strong);
@@ -240,18 +246,18 @@
   .title-grid { display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(0, .86fr); gap: clamp(22px, 4vw, 62px); align-items: center; flex: 1; }
   .title-kicker { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
   .title-kicker .line { width: 42px; height: 3px; background: var(--teal); }
-  .title-kicker span { font-size: clamp(10px, .68vw, 12px); letter-spacing: .2em; text-transform: uppercase; font-weight: 800; color: var(--teal); }
+  .title-kicker span { font-size: clamp(10.5px, .68vw, 12px); letter-spacing: .2em; text-transform: uppercase; font-weight: 800; color: var(--teal); }
   .title-display {
     font-size: clamp(2.75rem, 5.55vw, 6.2rem); line-height: .94; letter-spacing: -.045em;
     margin: 0 0 20px; font-weight: 800; max-width: 12ch;
   }
   .title-sub { font-size: clamp(.92rem, 1.08vw, 1.15rem); line-height: 1.45; color: var(--muted); max-width: 52ch; margin-bottom: 18px; }
   .title-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-  .title-meta { font-size: 10.5px; color: var(--muted-2); letter-spacing: .04em; }
+  .title-meta { font-size: 11px; color: var(--muted-2); letter-spacing: .04em; }
   .title-panel { background: var(--ink); color: #EDF4F7; padding: clamp(18px, 2vw, 30px); border: 1px solid #0E1921; }
   .packet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; border-bottom: 1px solid #3A4F5D; padding-bottom: 11px; margin-bottom: 12px; }
-  .packet-title { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #86BDCD; font-weight: 800; }
-  .packet-id { font-family: var(--mono); font-size: 10px; color: #9DB2BE; }
+  .packet-title { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #86BDCD; font-weight: 800; }
+  .packet-id { font-family: var(--mono); font-size: 10.5px; color: #9DB2BE; }
   .packet-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 8px 0; border-bottom: 1px solid #2B3E4B; align-items: baseline; }
   .packet-row:last-of-type { border-bottom: 0; }
   .packet-k { font-size: 12px; color: #DDE9EE; }
@@ -265,35 +271,35 @@
   .qcard { background: var(--paper); border: 1px solid var(--border); border-top: 3px solid var(--teal); padding: 13px 14px; }
   .qcard .qnum { font-size: 1.5rem; line-height: 1; font-weight: 800; color: var(--teal); margin-bottom: 7px; }
   .qcard h3 { font-size: clamp(.88rem, .95vw, 1.02rem); margin-bottom: 4px; }
-  .qcard p { font-size: clamp(.7rem, .75vw, .8rem); margin: 0; color: var(--muted); line-height: 1.35; }
+  .qcard p { font-size: clamp(.72rem, .76vw, .81rem); margin: 0; color: var(--muted); line-height: 1.35; }
   .pain-list { display: flex; flex-direction: column; gap: 8px; }
   .pain { display: grid; grid-template-columns: 94px minmax(0, 1fr); gap: 11px; align-items: start; background: var(--paper); border: 1px solid var(--border); padding: 10px 12px; }
   .pain-tag { font-size: 9.5px; line-height: 1.2; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--teal-dark); padding-top: 2px; }
   .pain h3 { font-size: clamp(.83rem, .9vw, .96rem); margin: 0 0 3px; }
-  .pain p { font-size: clamp(.71rem, .76vw, .81rem); line-height: 1.34; color: var(--muted); margin: 0 0 4px; }
+  .pain p { font-size: clamp(.73rem, .77vw, .82rem); line-height: 1.34; color: var(--muted); margin: 0 0 4px; }
   .quote-bar { border-left: 3px solid var(--teal); padding: 7px 0 7px 13px; margin: 0 0 12px; color: var(--ink-2); font-size: clamp(.8rem, .9vw, .96rem); line-height: 1.4; }
   .quote-bar b { color: var(--teal-dark); }
 
   /* Slide 3 */
   .slide--gap h2 { max-width: 54ch; font-size: clamp(1.45rem, 2.3vw, 2.7rem); }
   .ack-line { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
-  .fixture-note { margin: 6px 0 0; font-size: 10px; line-height: 1.35; color: var(--muted); }
+  .fixture-note { margin: 6px 0 0; font-size: 11px; line-height: 1.35; color: var(--muted); }
   .guards-shot { border: 1px solid var(--border-strong); background: var(--paper); position: relative; margin-top: 8px; }
   .guards-shot img { display: block; width: 100%; height: auto; }
-  .guards-shot .cap { padding: 5px 8px; border-top: 1px solid var(--border); font-size: 10px; line-height: 1.3; color: var(--muted); }
-  .m12-list { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 3px 6px; margin: 0; font-size: 10px; line-height: 1.35; }
+  .guards-shot .cap { padding: 5px 8px; border-top: 1px solid var(--border); font-size: 11px; line-height: 1.3; color: var(--muted); }
+  .m12-list { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 3px 6px; margin: 0; font-size: 11px; line-height: 1.35; }
   .m12-list dt { color: var(--muted); font-weight: 700; }
   .m12-list dd { margin: 0; overflow-wrap: anywhere; }
-  .m12-list code { font-size: 10px; }
+  .m12-list code { font-size: 11px; }
   .matrix-wrap { min-width: 0; }
   .matrix { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--border); }
-  .matrix th, .matrix td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .matrix th, .matrix td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   .matrix th { font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; background: #EEF3F5; line-height: 1.2; }
   .matrix th:not(:first-child), .matrix td:not(:first-child) { text-align: center; width: 9.4%; }
   .matrix td { font-size: clamp(.68rem, .73vw, .78rem); line-height: 1.3; }
   .matrix tr:last-child td { border-bottom: 0; }
   .matrix .tool-name { font-weight: 800; display: block; }
-  .matrix .tool-sub { color: var(--muted); font-size: .92em; display: block; margin-top: 1px; }
+  .matrix .tool-sub { color: var(--muted); font-size: 10.6px; display: block; margin-top: 1px; }
   .matrix tr.preflight td { background: #EAF4F6; border-top: 2px solid var(--teal); }
   .matrix tr.preflight .tool-name { color: var(--teal-dark); }
   .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--teal); }
@@ -306,14 +312,14 @@
   .bottom-band { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
   .bottom-band.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .bottom-card { background: var(--paper); border: 1px solid var(--border); border-top: 2px solid var(--teal); padding: 8px 10px; min-width: 0; }
-  .bottom-card b { display: block; font-size: clamp(.7rem, .75vw, .8rem); line-height: 1.2; margin-bottom: 2px; }
-  .bottom-card span { display: block; font-size: clamp(.62rem, .66vw, .71rem); color: var(--muted); line-height: 1.3; }
-  .bottom-card .num { font-family: var(--mono); color: var(--teal); font-size: 10px; font-weight: 700; }
+  .bottom-card b { display: block; font-size: clamp(.72rem, .76vw, .81rem); line-height: 1.2; margin-bottom: 2px; }
+  .bottom-card span { display: block; font-size: clamp(.68rem, .7vw, .74rem); color: var(--muted); line-height: 1.3; }
+  .bottom-card .num { font-family: var(--mono); color: var(--teal); font-size: 10.5px; font-weight: 700; }
   .stage-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 0 16px; margin-top: 8px; flex: 1; min-height: 0; }
-  .stage-item { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: clamp(.62rem, .66vw, .71rem); line-height: 1.25; }
-  .stage-item b { font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--teal-dark); }
+  .stage-item { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: clamp(.66rem, .69vw, .73rem); line-height: 1.25; }
+  .stage-item b { font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--teal-dark); }
   .stage-item span { color: var(--muted); }
-  .closing-line { margin-top: auto; border-top: 1px solid var(--border); padding-top: 9px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: clamp(.67rem, .72vw, .77rem); color: var(--muted); }
+  .closing-line { margin-top: auto; border-top: 1px solid var(--border); padding-top: 9px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: clamp(.7rem, .73vw, .78rem); color: var(--muted); }
   .closing-line b { color: var(--ink); font-weight: 800; }
 
   /* Slide 4 */
@@ -325,12 +331,12 @@
   .pipe:nth-child(odd) { border-top: 3px solid var(--teal); }
   .pipe-num { font-family: var(--mono); font-size: 9px; color: var(--muted-2); letter-spacing: .06em; }
   .pipe-name { display: block; font-size: clamp(.68rem, .74vw, .79rem); font-weight: 800; line-height: 1.15; margin: 3px 0 4px; }
-  .pipe-desc { display: block; font-size: clamp(.59rem, .63vw, .68rem); color: var(--muted); line-height: 1.28; }
+  .pipe-desc { display: block; font-size: clamp(.66rem, .68vw, .72rem); color: var(--muted); line-height: 1.28; }
   .arrow { flex: none; width: 10px; display: grid; place-items: center; color: #3E5563; font-size: 15px; font-weight: 800; }
   .invariants { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
   .invariant { background: var(--paper); border: 1px solid var(--border); border-top: 2px solid var(--teal); padding: 9px 10px; }
   .invariant b { display: block; font-size: clamp(.68rem, .73vw, .78rem); margin-bottom: 3px; }
-  .invariant span { display: block; font-size: clamp(.6rem, .64vw, .69rem); color: var(--muted); line-height: 1.3; }
+  .invariant span { display: block; font-size: clamp(.66rem, .68vw, .72rem); color: var(--muted); line-height: 1.3; }
   .run-strip { display: flex; align-items: center; gap: 10px; background: var(--ink); color: #EAF2F6; padding: 11px 14px; margin-top: 10px; }
   .run-strip .big { font-size: 1.15rem; font-weight: 800; color: #7BC4D6; letter-spacing: -.02em; }
   .run-strip .txt { font-size: clamp(.68rem, .74vw, .8rem); color: #B9CCD6; line-height: 1.35; }
@@ -346,12 +352,12 @@
   .rung:last-child { border-bottom: 0; }
   .rung .lab { font-weight: 800; font-size: clamp(.66rem, .71vw, .76rem); }
   .rung .cnt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; }
-  .rung .desc { font-size: clamp(.62rem, .66vw, .71rem); color: var(--muted); line-height: 1.28; }
-  .field-list { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px 8px; font-size: clamp(.67rem, .72vw, .77rem); line-height: 1.32; }
+  .rung .desc { font-size: clamp(.68rem, .7vw, .74rem); color: var(--muted); line-height: 1.28; }
+  .field-list { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px 8px; font-size: clamp(.7rem, .74vw, .79rem); line-height: 1.32; }
   .field-list dt { color: var(--muted); font-weight: 700; }
   .field-list dd { margin: 0; }
   .chain { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
-  .chain-node { font-family: var(--mono); font-size: 8.5px; border: 1px solid var(--border-strong); background: #F7F9FB; padding: 4px 5px; color: var(--ink-2); white-space: nowrap; }
+  .chain-node { font-family: var(--mono); font-size: 10px; border: 1px solid var(--border-strong); background: #F7F9FB; padding: 4px 5px; color: var(--ink-2); white-space: nowrap; }
   .chain-arrow { color: #3E5563; font-weight: 800; font-size: 11px; }
 
   /* Demo slides */
@@ -361,20 +367,21 @@
   .demo-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .demo-side .panel { padding: 12px 14px; }
   .demo-side h3 { font-size: clamp(.86rem, .94vw, 1.01rem); }
-  .demo-side p, .demo-side .callout-body { font-size: clamp(.7rem, .75vw, .8rem); }
+  .demo-side p, .demo-side .callout-body { font-size: clamp(.72rem, .76vw, .81rem); }
   .demo-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
   .demo-stat { background: var(--paper); border: 1px solid var(--border); padding: 7px 8px; }
   .demo-stat b { display: block; font-size: clamp(1rem, 1.2vw, 1.25rem); line-height: 1; letter-spacing: -.02em; }
-  .demo-stat span { display: block; margin-top: 3px; font-size: 8.6px; line-height: 1.2; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+  .demo-stat span { display: block; margin-top: 3px; font-size: 10px; line-height: 1.2; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
   .demo-stat.signal b { color: var(--danger); }
   .evidence-mini { border: 1px solid var(--border-strong); background: var(--paper); }
   .evidence-mini img { display: block; width: 100%; height: auto; }
-  .evidence-mini .cap { padding: 5px 8px; border-top: 1px solid var(--border); font-size: 9px; color: var(--muted); line-height: 1.3; }
+  .evidence-mini .cap { padding: 5px 8px; border-top: 1px solid var(--border); font-size: 10.5px; color: var(--muted); line-height: 1.3; }
   .mini-table { width: 100%; border-collapse: collapse; font-size: clamp(.62rem, .66vw, .71rem); line-height: 1.28; }
-  .mini-table th { text-align: left; color: var(--muted); font-size: 8.5px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); padding: 4px 4px; }
+  .mini-table th { text-align: left; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); padding: 4px 4px; }
   .mini-table td { border-bottom: 1px solid var(--border); padding: 5px 4px; vertical-align: top; }
   .mini-table tr:last-child td { border-bottom: 0; }
-  .mini-table code { font-family: var(--mono); font-size: 9.6px; }
+  .mini-table code { font-family: var(--mono); font-size: 10.5px; }
+  #slide-15 .mini-table th, #slide-15 .mini-table td { padding: 3px 6px; }
 
   /* Assistant */
   .assistant-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 1.5vw, 20px); min-height: 0; }
@@ -386,7 +393,7 @@
   @media (min-height: 850px) { .assistant-strip { display: grid; } }
   .assistant-strip .panel { padding: 9px 11px; }
   .assistant-strip b { display: block; font-size: clamp(.7rem, .75vw, .8rem); margin-bottom: 2px; }
-  .assistant-strip span { display: block; font-size: clamp(.62rem, .66vw, .71rem); color: var(--muted); line-height: 1.3; }
+  .assistant-strip span { display: block; font-size: clamp(.68rem, .7vw, .74rem); color: var(--muted); line-height: 1.3; }
 
   /* Evaluation */
   .eval-top { display: grid; grid-template-columns: 1.2fr .8fr; gap: 14px; margin-bottom: 8px; }
@@ -396,24 +403,24 @@
   .eval-stat:nth-child(3n) { border-right: 0; }
   .eval-stat:nth-child(n+4) { border-bottom: 0; }
   .eval-stat b { display: block; font-size: clamp(1rem, 1.2vw, 1.3rem); line-height: 1; }
-  .eval-stat span { display: block; margin-top: 3px; font-size: 8.4px; line-height: 1.2; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
-  .guard-line { margin: 5px 0 0; font-size: 10px; line-height: 1.3; color: var(--muted); }
+  .eval-stat span { display: block; margin-top: 3px; font-size: 10px; line-height: 1.2; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
+  .guard-line { margin: 5px 0 0; font-size: 11px; line-height: 1.3; color: var(--muted); }
   .guard-line b { color: var(--ink); }
   .chart-panel { padding: 10px 12px 8px; }
   .chart-panel h3 { margin-bottom: 2px; }
-  .chart-panel .chart-sub { font-size: 9.5px; color: var(--muted); margin-bottom: 4px; }
+  .chart-panel .chart-sub { font-size: 10.5px; color: var(--muted); margin-bottom: 4px; }
   .chart-svg { display: block; width: 100%; height: clamp(190px, 26vh, 300px); }
   .mobile-ci { display: none; }
-  .mobile-ci-row { display: grid; grid-template-columns: 84px minmax(0, 1fr) 72px; gap: 7px; align-items: center; margin: 6px 0; font-size: 10px; }
+  .mobile-ci-row { display: grid; grid-template-columns: 84px minmax(0, 1fr) 72px; gap: 7px; align-items: center; margin: 6px 0; font-size: 10.5px; }
   .mobile-ci-track { position: relative; height: 11px; background: #E5ECF0; border: 1px solid #D0DBE2; }
   .mobile-ci-range { position: absolute; top: 0; bottom: 0; background: #9BC6D1; }
   .mobile-ci-dot { position: absolute; right: 0; top: 50%; width: 7px; height: 7px; background: var(--teal); border-radius: 50%; transform: translate(50%, -50%); }
-  .mobile-ci-value { text-align: right; font-family: var(--mono); font-size: 9.5px; color: var(--muted); }
+  .mobile-ci-value { text-align: right; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
   .caveat-list { display: flex; flex-direction: column; gap: 7px; }
   .caveat { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; align-items: start; }
-  .caveat .mark { width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 800; border: 1px solid var(--amber-line); background: var(--amber-bg); color: var(--amber); }
+  .caveat .mark { width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10.5px; font-weight: 800; border: 1px solid var(--amber-line); background: var(--amber-bg); color: var(--amber); }
   .caveat .mark.no { border-color: #E4B7B5; background: var(--danger-bg); color: var(--danger); }
-  .caveat p { margin: 0; font-size: clamp(.67rem, .72vw, .77rem); line-height: 1.32; color: var(--ink-2); }
+  .caveat p { margin: 0; font-size: clamp(.7rem, .74vw, .79rem); line-height: 1.32; color: var(--ink-2); }
   .caveat p b { font-weight: 800; }
   .holdout { border-left: 3px solid var(--teal); }
   .eval-right { display: flex; flex-direction: column; }
@@ -423,7 +430,7 @@
   .packet-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, .85fr); gap: 14px; min-height: 0; }
   .section-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
   .section-item { border: 1px solid var(--border); background: var(--paper); padding: 6px 7px; }
-  .section-item b { display: block; font-family: var(--mono); font-size: 9px; color: var(--teal); }
+  .section-item b { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--teal); }
   .section-item span { display: block; font-size: clamp(.62rem, .66vw, .71rem); line-height: 1.25; margin-top: 2px; }
   .hash-block { background: #13222C; color: #DCE8EE; padding: 10px 11px; font-family: var(--mono); font-size: clamp(.58rem, .62vw, .67rem); line-height: 1.55; overflow-wrap: anywhere; }
   .hash-block .hk { color: #7BC4D6; }
@@ -434,11 +441,11 @@
 
   /* Rigor */
   .rigor-top { display: flex; gap: 6px; margin-bottom: 9px; flex-wrap: wrap; }
-  .rigor-badge { background: var(--paper); border: 1px solid var(--border); padding: 6px 9px; font-size: 9.5px; color: var(--muted); font-weight: 700; }
+  .rigor-badge { background: var(--paper); border: 1px solid var(--border); padding: 6px 9px; font-size: 10.5px; color: var(--muted); font-weight: 700; }
   .rigor-badge b { color: var(--ink); font-size: 12px; }
   .fix-table { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--border); }
-  .fix-table th { text-align: left; padding: 6px 8px; background: #EEF3F5; color: var(--muted); font-size: 8.6px; text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border); }
-  .fix-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); font-size: clamp(.62rem, .66vw, .71rem); line-height: 1.28; vertical-align: top; }
+  .fix-table th { text-align: left; padding: 6px 8px; background: #EEF3F5; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border); }
+  .fix-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); font-size: clamp(.68rem, .7vw, .74rem); line-height: 1.28; vertical-align: top; }
   .fix-table tr:last-child td { border-bottom: 0; }
   .fix-table td:first-child { font-weight: 700; }
   .fix-table .before { color: var(--danger); }
@@ -447,18 +454,18 @@
 
   /* Novelty */
   .prior-table { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--border); }
-  .prior-table th { text-align: left; padding: 5px 7px; background: #EEF3F5; color: var(--muted); font-size: 8.4px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); }
-  .prior-table td { padding: 5px 7px; border-bottom: 1px solid var(--border); font-size: clamp(.62rem, .66vw, .71rem); line-height: 1.28; vertical-align: top; }
+  .prior-table th { text-align: left; padding: 5px 7px; background: #EEF3F5; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); }
+  .prior-table td { padding: 5px 7px; border-bottom: 1px solid var(--border); font-size: clamp(.68rem, .7vw, .74rem); line-height: 1.28; vertical-align: top; }
   .prior-table tr:last-child td { border-bottom: 0; }
   .prior-table td:first-child { font-weight: 700; white-space: nowrap; }
   .score-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 34px; gap: 8px; align-items: center; margin: 7px 0; }
-  .score-label { font-size: clamp(.66rem, .71vw, .76rem); font-weight: 700; line-height: 1.2; }
+  .score-label { font-size: clamp(.69rem, .72vw, .77rem); font-weight: 700; line-height: 1.2; }
   .score-track { display:block; height: 9px; background: #E5ECF0; border: 1px solid #D0DBE2; overflow: hidden; }
   .score-fill { display:block; height: 100%; background: var(--teal); }
   .score-fill.mid { background: #4B8A9B; }
   .score-fill.low { background: var(--amber); }
   .score-num { font-family: var(--mono); font-size: 11px; text-align: right; color: var(--muted); }
-  .score-note { font-size: 9px; color: var(--muted-2); margin-top: 4px; }
+  .score-note { font-size: 10.5px; color: var(--muted-2); margin-top: 4px; }
 
   /* Viability */
   .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; }
@@ -467,13 +474,13 @@
   .risk-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; background: var(--danger); }
   .risk-dot.m { background: var(--amber); }
   .risk-dot.l { background: #8AA0AC; }
-  .risk b { display: block; font-size: clamp(.64rem, .69vw, .74rem); line-height: 1.25; }
-  .risk span { display: block; font-size: clamp(.58rem, .62vw, .67rem); color: var(--muted); line-height: 1.25; }
+  .risk b { display: block; font-size: clamp(.68rem, .71vw, .76rem); line-height: 1.25; }
+  .risk span { display: block; font-size: clamp(.65rem, .68vw, .71rem); color: var(--muted); line-height: 1.25; }
   .wedge { border-left: 4px solid var(--teal); }
   .risk-panel { display: flex; flex-direction: column; }
   .risk-panel > .eval-bottom { margin-top: auto; }
   .roadmap { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; margin-top: 7px; }
-  .road { background: var(--paper); border: 1px solid var(--border); padding: 5px 7px; font-size: clamp(.6rem, .64vw, .69rem); line-height: 1.25; }
+  .road { background: var(--paper); border: 1px solid var(--border); padding: 5px 7px; font-size: clamp(.66rem, .68vw, .72rem); line-height: 1.25; }
   .road b { color: var(--teal); font-family: var(--mono); font-size: 9px; display: block; margin-bottom: 1px; }
 
   /* Close */
@@ -489,31 +496,82 @@
   .ask-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
   .ask { border: 1px solid #3A4F5D; padding: 12px; background: #223440; }
   .ask b { display: block; font-size: clamp(.76rem, .82vw, .9rem); margin-bottom: 4px; color: #F3F7F9; }
-  .ask span { display: block; font-size: clamp(.65rem, .7vw, .76rem); color: #AFC2CD; line-height: 1.35; }
-  .contact-line { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: clamp(.68rem, .73vw, .8rem); color: #9FB4C0; margin-bottom: 12px; }
+  .ask span { display: block; font-size: clamp(.68rem, .72vw, .78rem); color: #AFC2CD; line-height: 1.35; }
+  .contact-line { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: clamp(.7rem, .74vw, .8rem); color: #9FB4C0; margin-bottom: 12px; }
   .pilot-ask { font-size: clamp(.8rem, .88vw, .96rem); color: #E7F0F4; margin: 0 0 10px; }
   .pilot-ask b { color: #8FD3E1; }
   .contact-line b { color: #DCE8EE; font-weight: 700; }
-  .disclaimer { font-size: 9px; line-height: 1.45; color: #7D94A2; border-top: 1px solid #3A4F5D; padding-top: 10px; max-width: 125ch; }
+  .disclaimer { font-size: 10.5px; line-height: 1.45; color: #7D94A2; border-top: 1px solid #3A4F5D; padding-top: 10px; max-width: 125ch; }
 
-  /* Agent loop: the five-agent chain (slides 13-16) */
+  /* Agent handoff chain: the five-agent feature pass (slides 13-16) */
   .agent-loop { display: flex; align-items: stretch; gap: 0; margin: 2px 0 0; min-width: 0; }
   .agent-node {
     flex: 1 1 0; min-width: 0; background: var(--paper); border: 1px solid var(--border);
     border-top: 3px solid var(--teal); padding: 10px 10px 11px;
   }
-  .agent-step { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; color: var(--muted-2); font-weight: 700; }
+  .agent-step { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; color: var(--muted-2); font-weight: 700; }
   .agent-node h3 { font-size: clamp(.92rem, 1.02vw, 1.1rem); line-height: 1.1; margin: 2px 0 3px; letter-spacing: -.01em; }
-  .agent-handoff { font-size: max(10px, .64vw); line-height: 1.25; color: var(--teal-dark); font-weight: 800; margin: 0 0 5px; text-transform: uppercase; letter-spacing: .04em; }
-  .agent-facts { font-size: max(10px, .64vw); line-height: 1.32; color: var(--muted); margin: 0; }
+  .agent-handoff { font-size: max(10.5px, .66vw); line-height: 1.25; color: var(--teal-dark); font-weight: 800; margin: 0 0 5px; text-transform: uppercase; letter-spacing: .04em; }
+  .agent-facts { font-size: max(11px, .67vw); line-height: 1.32; color: var(--muted); margin: 0; }
   .agent-arrow { flex: none; width: 20px; display: grid; place-items: center; color: var(--teal); font-size: 15px; font-weight: 800; }
+  .code-lab-grid {
+    display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.05fr) minmax(0, .9fr);
+    gap: clamp(10px, 1.2vw, 16px); align-items: start; min-height: 0;
+  }
+  .code-col { min-width: 0; }
+  .code-col .claim-code { tab-size: 2; }
+  .code-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .slide.is-active .agent-node { animation: agent-pulse 3s ease-in-out 2; }
+  .slide.is-active .agent-node:nth-of-type(2) { animation-delay: .18s; }
+  .slide.is-active .agent-node:nth-of-type(3) { animation-delay: .36s; }
+  .slide.is-active .agent-node:nth-of-type(4) { animation-delay: .54s; }
+  .slide.is-active .agent-node:nth-of-type(5) { animation-delay: .72s; }
+  @keyframes agent-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(11, 107, 133, 0); }
+    45% { box-shadow: 0 0 0 4px rgba(11, 107, 133, .10); }
+  }
+  .agent-compare {
+    display: flex; flex-wrap: wrap; gap: 3px 18px; align-items: baseline;
+    margin: 0 0 10px; padding: 8px 11px; background: var(--paper);
+    border: 1px solid var(--border); border-left: 3px solid var(--teal);
+    font-size: clamp(.78rem, .82vw, .88rem); line-height: 1.38;
+  }
+  .agent-compare b { color: var(--teal-dark); }
+  .agent-compare .same { color: var(--muted); }
+  .state-chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px;
+    border: 1px solid var(--amber-line); background: var(--amber-bg); color: var(--amber);
+    font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .state-chip.seed { border-color: var(--teal-line); background: var(--teal-soft); color: var(--teal-dark); }
+  .glossary {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px; margin-top: 7px;
+  }
+  .glossary.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .gloss {
+    background: var(--paper); border: 1px solid var(--border); padding: 7px 8px;
+    font-size: max(10.5px, .66vw); line-height: 1.3; color: var(--ink-2);
+  }
+  .gloss b {
+    display: block; color: var(--teal-dark); font-size: 10.5px;
+    letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px;
+  }
+  .exposure-note {
+    display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: baseline;
+    margin: 7px 0 0; padding: 7px 10px; background: var(--amber-bg);
+    border: 1px solid var(--amber-line); font-size: max(10.5px, .68vw); line-height: 1.35;
+  }
+  .exposure-note b { color: var(--amber); }
+  .resume-table td { vertical-align: top; }
 
   /* Seal cards: Scribe's four seals (slide 16) */
   .seal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
   .seal-card { background: var(--paper); border: 1px solid var(--border); border-top: 2px solid var(--teal); padding: 8px 9px; min-width: 0; }
-  .seal-label { display: block; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+  .seal-label { display: block; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
   .seal-hash { display: block; font-family: var(--mono); font-size: clamp(.66rem, .7vw, .76rem); color: var(--teal-dark); margin: 3px 0 2px; overflow-wrap: anywhere; }
-  .seal-art { display: block; font-size: max(10px, .64vw); line-height: 1.25; color: var(--muted); }
+  .seal-art { display: block; font-size: max(11px, .67vw); line-height: 1.25; color: var(--muted); }
 
   /* Notes and help */
   .notes-panel {
@@ -555,7 +613,7 @@
 
   /* Mobile */
   @media screen and (max-width: 900px) {
-    :root { --chrome-h: 50px; --foot-h: 32px; --pad-x: 18px; }
+    :root { --chrome-h: 50px; --foot-h: 58px; --pad-x: 18px; }
     html { scroll-padding-top: calc(var(--chrome-h) + 10px); }
     body { overflow: auto; overflow-x: hidden; padding-top: var(--chrome-h); }
     .chrome { gap: 10px; padding: 0 10px; }
@@ -572,7 +630,7 @@
     .head-badge { display: inline-block; margin-top: 8px; }
     h2 { font-size: clamp(1.45rem, 7.2vw, 2.1rem); max-width: none; }
     .slide-lede { font-size: .92rem; }
-    .cols-2, .cols-2.wide-left, .cols-3, .demo-grid, .slide--findings .demo-grid, .assistant-grid, .packet-grid, .gap-call, .eval-top, .eval-cols, .risk-cols, .title-grid { grid-template-columns: 1fr; }
+    .cols-2, .cols-2.wide-left, .cols-3, .demo-grid, .slide--findings .demo-grid, .assistant-grid, .packet-grid, .gap-call, .eval-top, .eval-cols, .risk-cols, .title-grid, .code-lab-grid { grid-template-columns: 1fr; }
     .agent-loop { flex-direction: column; }
     .agent-arrow { width: auto; height: 12px; transform: rotate(90deg); }
     .seal-grid { grid-template-columns: 1fr; }
@@ -605,7 +663,11 @@
     .score-row { grid-template-columns: 100px minmax(0, 1fr) 30px; }
     .close-quote { font-size: clamp(2rem, 10.5vw, 3.2rem); }
     .foot-brand { display: none; }
-    .foot-note { font-size: 9px; }
+    .foot { flex-wrap: wrap; align-content: center; gap: 1px 10px; padding: 4px 10px; }
+    .foot-note { flex: 1 1 100%; font-size: 10px; white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.3; }
+    .foot-mid { display: none; }
+    .foot-right { font-size: 10px; gap: 8px; }
+    .foot-dot { width: 5px; height: 5px; }
     .notes-panel { width: 100vw; top: var(--chrome-h); bottom: var(--foot-h); }
     .help { padding: 18px; }
     .title-meta { font-size: 9.5px; }
@@ -617,12 +679,29 @@
     .qcard .qnum { font-size: 1.2rem; }
     .claim-code { font-size: 10.5px; }
   }
+  @media screen and (max-width: 640px) {
+    /* Desktop UI captures render at ~3–5px when squeezed to 390; the HTML carries the data. */
+    .shot, .evidence-mini { display: none !important; }
+    .assistant-card .shot { display: block !important; }
+    .resume-table thead { display: none; }
+    .resume-table tbody, .resume-table tr, .resume-table td { display: block; width: 100%; }
+    .resume-table tr { border-bottom: 1px solid var(--border); padding: 5px 0; }
+    .resume-table tr:last-child { border-bottom: 0; }
+    .resume-table td { border: 0; padding: 2px 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; }
+    .resume-table td::before {
+      content: attr(data-label); font-size: 10.5px; text-transform: uppercase;
+      letter-spacing: .05em; color: var(--muted); font-weight: 800; line-height: 1.35;
+    }
+    .glossary, .glossary.four { grid-template-columns: 1fr 1fr; }
+    #slide-15 .mini-table { table-layout: fixed; }
+    #slide-15 .mini-table td, #slide-15 .mini-table th { overflow-wrap: anywhere; word-break: break-word; }
+  }
   @media screen and (max-width: 380px) {
     .invariants, .demo-stats, .ask-grid, .roadmap, .section-list { grid-template-columns: 1fr; }
     .stat { min-width: 100%; border-right: 0; border-bottom: 1px solid var(--border); }
   }
-  @media screen and (min-width: 901px) and (max-height: 800px) { .slide-body { zoom: .86; } }
-  @media screen and (min-width: 901px) and (max-height: 900px) { #slide-12 .slide-body { zoom: .95; } #slide-9 .slide-body { zoom: .97; } }
+  @media screen and (min-width: 901px) and (max-height: 800px) { .slide-body { zoom: .96; } }
+  @media screen and (min-width: 901px) and (max-height: 900px) { #slide-12 .slide-body { zoom: .96; } #slide-9 .slide-body { zoom: .97; } }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   }
@@ -635,7 +714,9 @@
   .section-item b, .section-item span, .cmd, .rigor-badge, .fix-table th, .fix-table td,
   .prior-table th, .prior-table td, .score-note, .road, .road b, .disclaimer,
   .foot-note, .title-meta, .marker, .bottom-card span, .claim-code, .shot figcaption,
-  .hash-block, .risk span { font-size: max(10px, 0.64vw); }
+  .hash-block, .risk span, .agent-step, .seal-label, .m12-list, .m12-list code,
+  .fixture-note, .guards-shot .cap,
+  .exposure-note { font-size: max(10.6px, 0.68vw); }
 
   /* Short projectors: compact spacing first; never hide the argument. */
   @media screen and (max-height: 840px) and (min-width: 901px) {
@@ -679,6 +760,17 @@
     .guards-shot { max-width: 250px !important; }
     .guard-line { margin-top: 3px; }
     .slide--findings .demo-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr); gap: 8px; }
+    #slide-6 .evidence-mini { display: none; }
+    #slide-15 .mini-table th, #slide-15 .mini-table td { padding: 3px 4px; }
+    #slide-15 .demo-side .panel { padding: 7px 9px; }
+    #slide-15 .demo-grid { grid-template-columns: 1fr; }
+    #slide-15 .demo-grid > .shot { display: none !important; }
+    #slide-15 .demo-grid > .stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+    #slide-18 .draft-limits { display: none; }
+    #slide-18 .claim-code { line-height: 1.3; padding: 5px 8px !important; }
+    #slide-18 .code-lab-grid .source { display: none; }
+    #slide-18 .glossary .gloss { padding: 5px 6px; }
+    .code-side { gap: 7px; }
   }
   @media screen and (min-width: 1600px) {
     .stage-item { grid-template-columns: max-content minmax(0, 1fr); column-gap: 10px; }
@@ -708,6 +800,16 @@
       background: var(--canvas); color: var(--ink);
     }
     .slide:last-child { page-break-after: auto; }
+    .slide::after {
+      content: "Synthetic estate · not affiliated with Guidewire · Official Cloud Assurance: not run";
+      position: absolute; left: 76px; right: 76px; bottom: 3px;
+      padding-top: 2px; border-top: 1px solid var(--border);
+      font-family: var(--sans); font-size: 10px; line-height: 1.1;
+      color: var(--muted); letter-spacing: .01em;
+    }
+    .slide--close::after { color: #9FB2BF; border-top-color: #3A4F5D; }
+    .slide-body, .agent-node { animation: none !important; }
+    .glossary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     .slide-body {
       width: 1600px !important; height: 900px !important; max-width: none; margin: 0;
       padding: 28px 76px 20px; transform: none !important;
@@ -1177,7 +1279,7 @@
           <h2>A decision queue, not a rename script.</h2>
           <p class="slide-lede">Twelve explicit source-to-target dispositions. Provenance is per row: documented example, PreFlight convention, or reviewer decision. Reject a row and the unresolved question becomes a named assumption.</p>
         </div>
-        <span class="head-badge">12 dispositions · 0 _gen writes</span>
+        <span class="head-badge attention">Post-decision · 4 assumptions</span>
       </div>
       <div class="demo-grid grow">
         <figure class="shot" style="margin:0">
@@ -1231,8 +1333,8 @@
       </div>
       <div class="demo-grid grow">
         <figure class="shot" style="margin:0">
-          <img src="assets/findings-focus-1440x900.png" width="1212" height="1016" alt="PreFlight Findings focus crop: SBT readiness flag, 24 advisory findings from 8 rules, claim strength and standard family columns, selected finding detail, and decision controls. The complete detail panel is included.">
-          <figcaption>Live capture at 1440 × 900, cropped to the SBT readiness flag, the 24 findings, the selected row, and the complete detail panel. The precision-guard corpus is shown separately below.</figcaption>
+          <img src="assets/findings-table-clean-1440x900.png" width="1212" height="566" alt="PreFlight Findings table crop: selected F-002 row plus seven more of the 24 advisory findings, with claim-strength, standard-family, and selected-finding detail columns. The app’s table-scroll hint is cropped out.">
+          <figcaption>Clean crop below the app’s table-scroll hint: 8 of the 24 finding rows plus the selected F-002 detail. The full list is in the review packet; the precision-guard excerpt is shown separately below.</figcaption>
         </figure>
         <div class="demo-side">
           <div class="callout-list">
@@ -1242,9 +1344,8 @@
             <div class="callout"><span class="callout-num">4</span><div class="callout-body"><b>SBT is a separate readiness flag.</b> Not mixed into the 24 advisory findings or the 8 scored rules.</div></div>
             <div class="callout"><span class="callout-num">5</span><div class="callout-body"><b>24 hard negatives stay silent.</b> <code>Query.make(PersonalVehicle).select()</code> is supported access, not JDBC. Comments and strings are masked first.</div></div>
           </div>
-          <div class="guards-shot" style="max-width:300px">
-            <img src="assets/findings-guard-query-make.png" width="270" height="244" alt="Precision-guard excerpt: PF-GW-SQL-001 lists Query.make(PersonalVehicle).select() as supported data access, not direct JDBC, with driver, string, and comment near-misses.">
-            <div class="cap"><b>Precision guard.</b> 8 rules × 3 near-misses; <code>Query.make</code> is supported access, not JDBC.</div>
+          <div class="panel" style="padding:8px 10px">
+            <p class="small" style="margin:0"><b>Precision guard:</b> 8 rules × 3 near-misses; <code>Query.make</code> is supported access, not JDBC. Comments and strings are masked before matching.</p>
           </div>
           <div class="panel optional-panel" style="padding:8px 10px">
             <p class="small" style="margin:0"><b>No violation claim.</b> Advisory, pattern-based, cited. Not Cloud Assurance, a pass/fail, or legal/security advice.</p>
@@ -1342,7 +1443,7 @@
                 <line x1="610" y1="34" x2="610" y2="272"/><line x1="700" y1="34" x2="700" y2="272"/>
               </g>
               <line x1="250" y1="272" x2="700" y2="272" stroke="#B9C7D2" stroke-width="1.5"/>
-              <g font-size="10" fill="#7B8A96" text-anchor="middle">
+              <g font-size="11" fill="#7B8A96" text-anchor="middle">
                 <text x="250" y="288">50%</text><text x="340" y="288">60%</text><text x="430" y="288">70%</text>
                 <text x="520" y="288">80%</text><text x="610" y="288">90%</text><text x="700" y="288">100%</text>
               </g>
@@ -1366,11 +1467,11 @@
                 <circle cx="700" cy="48" r="5"/><circle cx="700" cy="89" r="5"/><circle cx="700" cy="130" r="5"/>
                 <circle cx="700" cy="171" r="5"/><circle cx="700" cy="212" r="5"/><circle cx="700" cy="253" r="5"/>
               </g>
-              <g font-size="10" fill="#5B6B78" text-anchor="end">
+              <g font-size="11" fill="#5B6B78" text-anchor="end">
                 <text x="748" y="52">68–100</text><text x="748" y="93">68–100</text><text x="748" y="134">96–100</text>
                 <text x="748" y="175">76–100</text><text x="748" y="216">61–100</text><text x="748" y="257">no interval</text>
               </g>
-              <g fill="#8A5A12" font-size="10">
+              <g fill="#8A5A12" font-size="11">
                 <text x="349" y="232">6/8 top-8 allowance</text>
               </g>
             </g>
@@ -1434,7 +1535,7 @@
           <h2>The review artifact is the product.</h2>
           <p class="slide-lede">Six sections, every excluded file, every assumption, every disposition, 126 evidence items, and a hash-chained audit trail. This capture is post-decision: 11 audit events and 4 assumptions after Accept M-01 + Reject M-12. Downloadable HTML; locally verifiable; explicitly not a certification.</p>
         </div>
-        <span class="head-badge">126 evidence · 11 audit events</span>
+        <span class="head-badge attention">Post-decision · 11 events · 4 assumptions</span>
       </div>
       <div class="packet-grid grow">
         <figure class="shot" style="margin:0">
@@ -1478,16 +1579,17 @@
   </section>
 
   <!-- 13 -->
-  <section class="slide" id="slide-13" data-section="Demo · Migrator" data-title="Five-agent evidence chain" aria-label="Slide 13 of 23: Five-agent evidence chain">
+  <section class="slide" id="slide-13" data-section="Demo · Migrator" data-title="Five-agent handoff chain" aria-label="Slide 13 of 23: Five-agent handoff chain">
     <div class="slide-body">
       <div class="slide-head">
         <div class="slide-head-main">
-          <p class="kicker">Demo 08 · Migrator · five-agent chain</p>
-          <h2>Five agents. One evidence chain. No authority to deploy.</h2>
-          <p class="slide-lede">The feature migrator runs five specialist agents over the completed PA-VEH-01 review: Scout, Architect, Guardian, Critic, and Scribe. Each receives the prior artifact, adds a check or an artifact, and leaves a record. The run ends <span class="mono">completed_with_gates</span> with 11 gates open — not approval, not deployment. This path is a straight handoff chain; the cyclic rework loop belongs to the codebase lab.</p>
+          <p class="kicker">Demo 08 · Migrator · five-agent handoff chain</p>
+          <h2>Five agents. One handoff chain. No authority to deploy.</h2>
+          <p class="slide-lede">The feature migrator runs five specialist agents over the completed PA-VEH-01 review: Scout, Architect, Guardian, Critic, and Scribe. Each receives the prior artifact, adds a check or an artifact, and leaves a record. The run ends <span class="mono">completed_with_gates</span> with 11 gates open — not approval, not deployment. This path is a straight handoff chain; the codebase lab is the cyclic loop.</p>
         </div>
-        <span class="head-badge">Straight handoff chain</span>
+        <span class="head-badge">Seeded run · 3 assumptions</span>
       </div>
+      <p class="agent-compare"><span><b>Feature handoff chain:</b> Scout → Architect → Guardian → Critic → <b>Scribe</b> seals the review packet.</span><span><b>Codebase cyclic loop:</b> Scout → Architect ↔ Guardian / Critic → <b>Planner</b> assembles and seals the codebase plan.</span><span class="same"><b>Same fifth role, different loop:</b> seal the run, never approve or deploy.</span></p>
       <div class="agent-loop" role="list" aria-label="Five-agent handoff chain from Scout to Scribe">
         <article class="agent-node" role="listitem">
           <span class="agent-step">01</span>
@@ -1538,16 +1640,20 @@
         <span class="big">R-DEMO-001</span><span class="sep">·</span>
         <span class="txt"><b>completed_with_gates</b> · verification passed (7/7) · 11 gates open · no deployment</span>
       </div>
-      <p class="source" style="margin:7px 0 0">Optional live reasoning run <span class="mono">R-20261111-052740-b001</span>: <span class="mono">mimo-v2.6-flash</span> made 3 citation-checked calls (Scout, Architect, Critic); 0 ungrounded claims passed validation; Guardian made 0 model calls. The deterministic 7/7 checks and sealed status are unchanged.</p>
-      <figure class="shot" style="margin:10px 0 0">
-        <img src="assets/agents/migrator-loop-1440x900.png" width="1440" height="900" alt="Migrator page on run R-DEMO-001: five-agent cycle Scout, Architect, Guardian, Critic, Scribe; 5 work packages, 5 target drafts, 11 human gates, 6 high impact, and 8 bundle files." style="height:clamp(110px,19vh,170px);object-fit:cover;object-position:50% 0%">
-        <figcaption>The live migrator page for <span class="mono">R-DEMO-001</span>: the same five-agent strip, 11 gates, and sealed-bundle counts shown above. The page calls it a loop; the feature path is a straight handoff chain.</figcaption>
-      </figure>
+      <p class="source" style="margin:7px 0 0"><b>State:</b> the seeded review has 3 assumption gates + 8 rule groups = 11 gates. Slides 8 and 12 show the separate post-decision packet (4 assumptions after Reject M-12); that is not the migrator’s input state. Optional live reasoning run <span class="mono">R-20261111-052740-b001</span>: <span class="mono">mimo-v2.6-flash</span> made 3 citation-checked calls (Scout, Architect, Critic); 0 ungrounded claims passed validation; Guardian made 0 model calls. The deterministic 7/7 checks and sealed status are unchanged.</p>
+      <p class="eyebrow" style="margin:10px 0 4px">Plain-language glossary</p>
+      <div class="glossary four">
+        <div class="gloss"><b>Gosu</b>Guidewire’s JVM language for business logic and queries.</div>
+        <div class="gloss"><b>APD</b>Advanced Product Designer: product data and code generation.</div>
+        <div class="gloss"><b>Scribe</b>The feature handoff chain’s fifth agent; seals the review packet.</div>
+        <div class="gloss"><b>Planner</b>The codebase cyclic loop’s fifth agent; assembles and seals the plan.</div>
+      </div>
     </div>
     <div class="speaker-note" hidden>
-      <p><strong>Start with the chain, not the badge.</strong> “Scout, Architect, Guardian, Critic, Scribe. Each one receives the prior artifact, adds a check or an artifact, and leaves a record. Nobody can approve or deploy.”</p>
+      <p><strong>Start with the handoff chain, not the badge.</strong> “Scout, Architect, Guardian, Critic, Scribe. Each one receives the prior artifact, adds a check or an artifact, and leaves a record. Nobody can approve or deploy.”</p>
       <p>Read the numbers as the same review the audience already saw: 300 files, 101 evidence records, 31 links on PA-VEH-01, 24 findings, 12 dispositions. Architect produces five local files; Guardian turns findings and assumptions into 11 gates; Critic runs seven package-integrity checks; Scribe seals eight listed files.</p>
-      <p>If someone calls it a loop, correct the shape: “The feature path is a straight handoff chain. The cyclic Architect ↔ Guardian/Critic rework is the codebase lab.”</p>
+      <p><strong>Name the fifth-agent difference before anyone asks.</strong> “Scribe seals the feature packet. Planner is the codebase lab’s fifth agent: it assembles and seals the codebase plan. Same role, different loop — and neither approves or deploys.” The feature path is a straight handoff chain; only the codebase lab has the cyclic Architect ↔ Guardian/Critic rework.</p>
+      <p><strong>Plain terms:</strong> Gosu is Guidewire’s JVM language for business logic and queries; APD is the Advanced Product Designer; a gate is a named human decision, not an automated pass. The migrator runs on the seeded review: 3 assumption gates, not the 4-assumption post-decision packet on slides 8 and 12.</p>
       <p>Say the boundary plainly: “Synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.” The optional live run used three model calls; it did not change the deterministic checks or the sealed status.</p>
     </div>
   </section>
@@ -1582,8 +1688,8 @@
       <p class="source" style="margin:6px 0 0">Full target paths are under <span class="mono">migration/target/config/integration/</span>. All five are <span class="mono">mapped_transformed</span>, <span class="mono">draft_ready</span>, and <span class="mono">pending</span>.</p>
       <div class="cols cols-2" style="margin-top:9px">
         <figure class="shot" style="margin:0">
-          <img src="assets/agents/migrator-scout-1440x900.png" width="1440" height="900" alt="Migrator Scout stage on run R-DEMO-001: 31 evidence links, 101 evidence records across 300 files, 24 findings, 12 dispositions, and the first eight evidence rows handed to Architect." style="height:clamp(150px,26vh,250px);object-fit:cover;object-position:50% 0%">
-          <figcaption>Scout stage on <span class="mono">R-DEMO-001</span>: 31 evidence links on PA-VEH-01; the table shows the first 8 of 31. The package table above is built from <span class="mono">migration.json</span>, not from this screenshot.</figcaption>
+          <img src="assets/agents/migrator-scout-1440x900.png" width="1440" height="900" alt="Migrator Scout stage on run R-DEMO-001: 31 evidence links, 101 evidence records across 300 files, 24 findings, 12 dispositions, and the first evidence row handed to Architect." style="height:clamp(150px,26vh,250px);object-fit:cover;object-position:50% 0%">
+          <figcaption>Scout stage on <span class="mono">R-DEMO-001</span>: the crop shows the first evidence row of 31 on PA-VEH-01; the full handoff is in the packet. The package table above is built from <span class="mono">migration.json</span>, not from this screenshot.</figcaption>
         </figure>
         <div class="stack">
           <div class="panel tint">
@@ -1613,8 +1719,9 @@
           <h2>Guardian turns 24 findings and 3 assumptions into 11 human gates.</h2>
           <p class="slide-lede">Guardian does not score the draft; it opens a gate for every open assumption and every rule group that still has an unanswered finding. The 24 findings collapse into 8 rule groups of 3, plus 3 assumption gates, for 11 human decisions. Six of the 11 are high impact. The bundle cannot ship while any gate is open.</p>
         </div>
-        <span class="head-badge attention">11 gates · 6 high</span>
+        <span class="head-badge attention">Seeded run · 3 assumptions · 11 gates</span>
       </div>
+      <p class="source" style="margin:0 0 6px"><b>State:</b> seeded review — 3 assumptions + 8 rule groups = 11 gates. Slides 8 and 12 show the separate post-decision packet (4 assumptions after Reject M-12).</p>
       <div class="stat-strip" aria-label="Guardian gate arithmetic">
         <div class="stat"><span class="stat-value">24</span><span class="stat-label">findings</span></div>
         <div class="stat"><span class="stat-value">8</span><span class="stat-label">rule groups × 3</span></div>
@@ -1657,6 +1764,7 @@
           </div>
         </div>
       </div>
+      <p class="source" style="margin:6px 0 0"><b>Level check:</b> the 11 gates live at assumption and rule-group level, not package level. Slide 14 shows the only package-level gate, G-03.</p>
       <div class="bottom-band" style="grid-template-columns:1.15fr .85fr;margin-top:8px">
         <div class="bottom-card"><b>Independent by design</b><span>Guardian receives the 5 packages, open assumptions and findings, and the rule pack. It deliberately does not receive Scout’s narrative, Critic’s verdict, or any model-generated text.</span></div>
         <div class="bottom-card"><b>Open is a status, not a failure</b><span>A gate is a named human decision with an owner. All 11 are unresolved; 6 are high impact.</span></div>
@@ -1666,6 +1774,7 @@
       <p><strong>The arithmetic is the story.</strong> “24 findings collapse to eight rule groups of three, and three assumptions stand alone. That is 11 human decisions, six of them high impact.”</p>
       <p>Guardian’s independence is deliberate. It sees the packages, the open assumptions and findings, and the rule pack. It does not see Scout’s narrative or Critic’s verdict, and it receives no model-generated text.</p>
       <p>The gates are not scoring failures, but they are not resolved either: assumption owners are unassigned and the rule groups sit with the delivery team. Nothing ships while any gate is open.</p>
+      <p><strong>Label the state.</strong> This is the seeded review: 3 assumptions + 8 rule groups = 11 gates. The post-decision packet on slides 8 and 12 has 4 assumptions because Reject M-12 adds A-DEC-04; it is a different capture, not a stale count.</p>
       <p>Say the boundary plainly: synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.</p>
     </div>
   </section>
@@ -1745,6 +1854,7 @@
       </div>
       <div class="run-strip" style="margin:0 0 10px">
         <span class="txt">Qusar 2026.08 pre-cloud snapshot → <b>simulated</b> GWCP 2027.04 target · five-agent loop Scout → Architect ↔ Guardian / Critic → Planner · same 16-family rule pack · SARIF 2.1.0 · every patch <span class="mono">pending</span> · no deployment</span>
+        <span class="txt" style="flex:1 1 100%;border-top:1px solid #3A4F5D;padding-top:5px;margin-top:3px">Same fifth role, different loop: <b>Scribe</b> seals the feature packet; <b>Planner</b> assembles and seals the codebase plan. Neither approves.</span>
       </div>
       <div class="cols cols-2">
         <div class="panel" style="border-top:3px solid var(--teal)">
@@ -1765,7 +1875,7 @@
         <div class="panel" style="border-top:3px solid var(--teal)">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
             <div><p class="eyebrow" style="margin-bottom:2px">Multi-line regional P&amp;C · synthetic</p><h3 style="margin-bottom:3px">Harbor P&amp;C</h3></div>
-            <span class="tag">APD naming preparation</span>
+            <span class="tag">Type-level APD naming preparation</span>
           </div>
           <p class="small" style="margin-bottom:3px"><b>Illustrative synthetic footprint:</b> 2.6M policies · 214 PCF screens · 1,180 custom Gosu files · 42 integrations.</p>
           <p class="tiny" style="margin-bottom:6px">Cross-application: coastal eligibility, claims gateway, vendor MQ, billing batch.</p>
@@ -1776,14 +1886,15 @@
             <div class="stat signal"><span class="stat-value">11</span><span class="stat-label">human gates</span></div>
           </div>
           <p class="small" style="margin:6px 0 0"><span class="mono success">green_with_human_gates</span> · 15 rules fired · structural 100 / gate-adjusted <b>71</b>.</p>
+          <p class="tiny" style="margin:4px 0 0"><b>Not full APD conversion:</b> type-level naming preparation only; no field mapping or endpoint regeneration.</p>
         </div>
       </div>
       <figure class="shot" style="margin:9px 0 0">
-        <img src="assets/agents/case-studies-outcomes-focus.png" width="1210" height="230" alt="Crop of the migration stories page: Cascade Mutual and Harbor P&C cards with synthetic footprint values, outcome strips of 18/22/2/10 and 20/21/2/11, and green-with-gates status." style="height:clamp(110px,19vh,180px);object-fit:cover;object-position:50% 12%">
-        <figcaption>Both synthetic case cards and outcome strips; footprint figures are illustrative synthetic values. Harbor’s visible “APD conversion” label is the app’s program label; the generated deliverable is type-level naming preparation only.</figcaption>
+        <img src="assets/agents/case-studies-outcome-strips.png" width="1138" height="80" alt="Outcome strips from the migration stories page: Cascade Mutual 18/22/2/10 and Harbor P&C 20/21/2/11 with green-with-gates status. The app labels read blockers found, patches drafted, loop passes, and human gates.">
+        <figcaption>Outcome strips only, cropped above the app’s program label: Cascade 18/22/2/10 and Harbor 20/21/2/11. The app says “blockers found” and “patches drafted”; the cards above call the same counts findings and patches. Footprints are illustrative synthetic values.</figcaption>
       </figure>
       <div class="panel tint" style="margin-top:8px;padding:7px 10px">
-        <p class="small" style="margin:0"><b>Reality boundary:</b> synthetic profiles, not customer references. No customer data, no tenant connection, no Guidewire affiliation. A code-level green is bounded; human gates remain open. Harbor’s APD draft is type-level APN naming preparation only — not full APD conversion or field mapping.</p>
+        <p class="small" style="margin:0"><b>Reality boundary:</b> synthetic profiles, not customer references. No customer data, no tenant connection, no Guidewire affiliation. A code-level green is bounded; human gates remain open. Harbor’s APD draft is type-level APD naming preparation only — not full APD conversion or field mapping.</p>
       </div>
     </div>
     <div class="speaker-note" hidden>
@@ -1791,6 +1902,7 @@
       <p>That is why Harbor has more findings and gates despite fewer patches. The structural score reads 100/100 for both, but the human-gate-adjusted scores are 74 and 71; the gap is the point.</p>
       <p>Label the footprint numbers honestly: illustrative synthetic values, not measured customer data. No customer data, no tenant, no Guidewire affiliation.</p>
       <p>Harbor’s APD deliverable is a type-level codegen <span class="mono">nameOverride</span> draft: naming preparation only. It is not a full APD conversion and does not model field-level mapping or endpoint generation.</p>
+      <p><strong>Plain terms:</strong> APD is the Advanced Product Designer; Qusar 2026.08 is the synthetic source release and GWCP 2027.04 is the simulated target platform. App Events are platform message envelopes. Same fifth role, different loop: Scribe seals the feature packet; Planner assembles and seals the codebase plan.</p>
     </div>
   </section>
 
@@ -1800,19 +1912,18 @@
       <div class="slide-head">
         <div class="slide-head-main">
           <p class="kicker">Demo 13 · Codebase lab · refactor + SARIF</p>
-          <h2>The code lab closes the loop — and still leaves 10/11 human gates.</h2>
-          <p class="slide-lede">The codebase lab starts from raw Gosu, Java, XML, and GUnit rather than a completed review. Architect drafts patches, Guardian re-scans the target, Critic applies every displayed diff, and Planner compiles only after both gates agree. Cascade and Harbor each need two passes and still exit with human gates open. The output is a review bundle and SARIF, not a deployed change.</p>
+          <h2>The code lab closes its loop. Cascade 10 and Harbor 11 human gates stay open.</h2>
+          <p class="slide-lede">The codebase lab starts from raw Gosu, Java, XML, and GUnit rather than a completed review. Architect drafts patches, Guardian re-scans the target, Critic applies every displayed diff, and Planner assembles and seals the codebase plan. Nothing is compiled: compile validation is future work. Cascade and Harbor each need two passes, and every human gate remains open. The output is a review bundle and SARIF, not a deployed change.</p>
         </div>
         <span class="head-badge">SARIF 2.1.0 · advisory</span>
       </div>
       <div class="run-strip" style="margin:0 0 10px">
         <span class="txt"><b>16</b> code rule families · 2 cases · 2 iterations each · <b>Cascade</b> 18 findings / 22 patches / 10 gates · <b>Harbor</b> 20 findings / 21 patches / 11 gates · 13 / 15 SARIF rules fired</span>
       </div>
-      <div class="demo-grid grow">
-        <div class="stack" style="min-width:0">
-          <div style="min-width:0">
-            <p class="eyebrow" style="margin-bottom:4px">Before · fixture source (excerpt)</p>
-            <div class="claim-code" style="padding:9px 11px;line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%">
+      <div class="code-lab-grid grow">
+        <div class="code-col">
+          <p class="eyebrow" style="margin-bottom:4px">Before · fixture source (excerpt)</p>
+          <div class="claim-code" tabindex="0" role="region" aria-label="Before: JDBC source excerpt" style="padding:9px 11px;line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%">
 <span class="m">uses java.sql.Connection</span>
 <span class="m">uses java.sql.DriverManager</span>
 
@@ -1822,48 +1933,62 @@ var stmt = conn.createStatement()
 stmt.executeQuery(
   <span class="s">"SELECT factor FROM cascade_rating " +</span>
   <span class="s">"WHERE vin = '" + vin + "'"</span>)
-            </div>
           </div>
-          <div style="min-width:0">
-            <p class="eyebrow" style="margin-bottom:4px">After · generated draft shape (not compiled)</p>
-            <div class="claim-code" style="padding:9px 11px;line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%">
+          <p class="source" style="margin:6px 0 0">Source excerpt from <span class="mono">gsrc/cascade/rating/VehicleRatingQuery.gs</span>; line breaks added for display. This is the fixture’s JDBC and string-concatenated SQL.</p>
+        </div>
+        <div class="code-col">
+          <p class="eyebrow" style="margin-bottom:4px">After · corrected draft shape (not compiled)</p>
+          <div class="claim-code" tabindex="0" role="region" aria-label="After: corrected Gosu Query draft" style="padding:9px 11px;line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%">
 <span class="k">package</span> cascade.rating
 
 <span class="k">uses</span> gw.api.database.Query
 
-<span class="m">// PreFlight Architect draft: candidate Gosu Query / application API service.</span>
-<span class="m">// Confirm the entity and projected fields with the data owner before merge.</span>
-<span class="k">class</span> VehicleRatingQueryQueryService {
+<span class="m">// Architect draft: typed Gosu Query / API service.</span>
+<span class="m">// Confirm entity and fields with the data owner.</span>
+<span class="k">class</span> VehicleRatingQueryService {
   <span class="k">function</span> load() : List&lt;VehicleRating&gt; {
     <span class="k">return</span> Query.make(VehicleRating).select().toList()
   }
 }
-            </div>
           </div>
-          <p class="source" style="margin:0">Source excerpt from <span class="mono">gsrc/cascade/rating/VehicleRatingQuery.gs</span>; line breaks added for display. The draft is a generated Gosu Query sketch — not compiled, and semantic equivalence is gate CR-03.</p>
+          <p class="source" style="margin:6px 0 0">The app generator currently appends <span class="mono">QueryService</span> to the source class name, producing <span class="mono">VehicleRatingQueryQueryService</span>; that naming artifact is owned by the app team, so the corrected name is shown here. The draft is not compiled; semantic equivalence is gate CR-03.</p>
         </div>
-        <div class="stack" style="min-width:0">
+        <div class="code-side">
           <div class="panel" style="padding:10px 12px">
             <p class="eyebrow">SARIF 2.1.0 · advisory by construction</p>
+            <p class="small" style="margin-bottom:4px"><b>SARIF is the machine-readable output of a static analyzer</b> — findings with rule IDs and file locations. It is advisory input to CI, not a compliance verdict.</p>
             <p class="small" style="margin-bottom:4px">Tool driver <b>PreFlight CodeGuard</b>. Cascade: <b>18</b> results / <b>13</b> rules. Harbor: <b>20</b> results / <b>15</b> rules.</p>
             <p class="tiny" style="margin-bottom:4px">Per result: <span class="mono">ruleId</span> · <span class="mono">level</span> · artifact URI · start line/column · <span class="mono">partialFingerprints.primaryLocationLineHash</span> · claim strength · remediation · redacted flag.</p>
             <p class="tiny" style="margin:0">Run properties: <span class="mono">official_cloud_assurance: false</span> · <span class="mono">synthetic: true</span>. No source excerpts or secret values; works with <span class="mono">upload-sarif</span>.</p>
           </div>
-          <figure class="shot" style="margin:0">
-            <img src="assets/agents/codebase-patches-1440x900.png" width="1440" height="900" alt="Codebase lab Patches tab: 22 Cascade refactor patches, each with target path, rule IDs, risk level, and pending approval." style="height:clamp(120px,18vh,190px);object-fit:cover;object-position:50% 45%">
-            <figcaption>Cascade patch bundle: 22 drafts, every patch pending human approval.</figcaption>
-          </figure>
+          <div class="panel tint draft-limits" style="padding:10px 12px">
+            <p class="eyebrow">What the draft does not prove</p>
+            <ul class="bullets tight" style="font-size:max(10.5px, .68vw);margin-bottom:0">
+              <li>Compile or runtime equivalence.</li>
+              <li>Entity or field-level mapping.</li>
+              <li>Tenant compatibility or deployment.</li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="panel tint" style="margin-top:8px;padding:8px 11px">
-        <p class="small" style="margin:0 0 3px"><b>16 rule families.</b> 13 fired on Cascade, 15 on Harbor; 18 vs 20 SARIF results; both cases 2 passes. The lab is a structural scanner, not a compiler or data-flow engine. Drafts are not compiled; every patch remains <span class="mono">pending</span>.</p>
-        <p class="tiny" style="margin:0"><b>CDA correction:</b> Cloud Data Access is a streaming/export service to S3 Parquet, not a synchronous in-app read. Synchronous reads use Gosu Query or an application API. <b>Servlet:</b> public guidance says custom servlets are “not a recommended practice” — not “unsupported.”</p>
+        <p class="small" style="margin:0 0 3px"><b>16 rule families.</b> 13 fired on Cascade, 15 on Harbor; 18 vs 20 SARIF results; both cases 2 passes. <b>Planner assembles and seals the codebase plan; nothing is compiled.</b> The lab is a structural scanner, not a compiler or data-flow engine. Compile validation is future work; every patch remains <span class="mono">pending</span>.</p>
+        <p class="eyebrow" style="margin:6px 0 4px">Plain-language glossary</p>
+        <div class="glossary">
+          <div class="gloss"><b>Gosu</b>Guidewire’s JVM language for business logic and queries.</div>
+          <div class="gloss"><b>APD</b>Advanced Product Designer: product data and code generation.</div>
+          <div class="gloss"><b>CDA</b>Cloud Data Access: streams/exports to S3 Parquet; not a synchronous read.</div>
+          <div class="gloss"><b>App Events</b>Platform message envelopes; the simulated v2 adds tenant and event IDs.</div>
+          <div class="gloss"><b>SARIF</b>Machine-readable static-analysis results; advisory, not a compliance verdict.</div>
+        </div>
       </div>
     </div>
     <div class="speaker-note" hidden>
       <p><strong>The lab is a structural pre-check, not a compiler.</strong> That is why the slide says “draft” and keeps semantic equivalence visible. The same 16-family pack fires differently: 13 rules on Cascade, 15 on Harbor, producing 18 and 20 SARIF results.</p>
       <p>Each result carries a line hash and a claim-strength label. The SARIF run marks Cloud Assurance as not run and the fixture as synthetic. It is suitable for advisory CI ingestion, not a compliance verdict.</p>
       <p>The refactor example shows intent, not compiled equivalence. The source uses JDBC and concatenated SQL; the draft shape uses a typed Gosu Query. A human owner still has to validate entity mapping, semantics, and runtime behavior.</p>
+      <p><strong>Naming artifact.</strong> The app generator currently appends <span class="mono">QueryService</span> to the source class name, so the literal draft class is <span class="mono">VehicleRatingQueryQueryService</span>. That doubled name is a generator artifact owned by the app team; the slide shows the corrected <span class="mono">VehicleRatingQueryService</span> for readability.</p>
+      <p><strong>Plain terms:</strong> Gosu is Guidewire’s JVM language for business logic and queries; APD is the Advanced Product Designer; CDA (Cloud Data Access) streams/exports InsuranceSuite data to S3 as Parquet; App Events are platform message envelopes; SARIF is the machine-readable static-analysis results format — advisory, not a compliance verdict.</p>
       <p>Correct two labels explicitly. Cloud Data Access streams and exports InsuranceSuite data to S3 as Parquet; it is not a synchronous in-app read path. Synchronous reads use Gosu Query or an application API. Custom servlets are “not a recommended practice,” not “unsupported.”</p>
     </div>
   </section>
@@ -1892,16 +2017,17 @@ stmt.executeQuery(
           <tr><td>Cloud API version</td><td>v1 → v2 route prefix</td><td class="mono">PF-CODE-SRV-001</td><td>4</td><td>3</td></tr>
         </tbody>
       </table>
+      <p class="exposure-note"><b>Per-scenario exposure — not additive.</b><span>Each row is an independent release change; one patch can appear in more than one row. Cascade has 30 patch-exposures across 22 patches (2+3+7+14+4); Harbor has 28 across 21 (2+3+6+14+3). The estate totals stay 22 and 21.</span></p>
       <p class="source" style="margin:5px 0 0">Scenario IDs: <span class="mono">GWCP-APD-NAMING-2027.04</span> · <span class="mono">GWCP-APP-EVENTS-V2-2027.04</span> · <span class="mono">GWCP-GATEWAY-MTLS-2027.04</span> · <span class="mono">GWCP-GOSU-API-REMOVAL-2027.04</span> · <span class="mono">GWCP-CLOUD-API-VERSION-2027.04</span>. All five simulate GWCP 2026.10 → 2027.04; the 2027.04 release and the 20-character limit are PreFlight simulations, not published Guidewire release notes.</p>
       <div class="cols cols-2" style="margin-top:8px">
         <div class="panel" style="padding:9px 11px">
           <p class="eyebrow">Resume options · revalidate / rollback / defer</p>
-          <table class="mini-table" aria-label="Resume options after an upgrade">
+          <table class="mini-table resume-table" aria-label="Resume options after an upgrade">
             <thead><tr><th scope="col">Option</th><th scope="col">What it does</th><th scope="col">Status recorded</th></tr></thead>
             <tbody>
-              <tr><td><b>Revalidate</b> <span class="tag success">recommended</span></td><td>Re-run Architect with the new rule pack</td><td class="mono">resume_requested</td></tr>
-              <tr><td><b>Rollback</b></td><td>Return to the last green checkpoint; keep the sealed bundle</td><td class="mono">rolled_back_to_checkpoint</td></tr>
-              <tr><td><b>Defer</b></td><td>Pin the assessment release; record the risk owner</td><td class="mono">upgrade_deferred</td></tr>
+              <tr><td data-label="Option"><b>Revalidate</b> <span class="tag success">recommended</span></td><td data-label="What it does">Re-run Architect with the new rule pack</td><td data-label="Status recorded" class="mono">resume_requested</td></tr>
+              <tr><td data-label="Option"><b>Rollback</b></td><td data-label="What it does">Return to the last green checkpoint; keep the sealed bundle</td><td data-label="Status recorded" class="mono">rolled_back_to_checkpoint</td></tr>
+              <tr><td data-label="Option"><b>Defer</b></td><td data-label="What it does">Pin the assessment release; record the risk owner</td><td data-label="Status recorded" class="mono">upgrade_deferred</td></tr>
             </tbody>
           </table>
           <p class="tiny" style="margin:5px 0 0">All three clear the green signal and keep human approval required.</p>
@@ -1925,6 +2051,8 @@ stmt.executeQuery(
       <p><strong>The 24-character APD type-name limit is documented; the 20-character 2027.04 scenario is a simulation.</strong> Do not say Guidewire is tightening the limit in 2027.04. The table is a model of release-change exposure, not a published release note.</p>
       <p>The generation bumps from 1 to 2 on detection, and the previous green signal is invalidated rather than silently reused. The APD row affects two patches in each case. The removed-API row is broad: 14 patches in both cases, scanned across <span class="mono">gsrc/</span>, <span class="mono">java/</span>, and <span class="mono">plugins/</span>.</p>
       <p>The three resume choices all clear the green signal and keep a human in the loop; the tool records the choice, it does not approve it. Source changes, corrupt files, duplicate targets, analyzer crashes, and empty snapshots become named states instead of an unchecked green signal.</p>
+      <p><strong>Explain the arithmetic.</strong> The five rows are independent scenarios, not cumulative. Cascade has 30 patch-exposures across 22 patches; Harbor 28 across 21. One patch can be affected by more than one scenario, so the rows must never be summed to contradict the 22/21 totals.</p>
+      <p><strong>Plain terms:</strong> GWCP is the Guidewire Cloud Platform; App Events are platform message envelopes; the v2 envelope adds tenant and event IDs. The 2027.04 release and the 20-character limit are PreFlight simulations, not published Guidewire release notes.</p>
       <p>Counts are exposure, not effort or defect counts. Say the boundary plainly: synthetic fixtures, bounded checks, human gates open, not an official Cloud Assurance result.</p>
     </div>
   </section>

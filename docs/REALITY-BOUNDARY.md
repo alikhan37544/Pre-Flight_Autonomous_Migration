@@ -40,7 +40,7 @@ Guidewire's own public migration guide describes a nine-stage program: Cloud Upg
 | 4. Delivery: Inception | Review technical-upgrade output, create the formal development backlog, finalize release plan [S9] | Synthetic findings can look like a backlog, but no real release plan or owner commitments exist. |
 | 5. Delivery: Development | Address cloud-suitability issues, refactor technical debt, develop and run automated tests [S9] | **Drafts only.** Unified diffs and candidate files; no compilation, no tests against a Guidewire runtime, no deployment. |
 | 6. Delivery: Stabilization | End-to-end testing, performance validation, dress rehearsals for database upgrade readiness [S9] | **Not performed.** No E2E, performance, or data-rehearsal evidence. |
-| 7. Deployment Preparation | Final dry runs, code confirmed stable, environment made production-ready [S9] | **Not performed.** |
+| 7. Deployment Preparation | Final dry runs, code confirmed stable, environment prepared for production [S9] | **Not performed.** |
 | 8. Post-Deployment Support | Dedicated support for 4–6 weeks to resolve post-go-live issues [S9] | **Not performed.** |
 | 9. Cloud Updates | Test new Guidewire Cloud releases during and after migration and stay aligned [S9] | **Not performed.** PreFlight models simulated release scenarios, not live release monitoring. |
 
@@ -85,7 +85,7 @@ Representative repository evidence:
 | SARIF is real | `app/services/sarif.py:18` sets `SARIF_SCHEMA` to the 2.1.0 schema; `:110-145` emits `official_cloud_assurance: False` and `synthetic: True` | The output is a valid-format advisory SARIF document. | An official Cloud Assurance result or a compliance pass. |
 | The audit chain is real | `app/services/code_migration.py:163-240` implements SHA-256 canonical JSON, `prev_hash`, and verification | The log is tamper-evident against local edits/reorders/truncation when the checkpoint is intact. | Non-repudiation, external timestamping, or truth of the content. |
 | Patches stay pending | `app/services/refactor.py:787`, `:807`, `:833` set `approval: "pending"` | No self-approval. | Human review or business acceptance. |
-| The demo is explicitly bounded | `README.md:91-101`, `:338-351`; `docs/CODEBASE-MIGRATION.md:304-313`; `docs/EVALUATION-SCOPE.md:37-52` | The project already states the limitations in its own words. | That the limitations are unimportant. |
+| The demo is explicitly bounded | `README.md:103-113`, `:338-363`; `docs/CODEBASE-MIGRATION.md:304-313`; `docs/EVALUATION-SCOPE.md:37-52` | The project already states the limitations in its own words. | That the limitations are unimportant. |
 
 **Key point:** these artifacts are real, but they are real **about a synthetic input**. The generated JMS patch is a particularly useful honesty test: it replaces a legacy transport with a placeholder, not with a working App Events or Gateway configuration. That is appropriate for a draft, and it should be shown as a draft.
 
@@ -131,7 +131,7 @@ This is a genuine review artifact. It is not a merge request, a compiled change,
 
 The SARIF output is a real 2.1.0 document: `$schema`, `version`, tool driver, rule metadata, results, locations, `partialFingerprints`, and run properties. It carries `official_cloud_assurance: false` and `synthetic: true`. It is suitable for CI ingestion as **advisory** findings.
 
-Uploading it to GitHub Code Scanning does not make it an official Cloud Assurance result. SARIF is a transport format, not a compliance verdict. The project says this correctly: “SARIF results describe source findings and their evidence; they do not assert that a patch has been compiled or approved” [README:351].
+Uploading it to GitHub Code Scanning does not make it an official Cloud Assurance result. SARIF is a transport format, not a compliance verdict. The project says this correctly: “SARIF results describe source findings and their evidence; they do not assert that a patch has been compiled or approved” [README:363].
 
 #### Hash chain
 
@@ -190,11 +190,11 @@ These are not reasons to discard the prototype. They are reasons to phrase its c
 
 ### 4.1 Cloud Data Access is not a synchronous replacement for JDBC
 
-PreFlight's rule pack and glossary describe Cloud Data Access (CDA) as “the supported cloud read path that replaces direct JDBC/SQL in extension code” (`app/services/code_migration.py`, glossary; `rules/codebase_rules.yaml:54-56`; `docs/CODEBASE-MIGRATION.md:70`). That wording conflates two different things.
+**Status: resolved in the current build.** The code glossary now says: “Guidewire's cloud data export/streaming service (S3 Parquet); synchronous in-app reads use Gosu Query or application APIs” (`app/services/code_migration.py:1485`), and `docs/CODEBASE-MIGRATION.md:70` reserves Cloud Data Access for analytics/export. The generated draft is a Gosu Query service named `VehicleRatingQueryQueryService` (`app/services/refactor.py:532-546`) and uses `Query.make(...).select()`; the old `VehicleRatingQueryCloudDataAccess` class name is gone.
 
 Guidewire's public CDA material describes CDA as a **data streaming/export service** that lands InsuranceSuite data in Amazon S3 as Parquet files for analytics and downstream systems [S15][S16]. It is not a synchronous in-application query API. For synchronous reads inside extension code, the documented direction is a supported Gosu Query or an application/Cloud API; the data-access architecture must be decided explicitly.
 
-The generated draft is actually closer to right than its label: it uses `Query.make(VehicleRating).select()` in a class named `VehicleRatingQueryCloudDataAccess` (`refactor.py:538`). The code is a Gosu Query draft; the name and glossary are misleading. This matters for the invented Cascade 200 ms p95 constraint: a CDA/S3 export path is not designed as a synchronous 200 ms rating path. Before a real pilot, rename the synchronous path to “Gosu Query / application API,” reserve “CDA” for analytics/export, and record a data-access architecture decision with latency and consistency requirements.
+This still matters for the invented Cascade 200 ms p95 constraint: a CDA/S3 export path is not designed as a synchronous 200 ms rating path. Keep the synchronous path labelled “Gosu Query / application API,” reserve “CDA” for analytics/export, and record a data-access architecture decision with latency and consistency requirements. The app-template glossaries are a separate copy surface and must use the same wording.
 
 ### 4.2 App Events is asynchronous and at-least-once
 
@@ -206,11 +206,11 @@ The lab's own human gate CR-05 says: “Verify event contract, ordering key, del
 
 The public docs say type names are limited to 24 characters and truncation can cause endpoint compile errors; the correction is a codegen `nameOverride` plus endpoint regeneration [S4]. The docs' field-level guidance says `nameOverride` should be used only for Cloud Retrofit without APD App; for APD App or APD conversion, use `schemaPropertyName` [S6]. The project interprets this as a field-level restriction and says it models the non-APD path [docs/RULES-RESEARCH.md:165,232-235].
 
-Cascade is explicitly “Cloud Retrofit without APD App,” so the type-level `nameOverride` draft is in scope. Harbor is labeled “Cloud Retrofit with APD conversion · multi-LOB” (`app/services/case_studies.py:125`), but its generated codegen draft is only a type-level `nameOverride` for a type name. That may be valid for the type-name mismatch, but it is **not** a full APD-conversion artifact: it does not model the APD App import, field-level `schemaPropertyName`, product-model synchronization, or endpoint regeneration [S4][S6][S11][S12]. Do not present Harbor as proof that PreFlight covers APD conversion. Label the Harbor draft “type-name codegen override only; APD conversion and field mapping not modeled.”
+**Status: resolved in the current build.** Cascade is explicitly “Cloud Retrofit without APD App,” so the type-level `nameOverride` draft is in scope. Harbor is now labelled “Cloud Retrofit + APD naming preparation (type-level codegen draft) · multi-LOB” (`app/services/case_studies.py:141`), and the case-study copy says the deliverable is a type-level `nameOverride`, not a full APD conversion (`:251-253`). The draft still does not model the APD App import, field-level `schemaPropertyName`, product-model synchronization, or endpoint regeneration [S4][S6][S11][S12]. Do not present Harbor as proof that PreFlight covers APD conversion. Keep the label “type-name codegen override only; APD conversion and field mapping not modeled.”
 
-### 4.4 Servlet wording is stronger than the public policy
+### 4.4 Servlet wording matches the public policy
 
-The public hardening guidance says: “The use of custom servlets is not a recommended practice. All integrations should be implemented using the approved REST API framework” [S14]. PreFlight labels the rule `verified-policy`, which is correct. But one case-study summary says the servlet is “not a supported cloud extension point” (`app/services/case_studies.py:100`). “Not supported” is stronger than “not recommended.” Align the copy to the public wording, and keep the claim-strength label visible.
+**Status: resolved in the current build.** The public hardening guidance says: “The use of custom servlets is not a recommended practice. All integrations should be implemented using the approved REST API framework” [S14]. PreFlight labels the rule `verified-policy`, which is correct. The case-study summary now says “custom servlets are not a recommended practice; use the approved REST API framework” (`app/services/case_studies.py:116`). The stronger “not supported” wording is gone. Keep the public wording and the claim-strength label visible.
 
 ### 4.5 The 24-character limit is a type-name limit, not a universal name limit
 
@@ -218,7 +218,7 @@ The public page says “type names are limited to 24 characters” and gives the
 
 ### 4.6 “Green” and “100/100” are structural, not production readiness
 
-The generated Cascade report (`MIGRATION-REPORT.md`) shows a structural score of 100/100 after the loop, a human-gate-adjusted score of 74/100, and ten open human gates; Harbor shows 100/100 structural and 71/100 human-gate-adjusted. The 100 is a **structural consistency score**, not cloud readiness, not Cloud Assurance, and not deployment approval. The project says the green signal is “a bounded agent verdict with open human gates; it is never deployment approval” [README:101; docs/CODEBASE-MIGRATION.md:309]. Put the human-gate score and the boundary next to any 100/100 slide.
+The generated Cascade report (`MIGRATION-REPORT.md`) shows a structural score of 100/100 after the loop, a human-gate-adjusted score of 74/100, and ten open human gates; Harbor shows 100/100 structural and 71/100 human-gate-adjusted. The 100 is a **structural consistency score**, not cloud readiness, not Cloud Assurance, and not deployment approval. The project says the green signal is “a bounded agent verdict with open human gates; it is never deployment approval” [README:113; docs/CODEBASE-MIGRATION.md:319]. Put the human-gate score and the boundary next to any 100/100 slide.
 
 ### 4.7 The hash chain and the static snapshot are different artifacts
 
@@ -329,7 +329,7 @@ The ladder answers a different question at each stage. Do not skip stages: a lat
 
 **What PreFlight cannot claim:**
 - Official Cloud Assurance, production data compatibility, performance, security, or cutover.
-- That a successful dev build is production-ready.
+- That a successful dev build proves production readiness.
 
 **What the demo should show:**
 - A compiler/test transcript, not just a diff.
@@ -467,20 +467,22 @@ A shorter variant for a dense slide:
 
 ---
 
-## 9. Unverifiable claims and open issues
+## 9. Unverifiable claims and status of previously open issues
+
+Rows marked **RESOLVED** record issues found in the 2026-11-11 review that have since been fixed. They stay in the memo as evidence of what was wrong and what the current wording is.
 
 | Location | Claim / issue | Why it is not verifiable or not yet supported | Recommended handling |
 |---|---|---|---|
 | Cloud Standards corpus and threshold | The full Cloud Standards rules and the exact Cloud Assurance threshold are not public. Standard pages redirect to `/gw-login`; the public Cloud Assurance page refers to “the threshold” without a number [S1][S2]. | Only public IDs/titles and process descriptions can be cited. The rule bodies and numeric threshold are gated. | Say “public ID/title verified; body gated; threshold not public.” Do not infer or invent a threshold. |
-| 2027.04 / 20-character APD scenario | `app/services/resilience.py:27-42` and `docs/RULES-RESEARCH.md:149-166,236-238` label the 20-character limit a simulation. But `docs/presentation/AGENT-SLIDES-DRAFT.md:518` says “The upgrade is not a hypothetical; the APD limit moves from 24 to 20 characters.” | No public 2027.04 release note or 20-character APD limit was found in the sources reviewed. The deck line contradicts the research note. | Change the deck line to: “The 24-character limit is documented; the 20-character 2027.04 scenario is a simulation.” |
-| CDA as a read path | `app/services/code_migration.py` (glossary) calls CDA “the supported cloud read path that replaces direct JDBC/SQL in extension code”; `docs/CODEBASE-MIGRATION.md:70` says “Gosu Query / Cloud Data Access for reads.” | CDA is a streaming/export service to S3, not a synchronous in-app query API [S15][S16]. The generated draft uses Gosu `Query.make`, which is the right in-app API; the label is wrong. | Rename the synchronous path to “Gosu Query / application API”; reserve CDA for analytics/export; add an architecture decision with latency/consistency requirements. |
-| Harbor APD conversion coverage | `app/services/case_studies.py:125` labels Harbor “Cloud Retrofit with APD conversion,” but the generated codegen draft is a type-level `nameOverride` only. | Type-level `nameOverride` is a documented mechanism for type-name mismatch [S4], but a full APD conversion also involves APD import, field-level `schemaPropertyName`, product-model synchronization, and endpoint regeneration [S6]. The draft does not model those. | Label Harbor's draft “type-name codegen override only; APD conversion and field mapping not modeled.” Do not present it as APD-conversion coverage. |
-| Servlet “not supported” wording | `app/services/case_studies.py:100` says the servlet is “not a supported cloud extension point.” | The public policy says custom servlets are “not a recommended practice,” not unsupported [S14]. “Not supported” is stronger. | Use “not recommended; use the approved REST API framework.” Keep the `verified-policy` label. |
+| **RESOLVED** · 2027.04 / 20-character APD scenario | `app/services/resilience.py:27-42` and `docs/RULES-RESEARCH.md:149-166,236-238` label the 20-character limit a simulation. `docs/presentation/AGENT-SLIDES-DRAFT.md:518` now says “The 24-character limit is documented; the 20-character 2027.04 scenario is a simulation.” | No public 2027.04 release note or 20-character APD limit was found in the sources reviewed. The deck and research note now agree. | Keep saying “documented 24-character type-name limit; 2027.04 20-character scenario is a simulation.” |
+| **RESOLVED** · CDA as a read path | `app/services/code_migration.py:1485` defines CDA as the cloud data export/streaming service (S3 Parquet) and says synchronous in-app reads use Gosu Query or application APIs; `docs/CODEBASE-MIGRATION.md:70` reserves Cloud Data Access for analytics/export. The generated draft is `VehicleRatingQueryQueryService` (`app/services/refactor.py:532-546`). | CDA is a streaming/export service to S3, not a synchronous in-app query API [S15][S16]. The previous `VehicleRatingQueryCloudDataAccess` label and “supported cloud read path” glossary wording are gone. | Keep the “Gosu Query / application API” label for synchronous reads; reserve CDA for analytics/export. App-template glossaries must use the same wording. |
+| **RESOLVED** · Harbor APD conversion coverage | `app/services/case_studies.py:141` labels Harbor “Cloud Retrofit + APD naming preparation (type-level codegen draft) · multi-LOB”; `:251-253` says the deliverable is a type-level `nameOverride`, not a full APD conversion. | The draft is still type-level only. A full APD conversion also involves APD import, field-level `schemaPropertyName`, product-model synchronization, and endpoint regeneration [S6]. | Keep the type-name-only label; do not present Harbor as APD-conversion coverage. |
+| **RESOLVED** · Servlet wording | `app/services/case_studies.py:116` says “custom servlets are not a recommended practice; use the approved REST API framework.” | This matches the public policy [S14]; the stronger “not supported” wording is gone. | Keep “not recommended; use the approved REST API framework” and the `verified-policy` label. |
 | Case-study footprint numbers | `docs/CASE-STUDIES.md:13`, `:61-63`; `app/services/case_studies.py:17-38`, `:122-143` give policy counts, states, screen counts, and rating volumes. | The profiles are invented; no customer data. The numbers are illustrative. | Put “invented” on the same slide as the numbers; do not use them in a benchmark or ROI claim. |
 | “Over 90% of CAA findings resolved” | The 2026 Guidewire guest blog says Lighthouse resolves “over 90% of CAA findings” [S17]. | This is a vendor/guest-post claim; no independent data or methodology is provided. | Do not use it as evidence. If mentioned, label it “vendor claim, not independently verified.” |
 | Demo snapshot hashes | `docs/demo/run-summary.json` records an audit head; the live `verify-audit` head on 2026-11-11 was different. | The packaged summary is a capture-time snapshot; the README says it is “not a live verifiable run” [docs/demo/README.md:3]. | Present it as historical; re-run `verify-audit`/`verify-packet` on the live run store for live proof. |
 | “CAA” terminology | Some partner/guest material uses “Cloud Assurance Assessment (CAA)” alongside “CUE” and the automated build without a public definition. | The public Guidewire docs verified for this review describe the Automated Cloud Assurance build and the CUE; no public self-service “CAA” artifact or published threshold was found in the sources reviewed. | Use “CUE” for the formal assessment and “Automated Cloud Assurance” for the build gate. Do not treat the terms as interchangeable. |
-| Test counts | README says 449 tests, `docs/VERIFICATION.md` says 421, and the demo summary is from a different build. | Test counts are build-specific and change with the suite. | Re-run the suite and cite the current count with the commit hash; do not cite a stale count. |
+| **RESOLVED** · Test counts | README says 481 (`pytest`, 2026-11-11); `docs/VERIFICATION.md` keeps 421 as an explicitly historical 8 November build and cites 481 as the current suite. | Test counts are build-specific and change with the suite. | Cite the current count and command; do not cite a stale count. |
 | “100/100” structural score | The generated Cascade report shows 100/100 after the loop and 74/100 human-gate-adjusted; Harbor shows 100/100 and 71/100. | The 100 is structural consistency, not cloud readiness. | Show both numbers and the boundary; never show 100/100 alone. |
 
 ---

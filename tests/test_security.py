@@ -263,3 +263,64 @@ def test_safe_yaml_config_still_loads(tmp_path: Path) -> None:
     parsed = parse_config_yaml(path)
     assert parsed.data["types"]["PAVehicle"]["nameOverride"] == "PersonalVehicle"
     assert parsed.data["note"] == "!! is plain text here"
+
+
+# -- local-only server bind -------------------------------------------------
+
+
+def test_serve_refuses_a_nonlocal_bind_without_the_override(tmp_path: Path, monkeypatch) -> None:
+    import uvicorn
+
+    from app import cli
+
+    called: list[tuple[str, int]] = []
+
+    def fake_run(app, *, host, port, log_level):
+        called.append((host, port))
+
+    monkeypatch.setattr(uvicorn, "run", fake_run)
+    monkeypatch.delenv("PREFLIGHT_ALLOW_NONLOCAL", raising=False)
+
+    result = cli.cmd_serve(cli.argparse.Namespace(host="0.0.0.0", port=8123))
+    assert result == 2
+    assert called == []
+
+    result = cli.cmd_serve(cli.argparse.Namespace(host="192.168.1.10", port=8123))
+    assert result == 2
+    assert called == []
+
+
+def test_serve_allows_a_nonlocal_bind_only_with_the_override(monkeypatch) -> None:
+    import uvicorn
+
+    from app import cli
+
+    called: list[tuple[str, int]] = []
+
+    def fake_run(app, *, host, port, log_level):
+        called.append((host, port))
+
+    monkeypatch.setattr(uvicorn, "run", fake_run)
+    monkeypatch.setenv("PREFLIGHT_ALLOW_NONLOCAL", "1")
+
+    result = cli.cmd_serve(cli.argparse.Namespace(host="0.0.0.0", port=8123))
+    assert result == 0
+    assert called == [("0.0.0.0", 8123)]
+
+
+def test_serve_allows_loopback_binds(monkeypatch) -> None:
+    import uvicorn
+
+    from app import cli
+
+    called: list[tuple[str, int]] = []
+
+    def fake_run(app, *, host, port, log_level):
+        called.append((host, port))
+
+    monkeypatch.setattr(uvicorn, "run", fake_run)
+    monkeypatch.delenv("PREFLIGHT_ALLOW_NONLOCAL", raising=False)
+
+    for host in ("127.0.0.1", "::1", "localhost"):
+        assert cli.cmd_serve(cli.argparse.Namespace(host=host, port=8123)) == 0
+    assert [item[0] for item in called] == ["127.0.0.1", "::1", "localhost"]

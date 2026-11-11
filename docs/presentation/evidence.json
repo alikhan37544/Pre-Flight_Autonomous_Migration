@@ -8,16 +8,16 @@
     "external_requests": 0,
     "print_pages": 23,
     "pdf": "docs/presentation/PreFlight-deck.pdf",
-    "validation": "Playwright at 1920x1080, 1440x900, 1280x720, 1024x768, 390x844: 23 slides; 0 desktop layout overflow/clipping failures; 0 console errors; 0 external requests; 0 horizontal overflow at 390; PDF 23 pages at 1200 x 675.12 pts",
+    "validation": "Playwright at 1920x1080, 1440x900, 1280x720, 1024x768, 390x844: 23 slides; 0 layout/overflow failures at every viewport; 0 console errors; 0 external requests; 10.5px CSS font floor (>=10.08px effective); 390 footer shows the full boundary including Official Cloud Assurance: not run; tagged PDF, 23 pages at 1200 x 675.12 pts, boundary line on every page",
     "pdf_pages": 23,
     "pdf_page_size": "1200 x 675.12 pts",
-    "pdf_sha256": "ddb97057f7c964703a0e875d96c0be6f73ded42420be9c19ffaeb082815d6262",
-    "pdf_bytes": 1486730,
+    "pdf_sha256": "a1ae9c5739c62f4fcb52ed7c23246e07fcdb20cf1311548d3d8a656ce53593b3",
+    "pdf_bytes": 1234120,
     "slides_note": "13–19 are the new agent/codebase block; the former 13–16 are now 20–23.",
     "validation_file": "docs/presentation/assets/deck-23/validation.json",
-    "generated_at": "2026-11-11T12:08:57Z"
+    "generated_at": "2026-11-11T14:40:24Z"
   },
-  "generated_at": "2026-11-11T12:13:50Z",
+  "generated_at": "2026-11-11T14:54:42+00:00",
   "run": {
     "run_id": "R-DEMO-001",
     "fixture": "demo-slice-300",
@@ -53,7 +53,11 @@
     "snapshot_short": "bd4a8a4b338a",
     "packet_hash_seed": "e44218d0a00c",
     "packet_cover_snapshot": "bd4a8a4b338a",
-    "audit_events_predecision": 9
+    "audit_events_predecision": 9,
+    "state_labels": {
+      "seeded_review": "3 assumptions, 9 audit events, 11 gates; used by the migrator run and slides 13/15",
+      "post_decision_packet": "4 assumptions (A-DEC-04), 11 audit events; used by slides 8/12"
+    }
   },
   "metrics": [
     {
@@ -286,6 +290,7 @@
       "section": "Demo · Reconstruction",
       "title": "A decision queue, not a rename script.",
       "key_points": [
+        "Post-decision state: 4 assumptions, 11 audit events",
         "12 dispositions / 5 target changes (C-01…C-05)",
         "Four exact documented examples + one documented 24-char mechanism applied to a synthetic long type + 6 API conventions + 1 typelist convention",
         "Accept M-01; reject M-12 (R-TYP-01) → A-DEC-04",
@@ -305,6 +310,7 @@
       "title": "Precision is a feature. Restraint is the interface.",
       "key_points": [
         "24 findings / 8 rules; F-001 SBT readiness flag separate; F-002…F-025 advisory findings",
+        "Clean crop below the app’s table-scroll hint: 8 of 24 rows plus the selected F-002 detail; full list in the packet",
         "Claim strength: 12 verified-id, 3 verified-policy, 3 verified-doc, 3 secondary, 3 heuristic",
         "Two standard families: Cloud Standards IS-TLS-1238 / IS-TLS-1191; Gosu Secure Coding SEC00-G / ERR00-G",
         "Precision guards: 8 rules × 3 hard negatives; Query.make supported; 24/24 silent",
@@ -365,12 +371,15 @@
       "number": 13,
       "id": "slide-13",
       "section": "Demo · Migrator",
-      "title": "Five agents. One evidence chain. No authority to deploy.",
+      "title": "Five agents. One handoff chain. No authority to deploy.",
       "key_points": [
-        "Straight handoff chain: Scout → Architect → Guardian → Critic → Scribe; the cyclic rework loop is the codebase lab",
+        "Seeded run: 3 assumption gates + 8 rule groups = 11 gates; post-decision packet on slides 8/12 has 4 assumptions",
+        "Straight handoff chain: Scout → Architect → Guardian → Critic → Scribe; the codebase lab is the cyclic loop",
+        "Same fifth role, different loop: Scribe seals the feature packet; Planner assembles and seals the codebase plan; neither approves or deploys",
         "R-DEMO-001: 300 files, 101 evidence records, 31 links on PA-VEH-01, 24 findings, 12 dispositions",
         "5 work packages, 5 target files, 11 gates (3 assumptions + 8 rule groups, 6 high), 7/7 checks, 8 listed files",
         "completed_with_gates; no deployment, no tenant contact, no Gosu/Java compile against Guidewire, no official Cloud Assurance",
+        "Glossary: Gosu, APD, Scribe, Planner",
         "Optional live reasoning run R-20261111-052740-b001: 3 citation-checked calls, 0 ungrounded claims, Guardian 0 model calls; deterministic 7/7 unchanged",
         "Reality boundary callout: synthetic rehearsal, not an actual migration"
       ],
@@ -403,9 +412,11 @@
       "section": "Demo · Migrator",
       "title": "Guardian turns 24 findings and 3 assumptions into 11 human gates.",
       "key_points": [
+        "Seeded state: 3 assumptions + 8 rule groups = 11 gates; slides 8/12 show the separate 4-assumption post-decision packet",
         "24 findings → 8 rule groups × 3 = 24; 3 assumptions; 11 human gates; 6 high impact; 0 resolved",
         "Assumption gates G-01, G-02, G-03 are unassigned; G-01 and G-03 high, G-02 medium",
         "Rule groups G-04…G-11 each carry 3 findings; high: NAM, PKG, SEC, SQL; medium: EXC, GUNIT, SRV, TX",
+        "Gate-level check: gates live at assumption/rule-group level, not package level; slide 14 shows the only package-level gate, G-03",
         "Guardian deliberately does not receive Scout’s narrative, Critic’s verdict, or model-generated text",
         "A gate is a named human decision with an owner; open is a status, not a scoring failure"
       ],
@@ -441,7 +452,9 @@
         "Illustrative synthetic footprints: Cascade 420,000 policies / 38 PCF screens / 64 custom Gosu files / 7 integrations; Harbor 2.6M / 214 / 1,180 / 42",
         "Both green_with_human_gates; structural 100/100; human-gate-adjusted 74 (Cascade) and 71 (Harbor)",
         "Qusar 2026.08 snapshots → simulated GWCP 2027.04 target; same 16-family rule pack; SARIF 2.1.0; every patch pending",
-        "Harbor APD is type-level APN naming preparation only, not full APD conversion or field mapping"
+        "Same fifth role, different loop: Scribe seals the feature packet; Planner assembles and seals the codebase plan",
+        "Harbor APD is type-level APD naming preparation only, not full APD conversion or field mapping",
+        "Clean outcome-strip crop excludes the app’s program-label row; app labels blockers found / patches drafted map to findings / patches"
       ],
       "sources": [
         "S-04",
@@ -453,14 +466,16 @@
       "number": 18,
       "id": "slide-18",
       "section": "Demo · Codebase lab",
-      "title": "The code lab closes the loop — and still leaves 10/11 human gates.",
+      "title": "The code lab closes its loop. Cascade 10 and Harbor 11 human gates stay open.",
       "key_points": [
         "16 code rule families; Cascade 18 findings / 22 patches / 10 gates / 13 SARIF rules; Harbor 20 / 21 / 11 / 15",
         "SARIF 2.1.0, tool driver PreFlight CodeGuard; official_cloud_assurance false; synthetic true; no source excerpts or secret values",
-        "Before: JDBC/DriverManager + concatenated SQL in VehicleRatingQuery.gs; after: generated Gosu Query draft using Query.make(...).select()",
-        "The draft is not compiled; semantic equivalence, field mapping, and runtime behavior remain human gates",
-        "CDA is streaming/export to S3 Parquet, not a synchronous in-app read; synchronous reads use Gosu Query or an application API",
-        "Custom servlets are “not a recommended practice,” not “unsupported”"
+        "SARIF is the machine-readable static-analysis output; advisory input to CI, not a compliance verdict",
+        "Before: JDBC/DriverManager + concatenated SQL in VehicleRatingQuery.gs; after: corrected VehicleRatingQueryService draft using Query.make(...).select()",
+        "Generator naming artifact: app appends QueryService to the source class, producing VehicleRatingQueryQueryService; corrected name shown and reported to the app team",
+        "Planner assembles and seals the codebase plan; nothing is compiled; compile validation is future work; every patch pending",
+        "The draft does not prove compile/runtime equivalence, entity/field mapping, or tenant compatibility",
+        "Glossary: Gosu, APD, CDA, App Events, SARIF"
       ],
       "sources": [
         "S-13",
@@ -475,6 +490,7 @@
       "key_points": [
         "Five simulated GWCP 2026.10 → 2027.04 scenarios; not published 2027.04 release notes",
         "APD 24 → 20 characters is a simulation; generation 1 → 2; prior green signal invalidated",
+        "Per-scenario exposure, not additive: Cascade 30 patch-exposures across 22 patches; Harbor 28 across 21; one patch can appear in more than one scenario",
         "Exposure counts (Cascade/Harbor): APD 2/2, App Events v2 3/3, Gateway mTLS 7/6, removed Gosu API 14/14, Cloud API version 4/3",
         "Resume options: revalidate → resume_requested; rollback → rolled_back_to_checkpoint; defer → upgrade_deferred; all clear green and keep human approval",
         "APD regenerated at 20 characters → compatible; 24-character bundle → revalidation_required",
@@ -872,6 +888,11 @@
       "sha256": "96da228497fd5b50898e32c1a562cc044c37352c21f7f5e325eb77338d9cffec"
     },
     {
+      "file": "assets/agents/case-studies-outcome-strips.png",
+      "bytes": 10050,
+      "sha256": "de610a5bf478ac390a584d5fba0b7dbe29949ce78202b9b0444ad2e8de9462b4"
+    },
+    {
       "file": "assets/agents/case-studies-outcomes-focus.png",
       "bytes": 42454,
       "sha256": "17257648b1035e5519a91c7bb642d25c11ee911dea4be580a72f6300714f1de3"
@@ -953,338 +974,338 @@
     },
     {
       "file": "assets/deck-23/deck-slide-01-1440x900.png",
-      "bytes": 99503,
-      "sha256": "0105bb71043d9484f6092d54bb7cc8e14d395bf399f5236f4c51577a07705d88"
+      "bytes": 100594,
+      "sha256": "c48a1292d23a424cd31ce438fea1546792b8d856cfa77c213df8098db43deba5"
     },
     {
       "file": "assets/deck-23/deck-slide-01-390x844.png",
-      "bytes": 70801,
-      "sha256": "589e03442075466398399fa77140bc5a50661e890e44290bd8d8b9e50d0fc4b0"
+      "bytes": 71475,
+      "sha256": "c008fa3032f3b7d2b5c4b11b8f8b20a30a68697ce854e6eb399503a26a6d82c4"
     },
     {
       "file": "assets/deck-23/deck-slide-02-1440x900.png",
-      "bytes": 174270,
-      "sha256": "680ef2be1538281553e59bece8060627d3f538b895788fc1049a0713a7087a47"
+      "bytes": 177464,
+      "sha256": "1fc124ec4aadff40f2a602a1f43debb15af08665502e5f475475efe1d10bffac"
     },
     {
       "file": "assets/deck-23/deck-slide-02-390x844.png",
-      "bytes": 151356,
-      "sha256": "7c7a21ab3666aa90a335c16ae08203484cb92757960c2d926d28ec6283fb98ae"
+      "bytes": 152561,
+      "sha256": "22c662f7a1c5a59407bb30b9039a200268670fbefd68442c0a0fa4b5a1f634d9"
     },
     {
       "file": "assets/deck-23/deck-slide-03-1440x900.png",
-      "bytes": 168803,
-      "sha256": "ab8fa5fff72b7643779af0f6aaf85405487fbf0b7ccbd8eac5bb51165d387743"
+      "bytes": 173099,
+      "sha256": "796966664ea25cd2f42c956774c76d411ea3d734e907d0de20668d0670430bb7"
     },
     {
       "file": "assets/deck-23/deck-slide-03-390x844.png",
-      "bytes": 124812,
-      "sha256": "2397efcbe99e309f1f3d80b9efbd1c157a4f36db4f489fbb0c5d9769464e5d30"
+      "bytes": 125544,
+      "sha256": "b249c0fbb05e6d785c0b66ee1d092fc448064e2aee3ad26be47270613fa7fbba"
     },
     {
       "file": "assets/deck-23/deck-slide-04-1440x900.png",
-      "bytes": 133997,
-      "sha256": "1f9c5a950c020cf36950caacf725ba2bc2193516e97a34549d5a50f64539a236"
+      "bytes": 137788,
+      "sha256": "fd5fb1b918e9fa3db33583c7a7848d47f60c2fe44761b00ddbf2011455e412f1"
     },
     {
       "file": "assets/deck-23/deck-slide-04-390x844.png",
-      "bytes": 135655,
-      "sha256": "380d9000b6422e431b2161a28ef971adf848587b51b7cb6ea015ae880c7ec0f7"
+      "bytes": 137862,
+      "sha256": "4e647521ffca12c7da26d08ea95ff9a4ad6f60f7b512bcf7858e072cf1cfe0e1"
     },
     {
       "file": "assets/deck-23/deck-slide-05-1440x900.png",
-      "bytes": 205258,
-      "sha256": "169c8ce5786683f753a7dc5a5e92a2898759c0e949b805c511c67531ba28b61f"
+      "bytes": 218212,
+      "sha256": "fb525c9348ce99993b1ae8eece18ba7e0c2f52daeac131be3daf18b3e98c4762"
     },
     {
       "file": "assets/deck-23/deck-slide-05-390x844.png",
-      "bytes": 168104,
-      "sha256": "70bb9757822a5fe5bdf59f82dc17ae70de635aff597c383b5ed466a9e1b93aeb"
+      "bytes": 179360,
+      "sha256": "d736f6dd9b15dcd1117ead05b3e1d7654782f88ec927536326745aedd066ec3c"
     },
     {
       "file": "assets/deck-23/deck-slide-06-1440x900.png",
-      "bytes": 243262,
-      "sha256": "cf4521eff79f30e49c1bff7c6b96a984f42f60be3927d8fe32b16b54b16917db"
+      "bytes": 248184,
+      "sha256": "4c1692e6366e8843668e9a789feec494612db1e954049267c32a34e7382995ce"
     },
     {
       "file": "assets/deck-23/deck-slide-06-390x844.png",
-      "bytes": 148532,
-      "sha256": "0efbb473b474ac839ee5326f7959f4e01077cc107d92895009910ff6e1df0fa8"
+      "bytes": 93641,
+      "sha256": "c6a4ae1139e50a2f32cfcf5ea5c76ec1f1f28b3447e2c74ea95c47f142efde16"
     },
     {
       "file": "assets/deck-23/deck-slide-07-1440x900.png",
-      "bytes": 185598,
-      "sha256": "52dce7f186c5afe0ec85b365920a397b4b586e7f4e14dee07d3b72bf102f3a3d"
+      "bytes": 192045,
+      "sha256": "bcedbbd2d349b324d8ea51defce57ccab77ab336066e86cb9c890af98e03dd80"
     },
     {
       "file": "assets/deck-23/deck-slide-07-390x844.png",
-      "bytes": 107209,
-      "sha256": "a38f1a8c4d03665d4abeacb2ee51a818420190bac8ad3aa807ebedfa70b9effa"
+      "bytes": 86947,
+      "sha256": "7d603950b0cd04c9c64de226d2c3251f07d0707690d5308a436d682d8cf7f857"
     },
     {
       "file": "assets/deck-23/deck-slide-08-1440x900.png",
-      "bytes": 224520,
-      "sha256": "7712a0790e5895f1ebe38f734c5a61f78ecbf91073e503e83194cfb446b0036a"
+      "bytes": 229818,
+      "sha256": "97ad930e710edc5d8dd26e8a965a1b0ca22b99fceaca2e08f002f5664e06100b"
     },
     {
       "file": "assets/deck-23/deck-slide-08-390x844.png",
-      "bytes": 135226,
-      "sha256": "0046120c7d8bdc8999d5d53cd5a7911f7df9881ca891cd459e5ba6cb1c6d492f"
+      "bytes": 97202,
+      "sha256": "29b106319d70e091d15b85f43941b07599f4d066d4455239a53732e64a269f99"
     },
     {
       "file": "assets/deck-23/deck-slide-09-1440x900.png",
-      "bytes": 289335,
-      "sha256": "be2e44f2fb41746fb42c441b7d3562e5c0c8d6f4f0f6c92a5c22ee2e96e996e7"
+      "bytes": 210381,
+      "sha256": "575a0b1339ee6f197f6662ace30429164dc9ef8c2525c6b33fc7fa2d99625198"
     },
     {
       "file": "assets/deck-23/deck-slide-09-390x844.png",
-      "bytes": 179778,
-      "sha256": "0ddb5a42c8558e7a3c2f9d7bb0927212fb58201218d687c7c9d5164781803a01"
+      "bytes": 99506,
+      "sha256": "cb212c8ed0e3b94db94535e56be131773b4fb027b934e42d4e851a935d94b8d3"
     },
     {
       "file": "assets/deck-23/deck-slide-10-1440x900.png",
-      "bytes": 223262,
-      "sha256": "b4743ae2d247f5a07987fafa6329453e595484f84a8a3ab5d271b908249a7b2b"
+      "bytes": 227998,
+      "sha256": "dd9c58c014ea7f8506c98961c0eeca6aeb6ade2c7bb301aaea04a1ff518c15d5"
     },
     {
       "file": "assets/deck-23/deck-slide-10-390x844.png",
-      "bytes": 154250,
-      "sha256": "e7b110c06cd66e376762dde138511082b41f9dc2c9143daf37fac1e8778b6329"
+      "bytes": 155201,
+      "sha256": "2a7176f6af65fb185c5c3e4bd7ff1b957ced2aaddc47534a582563433e13e0af"
     },
     {
       "file": "assets/deck-23/deck-slide-11-1440x900.png",
-      "bytes": 173394,
-      "sha256": "552f8bea370684b50e46589a1c3887f422deacdc693ddb2ab290b72d224aa161"
+      "bytes": 179346,
+      "sha256": "53ecff53315a2799107c63b0379704bce5791139fb981760e32b3029e0f981eb"
     },
     {
       "file": "assets/deck-23/deck-slide-11-390x844.png",
-      "bytes": 137252,
-      "sha256": "f69e2138410c8b46b58d3781bc8f62298125a137524b90922ad0eb0913229b4b"
+      "bytes": 140753,
+      "sha256": "a528d88ca9f59e635ac77544298bfb5387afe637fd59a6290e436567605c4b80"
     },
     {
       "file": "assets/deck-23/deck-slide-12-1440x900.png",
-      "bytes": 283538,
-      "sha256": "017b14e516d3829e94f88a299f7546dac9e7b840d4cc056f9c89b0ff2fb57d92"
+      "bytes": 297515,
+      "sha256": "308a81ec184b9c43f8598adae1cfd7d319464baca4b3b01743aa0b3466f754ea"
     },
     {
       "file": "assets/deck-23/deck-slide-12-390x844.png",
-      "bytes": 161144,
-      "sha256": "8b36a4d4ca004addd56a6d39e5e21e26b1daf1a1e3c5d4a60ddb95e412f1df42"
+      "bytes": 120912,
+      "sha256": "b06b969935670cee8fdbd977f962514385d84ac01457d26d865537ddb0424049"
     },
     {
       "file": "assets/deck-23/deck-slide-13-1024x768.png",
-      "bytes": 127718,
-      "sha256": "6cbfe6b7e7ce11dd28541ad03e34c6e9d9722e0fe4a9a49b27774a8f24a11bbe"
+      "bytes": 160137,
+      "sha256": "38e1447428bb1eefe785ebd06994d20e704cedb1a543532445f64884aeb39ae9"
     },
     {
       "file": "assets/deck-23/deck-slide-13-1280x720.png",
-      "bytes": 133523,
-      "sha256": "7db1e422454d95f9e54357bfb0f363401caa6071ac80b8ebd265293e75e98332"
+      "bytes": 154364,
+      "sha256": "068caf048268f45fe69d0b4273c1498147abcf5f16066e9778e4204ee9a63754"
     },
     {
       "file": "assets/deck-23/deck-slide-13-1440x900.png",
-      "bytes": 180769,
-      "sha256": "606926ce1eef4ff4d279e17a88c3e21538e7879c3c99f9b0899e1045031c25f5"
+      "bytes": 171748,
+      "sha256": "166fcdb4245517252923d5ba0a0c004405cd5df5023273d3c6f4cc5deb12297c"
     },
     {
       "file": "assets/deck-23/deck-slide-13-1920x1080.png",
-      "bytes": 225595,
-      "sha256": "f755f803fc17c3eb9007753df18a1b09719a9ffa166716eaac81da036a896bf2"
+      "bytes": 210603,
+      "sha256": "e8637b72d4c79cb4d26356513d006974fbe896026bc80903c46f76003fbb0dd2"
     },
     {
       "file": "assets/deck-23/deck-slide-13-390x844.png",
-      "bytes": 152982,
-      "sha256": "711c014d239e05333d24c4718dd78194760838dc95f44bd0ecd4f6816a616465"
+      "bytes": 161988,
+      "sha256": "d0a6613ba23ce195d4c2322b6ddde9a149baef844281db7dd50591fa27f902e2"
     },
     {
       "file": "assets/deck-23/deck-slide-14-1024x768.png",
-      "bytes": 141359,
-      "sha256": "a7a92c561266f0454dbbb48501e14788ef32014670f905c0bddb74447f64d85d"
+      "bytes": 167275,
+      "sha256": "347210271aa3c8494f464f989a067de8e03d5b59926042b9a2d9c02b2c641ba2"
     },
     {
       "file": "assets/deck-23/deck-slide-14-1280x720.png",
-      "bytes": 144880,
-      "sha256": "ff23bf0bf08285c1322dd0072441b9d4be28ae1e5f5574608707d94afe69bc42"
+      "bytes": 168240,
+      "sha256": "43e246c02de52c577af63a5174f257af801be3c3ee08b22499ee66be500da488"
     },
     {
       "file": "assets/deck-23/deck-slide-14-1440x900.png",
-      "bytes": 202061,
-      "sha256": "f307c355a00fa9213c4497e668f1faad8786d8843c6f7f25e3833df6be94f4e5"
+      "bytes": 211243,
+      "sha256": "e2570e56c32d67fea0b6fd5babbf3e01a62090f2029bc5db5c527417cb492a8e"
     },
     {
       "file": "assets/deck-23/deck-slide-14-1920x1080.png",
-      "bytes": 240655,
-      "sha256": "a751b1f585e12d03fc96853fca96b04284345c7e9aa3be135a7aca7466f943a9"
+      "bytes": 248851,
+      "sha256": "d382a5c550097eb679bea65b9566ba19e7d55110ef1b8f4411728e11de78ae02"
     },
     {
       "file": "assets/deck-23/deck-slide-14-390x844.png",
-      "bytes": 138532,
-      "sha256": "88cc826fe395c4a85e2796e9791b1678e6e743ac6e802ce21fc8ab63b42d0b79"
+      "bytes": 107786,
+      "sha256": "7821769825064b994042f815d752989618e37f7c06dedeacf201e6cc70ba5d60"
     },
     {
       "file": "assets/deck-23/deck-slide-15-1024x768.png",
-      "bytes": 180433,
-      "sha256": "e98d148bc864091c4eec4e1c9790ab4f86ea4f8ce383e4ba6c822619c8a5b70f"
+      "bytes": 130261,
+      "sha256": "0c6530f103ba1cadd4a7410b5b70d26d8cffa9a1ed19141077e85ac32b2b66c3"
     },
     {
       "file": "assets/deck-23/deck-slide-15-1280x720.png",
-      "bytes": 166525,
-      "sha256": "55e19d75ceba6932c799309a52ead84fa2dd043eac74d00cf902c4de7af6091d"
+      "bytes": 127224,
+      "sha256": "40def15b19ed77ab4230c8fe14c5dc6ed79133bad711e7aab9ab74be8f36104e"
     },
     {
       "file": "assets/deck-23/deck-slide-15-1440x900.png",
-      "bytes": 213566,
-      "sha256": "536f0e89b5f0fe7be0ba48f7b27e10d2d0016b3e1ca0ccb1ec41ac86ab76fb91"
+      "bytes": 229528,
+      "sha256": "b1442508b72bd6eea75af67fdbcd3220de411a27e167d042509dff913e001969"
     },
     {
       "file": "assets/deck-23/deck-slide-15-1920x1080.png",
-      "bytes": 282367,
-      "sha256": "3efdaf5de09048b9a8c11558df4de684e66980db476a91f30574be1adedeab88"
+      "bytes": 295980,
+      "sha256": "6fc7b4e26b153c0c064ad8d5bb385919fcce20879ae9fbed6bceee3ec9fac90a"
     },
     {
       "file": "assets/deck-23/deck-slide-15-390x844.png",
-      "bytes": 135960,
-      "sha256": "896ad626399eae81240598b3ab7af18dd901c478c89a34a24df0ced8c7156fc4"
+      "bytes": 128232,
+      "sha256": "af41305c5d2545707d6f4c473a357ff41ec0a5a2f78c02b653d6346ffbcc1458"
     },
     {
       "file": "assets/deck-23/deck-slide-16-1024x768.png",
-      "bytes": 144392,
-      "sha256": "cc425fb59e9ede109137d83c45f8583c87809254a4efafd06b159d90c5a06218"
+      "bytes": 168956,
+      "sha256": "e0ec77a775c741b3fc7dff6ed69b24dc37dfc2e1e55e2f5105161f3c39682ad4"
     },
     {
       "file": "assets/deck-23/deck-slide-16-1280x720.png",
-      "bytes": 151446,
-      "sha256": "22aa0cec48b60b7a49fca0d563b3990e464c439a536ab5a444c2320717477fca"
+      "bytes": 170709,
+      "sha256": "59fcec715a0e94e6839988dac9ef7434f89de9f4229be625fd2e7849d51d436f"
     },
     {
       "file": "assets/deck-23/deck-slide-16-1440x900.png",
-      "bytes": 217367,
-      "sha256": "f1451990f975032493168d36faf8e9b5bbb33e6a09f9a5c6a873cfd6448c5c1d"
+      "bytes": 222714,
+      "sha256": "2f07a9f657b5192ff7350e3fdd35297359144b66c80775a106137fa30ffdf8c2"
     },
     {
       "file": "assets/deck-23/deck-slide-16-1920x1080.png",
-      "bytes": 261803,
-      "sha256": "3f588f98a91b391d27bacdc41c4d227b2d5d7651187d0720f06b43b1f4cb4c84"
+      "bytes": 267366,
+      "sha256": "0060038c0fd48276d826414b1a4284c4914ac777bd597b2e72ba5f837491abbb"
     },
     {
       "file": "assets/deck-23/deck-slide-16-390x844.png",
-      "bytes": 176212,
-      "sha256": "27d6316ad62131e916edd9bb317003aca3e00da86ad616cd5f4005e5474beb17"
+      "bytes": 115250,
+      "sha256": "29bc55dbe7e4490e96483a4fa3e2e600e4e5c277d5467720195e1a8d630cc000"
     },
     {
       "file": "assets/deck-23/deck-slide-17-1024x768.png",
-      "bytes": 147663,
-      "sha256": "4c509e05e8ea5e9d8165d7ed73faa88e52ded6f8b38e2be546ab9f3f66c19bb7"
+      "bytes": 162647,
+      "sha256": "c1b1ab3995542723ae65dbb3ea8ff193452b5975ed681752459b0136200cf417"
     },
     {
       "file": "assets/deck-23/deck-slide-17-1280x720.png",
-      "bytes": 156148,
-      "sha256": "38ffb8f30ec54c696dac8d3bcffb87d058fec0f5a4b84d0c589986581b0a8839"
+      "bytes": 168282,
+      "sha256": "86f95bd0d9dad251347004cba4a62fb82645f03e451965e3dce4b602ba306130"
     },
     {
       "file": "assets/deck-23/deck-slide-17-1440x900.png",
-      "bytes": 208348,
-      "sha256": "ea10a19532499708cd7ec62961206986af3f604e2f661cd2094095e619a980d1"
+      "bytes": 203700,
+      "sha256": "bc7a1094a0d6fcb9da293bd5f591cc71b2a448ca01288958f538baff2868be38"
     },
     {
       "file": "assets/deck-23/deck-slide-17-1920x1080.png",
-      "bytes": 258496,
-      "sha256": "80f621d21bd55312c6033d8d0528c16e86accbfd0c287ca1884d0fadb4951de4"
+      "bytes": 241868,
+      "sha256": "7771d8ecead81c484a6c3c2504a406f264e27d684d6981b1df530127a09e7165"
     },
     {
       "file": "assets/deck-23/deck-slide-17-390x844.png",
-      "bytes": 160620,
-      "sha256": "578e3bfee53fb878e9346ce128deb7867cff0cf842610c74a3b5728418e8f6c3"
+      "bytes": 152657,
+      "sha256": "ec9ba34f660c067e3ddca13a13c02e437c6fd7df558e87ff1accbfee7a6cc920"
     },
     {
       "file": "assets/deck-23/deck-slide-18-1024x768.png",
-      "bytes": 151590,
-      "sha256": "8aa3cfdf1e6231fdd196e79c40c172e9b6af29b575fe6065348250aa7e0d05f7"
+      "bytes": 176295,
+      "sha256": "834a4c0945a7baed47518edebfe16f5026b9d5aa5096ee816d138e0706b3f3b1"
     },
     {
       "file": "assets/deck-23/deck-slide-18-1280x720.png",
-      "bytes": 150970,
-      "sha256": "0fa5ac0dc31aa921f2254107f936719bdd529370107700e893055f564b042947"
+      "bytes": 172632,
+      "sha256": "7dd115f20263c4b7e8351cb311bf1f82b4549e2a788bb99ee161778fcf6c96fb"
     },
     {
       "file": "assets/deck-23/deck-slide-18-1440x900.png",
-      "bytes": 190602,
-      "sha256": "8fa3e97b348690d7464c97cf5d6e3147bbb3b64d3de5dff064b1a0d80163dfcd"
+      "bytes": 224828,
+      "sha256": "94252fcead2511004b0a21393c74b02d58ec698295cff2337cae7fc5069bb397"
     },
     {
       "file": "assets/deck-23/deck-slide-18-1920x1080.png",
-      "bytes": 252794,
-      "sha256": "abf5504ac2e450944f897df91cf1e24b7742d4b30b1bb86242c457d946bfe600"
+      "bytes": 277515,
+      "sha256": "d8d71a0aa7ecf179b38c1bb4e77b6885f41ed03a9e94b70a2c50cb96c935824f"
     },
     {
       "file": "assets/deck-23/deck-slide-18-390x844.png",
-      "bytes": 163870,
-      "sha256": "ded9b39ac86f5dd9867eec76f2f0437a03c4d51e628b5cf322e36191f3552c8d"
+      "bytes": 193489,
+      "sha256": "dad151380cc9fca71412eba20580f0bf46466c6494c951970a043cb20b41d842"
     },
     {
       "file": "assets/deck-23/deck-slide-19-1024x768.png",
-      "bytes": 144963,
-      "sha256": "9395b237eabd1d25618da8f647a9e3b29807eb82aafd9a8c9a3103ec09ef30f7"
+      "bytes": 175869,
+      "sha256": "1ae2c1d506d4dcae7f921260ae4872e91d594c39e767a7d8ca537df3c76da442"
     },
     {
       "file": "assets/deck-23/deck-slide-19-1280x720.png",
-      "bytes": 145784,
-      "sha256": "4fa3f1c69289f0de1285150b66a9e3be9d71a11f63fa7ce2884090f1c378a479"
+      "bytes": 171342,
+      "sha256": "9d6a3dafb0186eb65fea7ee343e5f3c687abd57dda11a5d166e1362e879efc21"
     },
     {
       "file": "assets/deck-23/deck-slide-19-1440x900.png",
-      "bytes": 196306,
-      "sha256": "f156028252fd813d7148615f1756ed6c351f0237bd638b094643ed5cab6eb228"
+      "bytes": 206073,
+      "sha256": "c81aca3e813dde7aa43edf79ef9f88a61ca35544288750a454b3475719700721"
     },
     {
       "file": "assets/deck-23/deck-slide-19-1920x1080.png",
-      "bytes": 255326,
-      "sha256": "c6d1c14e665aaa6239a3e281f3936fa967cedc344153c3728761aa196d5b34c9"
+      "bytes": 275523,
+      "sha256": "433e687224320e777e25643ddbeeb72c5cdbf17c2c638b4a1b61e1302ea493bf"
     },
     {
       "file": "assets/deck-23/deck-slide-19-390x844.png",
-      "bytes": 169887,
-      "sha256": "4de4a13927e915d34bf538b3612e0ec8cc64d535679d2f69bf5a1669ef947a48"
+      "bytes": 163957,
+      "sha256": "12dcabc90557f3d9795a846b34aef2096ba4103b3a36a17e7646b80758c2671b"
     },
     {
       "file": "assets/deck-23/deck-slide-20-1440x900.png",
-      "bytes": 126692,
-      "sha256": "6e20fc3756a2a3774152f42ef67130d2b87acc7335abd0a2219d31c6847cabb4"
+      "bytes": 133501,
+      "sha256": "08893a18283eb5eef4b95c95e617cdf926c1f7dea13d8383fb80c6d6eef534cd"
     },
     {
       "file": "assets/deck-23/deck-slide-20-390x844.png",
-      "bytes": 112025,
-      "sha256": "e27e49e4a24fc3a9d8f73be1f17837b45a8c651932063c90537d5ffc52635044"
+      "bytes": 115327,
+      "sha256": "7b9574544c7f54fbc1a874fb2b3002183f17a926d3d9d53e81368e799c9652c9"
     },
     {
       "file": "assets/deck-23/deck-slide-21-1440x900.png",
-      "bytes": 169557,
-      "sha256": "9368624a2e1fd3183781ff4f16820b714ffb0c471f6a6b353b7c0b11410d1299"
+      "bytes": 179511,
+      "sha256": "22d216c83b7806f00c95608358d303a0b475f104c66db688e1d756952b8e69d1"
     },
     {
       "file": "assets/deck-23/deck-slide-21-390x844.png",
-      "bytes": 143426,
-      "sha256": "2980fd4b8bb507d1bfb6579e9427ce12e3e9f424bf517a2409f2bade7af2ef61"
+      "bytes": 149900,
+      "sha256": "0710fd87c1cd2c4b340909f2db0f884342c0039dd49f25e081bdbef07f0fbac4"
     },
     {
       "file": "assets/deck-23/deck-slide-22-1440x900.png",
-      "bytes": 172881,
-      "sha256": "fa8ff4517dbf7d4e892292e9143d3634b60bc01fbfa279d096819bf7a71aa180"
+      "bytes": 182279,
+      "sha256": "a52ae882486bc481297647a7d31a4468a587677f3ffa8581c8380e3c8769d136"
     },
     {
       "file": "assets/deck-23/deck-slide-22-390x844.png",
-      "bytes": 156122,
-      "sha256": "2e5b3f05e6fed0f83a4fa1f4961c6a10ad3dae988bd8ca7bc10b70f71f9a0d84"
+      "bytes": 162974,
+      "sha256": "6d659653569650c8ccaf33396df69dcbe33d817ae094ce89c9aa964294292f7c"
     },
     {
       "file": "assets/deck-23/deck-slide-23-1440x900.png",
-      "bytes": 128426,
-      "sha256": "a714023314e876120b5ae64afea403a99e607c8a8e14ae88ae3470313d4477a9"
+      "bytes": 130867,
+      "sha256": "0e29f03005ec8d330603481d8eb27e98838999933407edcad4845767e1ae9cb6"
     },
     {
       "file": "assets/deck-23/deck-slide-23-390x844.png",
-      "bytes": 100453,
-      "sha256": "b8a049db677c6c6f74da483e1a1365420a79ff47fd90169204add678ae7edbd9"
+      "bytes": 102819,
+      "sha256": "bdde97e5add490ef3306da9ffc64ab7aa2e009c7b2dba9c1f0835364af888fdc"
     },
     {
       "file": "assets/deck-slide-01-1024x768.png",
@@ -1592,6 +1613,11 @@
       "sha256": "1d029a356341a0f0fdb22c64de750a18050295771b0397beded32e5b6202d02e"
     },
     {
+      "file": "assets/findings-table-clean-1440x900.png",
+      "bytes": 153516,
+      "sha256": "f21fca1443ea296a2d062422830422e80d0d70bb9d6f9ae15144a4289e4fe49d"
+    },
+    {
       "file": "assets/manifest-excluded-1280x900.png",
       "bytes": 151634,
       "sha256": "6bcc506fe4f10bf4917d2da5ecbe1056f8eca9a157b8e6f20c0e997436ed3184"
@@ -1752,159 +1778,48 @@
     },
     "console_errors": [],
     "external_requests": [],
-    "layout_checks": {
-      "stage_labels_1920": {
-        "overlaps": [],
-        "ok": true
-      }
+    "font_floor_css_px": 10.5,
+    "min_effective_font_px": 10.08,
+    "footer_390": "Synthetic estate · not affiliated with Guidewire · Official Cloud Assurance: not run",
+    "footer_390_clipped": false,
+    "reduced_motion": {
+      "media": "reduce",
+      "slide_body_animation": "none",
+      "agent_node_animation": "none",
+      "transition_duration": "0s",
+      "passed": true
     },
-    "accessibility": {
-      "mobile_matrix": {
-        "tabindex": "0",
-        "role": "region",
-        "label": "Capability comparison table; scroll horizontally at narrow widths",
-        "scrollWidth": 760,
-        "clientWidth": 358
-      }
-    },
-    "content_validation": {
-      "ok": true,
-      "failures": [],
-      "snapshot_short": "bd4a8a4b338a",
-      "source": "docs/presentation/index.html"
-    },
-    "crop_validation": {
-      "failures": [],
-      "checks": [
-        {
-          "name": "workbench",
-          "clip": {
-            "x": 218,
-            "y": 270,
-            "width": 1212,
-            "height": 630
-          },
-          "full": [],
-          "partial": [],
-          "bottom_before": null,
-          "ok": true,
-          "errors": []
-        },
-        {
-          "name": "manifest",
-          "clip": {
-            "x": 218,
-            "y": 200,
-            "width": 1212,
-            "height": 620
-          },
-          "full": [],
-          "partial": [],
-          "bottom_before": null,
-          "ok": true,
-          "errors": []
-        },
-        {
-          "name": "reconstruction",
-          "clip": {
-            "x": 218,
-            "y": 105,
-            "width": 1212,
-            "height": 770
-          },
-          "full": [],
-          "partial": [],
-          "bottom_before": "[data-mapping-row=\"M-06\"]",
-          "ok": true,
-          "errors": []
-        },
-        {
-          "name": "findings",
-          "clip": {
-            "x": 218,
-            "y": 220,
-            "width": 1212,
-            "height": 1000
-          },
-          "full": [],
-          "partial": [],
-          "bottom_before": null,
-          "ok": true,
-          "errors": []
-        },
-        {
-          "name": "reconstruction",
-          "clip": {
-            "x": 218,
-            "y": 105,
-            "width": 1212,
-            "height": 770
-          },
-          "full": [
-            ".page-head .eyebrow",
-            ".page-head h1",
-            "[data-gen-writes]",
-            ".banner-info",
-            ".tabs",
-            "[data-mapping-row=\"M-01\"]",
-            "[data-mapping-row=\"M-04\"]",
-            "[data-assumption-notice]"
-          ],
-          "partial": [
-            ".mapping-table"
-          ],
-          "bottom_before": "[data-mapping-row=\"M-05\"]",
-          "ok": true,
-          "errors": []
-        },
-        {
-          "name": "packet",
-          "clip": {
-            "x": 218,
-            "y": 95,
-            "width": 1212,
-            "height": 772
-          },
-          "full": [
-            ".packet-sections",
-            ".packet-assumptions-table tbody tr:first-child"
-          ],
-          "partial": [],
-          "bottom_before": ".packet-assumptions-table tbody tr:nth-child(2)",
-          "ok": true,
-          "errors": []
-        }
-      ]
-    },
-    "pdf": {
-      "path": "docs/presentation/PreFlight-deck.pdf",
-      "bytes": 1486730,
-      "sha256": "ddb97057f7c964703a0e875d96c0be6f73ded42420be9c19ffaeb082815d6262",
-      "pages": 23,
-      "page_size": "1200 x 675.12 pts"
-    },
-    "crop_failures": 0,
-    "capture_ok": true,
-    "print": {
-      "slides": 23,
-      "issues": [],
-      "page_height_ok": true
-    },
-    "deep_link": {
-      "hash": "#slide-23",
-      "active": "slide-23",
-      "counter": "23 / 23"
-    },
-    "keyboard": {
-      "home": "slide-1",
-      "end": "slide-23",
-      "notes_open": true,
-      "notes_text": "Close on the standard, not the feature list. “Every claim has evidence; every unknown has a name; every change waits for a human. That is what we want a migrati",
-      "help_open": true,
-      "help_text": "Deep links use #slide-1 … #slide-23. The deck has no external fonts, scripts, styles, or network calls. Print produces one 16:9 slide per page. Reduced-motion settings are respected."
-    }
+    "pdf_pages": 23,
+    "pdf_tagged": "yes",
+    "pdf_boundary_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "screenshots": 67,
+    "notes": "All 23 slides checked at all five viewports, including content below the body, right-edge overflow, dynamic font sizes, reduced motion, console errors, and external requests. Detail: assets/deck-23/validation.json."
   },
-  "asset_count": 173,
+  "asset_count": 175,
   "agent_demo": {
     "run_id": "R-DEMO-001",
     "feature_id": "PA-VEH-01",
@@ -1916,7 +1831,7 @@
       "Critic",
       "Scribe"
     ],
-    "handoff": "straight chain, not a cyclic loop",
+    "handoff": "straight handoff chain (Scribe seals); the codebase lab is the cyclic loop (Planner seals)",
     "files": 300,
     "evidence": 101,
     "feature_evidence": 31,
@@ -2020,7 +1935,7 @@
       "cda": "streaming/export to S3 Parquet; synchronous reads use Gosu Query or an application API",
       "servlet_wording": "not a recommended practice, not unsupported",
       "footprints": "illustrative synthetic values",
-      "harbor_apd": "type-level APN naming preparation only; full APD conversion not modeled"
+      "harbor_apd": "type-level APD naming preparation only; full APD conversion not modeled"
     }
   }
 }

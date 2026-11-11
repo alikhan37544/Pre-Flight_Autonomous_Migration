@@ -146,7 +146,7 @@ Snapshot
 | **Parse** | Reads each supported file format into a common evidence model | Evidence records |
 | **Discover** | Uses seeded rules to group artefacts into business features and builds a feature spine | `features.json`, `spine.json`, `gaps.json` |
 | **Review** | Runs eight migration-specific pattern checks with comment/string masking and hard negatives | `findings.json`, `review_evidence.json` |
-| **Reconstruct** | Applies 12 mapping rules to `PA-VEH-01` and writes local `_ext` drafts | `mappings.json`, `changes.json`, `assumptions.json` |
+| **Reconstruct** | Applies the 16-rule mapping pack to `PA-VEH-01`, records 12 explicit dispositions, and writes local `_ext` drafts | `mappings.json`, `changes.json`, `assumptions.json` |
 | **Compare** | Compares source inventory with the reference target | `comparison.json` |
 | **Evaluate** | Computes six headline metrics, baselines, and per-rule results | `metrics.json` |
 | **Packet** | Packages the review into a six-section artifact with hashes and an audit head | `packet.json`, `packet.html` |
@@ -349,6 +349,8 @@ These are **in-sample results on one controlled synthetic fixture**, not a bench
 
 Plus hashes (snapshot, rule pack, reference target, ground truth, features, findings, mappings, changes, assumptions), the audit head, owner/status, and a downloadable HTML packet.
 
+**Hash-scope note:** the packet's `hashes.rulepack` covers every `rules/*.yaml`, including the codebase lab's `codebase_rules.yaml`. `ground_truth/FROZEN.json` `rulepack_sha256` deliberately covers the review rule pack only and excludes `codebase_rules.yaml`, so the pre-registered demo hashes stay reproducible after the additive codebase feature. The two values are not expected to match; compare like with like. See [`VERIFICATION.md`](VERIFICATION.md#rule-pack-hash-scopes).
+
 **How to explain it:** *"This is the handover artifact. It carries its own hashes and audit head, so a reviewer can verify what they are reading."*
 
 ---
@@ -456,7 +458,7 @@ They share four names — Scout, Architect, Guardian, Critic — but the last ag
 | **Job** | Write the plan, the review report, and the sealed bundle manifest |
 | **Input** | All prior agent outputs |
 | **Output** | `migration-plan.json`, `MIGRATION-REPORT.md`, `bundle-manifest.json`, hash-chained agent log |
-| **Demo result** | Bundle sealed: 8 files · plan hash `12c2d3d23446…` · report hash `ef9bf37eabcd…` |
+| **Demo result** | Bundle sealed: 8 files · plan and report hashes are recorded in the live `migration/bundle-manifest.json` for the current generation (read live; re-runs change them) |
 | **Human decision** | Human approval still required |
 | **One-line explanation** | *"Scribe is the document controller: it packages and stamps the work, it does not approve it."* |
 

@@ -51,6 +51,25 @@ works.
 `migration/audit.jsonl`; it is separate from the review-run audit because the
 review packet and its seed hashes remain reproducible.
 
+## Every run is a new generation
+
+`migrate` appends a new generation to the run's migration log. `migration/audit.jsonl`
+is append-only, and the sealed plan, report, and bundle hashes are recomputed for the
+current generation. **Do not expect an earlier bundle's hashes to reproduce after a
+re-run**; the shipped `R-DEMO-001` hash examples describe the seed generation only.
+
+Use `verify-migration` on the current run, not on a remembered hash:
+
+```bash
+.venv/bin/python -m app.cli verify-migration R-DEMO-001
+```
+
+The command reports the current event count and verifies the live chain. Read current
+plan/report/bundle hashes from the current `migration/bundle-manifest.json`.
+
+Verification fails closed if the checkpoint is missing or the log and checkpoint
+disagree. Reseed the run rather than editing the append-only log.
+
 ## Artifacts
 
 Inside `data/runs/<run_id>/`:

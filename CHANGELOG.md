@@ -15,6 +15,7 @@
 - Add simulated upgrade resilience: generation bumps, stale-green invalidation, affected patch lists, revalidate/rollback/defer, and named unexpected-scenario handling.
 - Add two synthetic insurer case studies: Cascade Mutual (monoline Personal Auto) and Harbor P&C (Personal Auto, Homeowners, Workers' Comp).
 - Update the claims-lint-compatible rulepack hash handling to keep the frozen review snapshot reproducible.
+- Reconcile evidence docs with the Round 1 audit: point README QA at the current `docs/audits/` scorecards, resolve the stale boundary entries, remove stale Scribe hashes, record the current freeze commit, and document the packet-vs-frozen rule-pack hash scope.
 - Test suite: 481 passed with the current pytest suite (`pytest`, 2026-11-11).
 
 ## v1.0.0 — 2026-11-08

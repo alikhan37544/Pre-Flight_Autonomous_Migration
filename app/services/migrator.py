@@ -28,11 +28,19 @@ from app.services.llm import (
 
 MIGRATION_ARTIFACT = "migration.json"
 AUDIT_PATH = "migration/audit.jsonl"
+AUDIT_CHECKPOINT = "migration/audit.checkpoint.json"
 BUNDLE_ROOT = "migration"
 TARGET_ROOT = "migration/target"
 REPORT_PATH = "migration/MIGRATION-REPORT.md"
 PLAN_PATH = "migration/migration-plan.json"
 MANIFEST_PATH = "migration/bundle-manifest.json"
+SYNTHETIC_FIXTURES = frozenset({"demo-slice-300", "acme-pc-2026.10"})
+
+_REAL_CODE_BLOCKED_MESSAGE = (
+    "Live reasoning is blocked for non-synthetic runs. Only synthetic fixtures "
+    "may be sent unless an operator explicitly sets "
+    "PREFLIGHT_LLM_ALLOW_REAL_CODE=true after data-owner approval."
+)
 
 BOUNDARY = (
     "Autonomous draft generation only: the orchestrator writes a local, "
@@ -93,6 +101,58 @@ def _read(store, run_id: str, name: str, default: Any) -> Any:
         return default
 
 
+def _synthetic_snapshot_hashes() -> set[str]:
+    """Hashes of the bundled synthetic snapshots, from the frozen manifest."""
+    try:
+        payload = json.loads(
+            (Path(__file__).resolve().parents[2] / "ground_truth" / "FROZEN.json")
+            .read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError, TypeError):
+        return set()
+    fixtures = payload.get("fixtures") if isinstance(payload, dict) else None
+    if not isinstance(fixtures, dict):
+        return set()
+    hashes = set()
+    for fixture_id in SYNTHETIC_FIXTURES:
+        entry = fixtures.get(fixture_id)
+        digest = entry.get("sha256") if isinstance(entry, dict) else None
+        if isinstance(digest, str):
+            hashes.add(digest)
+    return hashes
+
+
+def _is_case_study_fixture(fixture_id: str) -> bool:
+    parts = [part for part in fixture_id.replace("\\", "/").split("/") if part not in {"", "."}]
+    return "case-studies" in parts
+
+
+def is_synthetic_run(store, run_id: str) -> bool:
+    """Return True only for a run whose source is a known synthetic fixture.
+
+    The live gateway is allowed for the bundled fixtures and case studies. A
+    run labelled with ``project_id="demo"`` may also qualify when its persisted
+    manifest is one of the frozen synthetic snapshots. An uploaded run never
+    qualifies, even if its status metadata was copied from a demo run.
+    """
+    status = store.read_status(run_id)
+    fixture_id = str(status.get("fixture_id") or "").strip()
+    if fixture_id == "uploaded" or fixture_id.startswith("uploaded/"):
+        return False
+    if fixture_id in SYNTHETIC_FIXTURES or _is_case_study_fixture(fixture_id):
+        return True
+    if str(status.get("project_id") or "") != "demo":
+        return False
+    manifest = _read(store, run_id, "manifest.json", None)
+    if not isinstance(manifest, dict):
+        return False
+    if manifest.get("synthetic") is True:
+        return True
+    if str(manifest.get("project_id") or "") != "demo":
+        return False
+    return manifest.get("sha256") in _synthetic_snapshot_hashes()
+
+
 def _safe_relative(path: str) -> bool:
     candidate = Path(path)
     return (
@@ -144,22 +204,53 @@ def _append_audit(store, run_id: str, *, agent: str, action: str,
         event["hash"] = _json_hash(event)
         with path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(event, sort_keys=True) + "\n")
+        store.write_artifact(run_id, AUDIT_CHECKPOINT, {
+            "run_id": run_id,
+            "count": seq + 1,
+            "head": event["hash"],
+            "log_size": path.stat().st_size,
+            "updated_at": _now(),
+        })
         return event
 
 
 def verify_migration_log(store, run_id: str) -> tuple[bool, str]:
-    """Verify the migrator's append-only event chain."""
+    """Verify the migrator's append-only event chain and its checkpoint."""
     path = store.run_dir(run_id) / AUDIT_PATH
     if not path.is_file():
         return False, "migration audit log is missing"
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        return False, f"migration audit log cannot be read: {type(exc).__name__}"
+    if not raw.strip():
+        return False, "migration audit log is empty"
+    try:
+        checkpoint = json.loads(
+            (store.run_dir(run_id) / AUDIT_CHECKPOINT).read_text(encoding="utf-8")
+        )
+    except FileNotFoundError:
+        return False, "migration audit checkpoint is missing"
+    except (OSError, ValueError, TypeError):
+        return False, "migration audit checkpoint is corrupt"
+    if not isinstance(checkpoint, dict):
+        return False, "migration audit checkpoint is corrupt"
+    if checkpoint.get("run_id") != run_id:
+        return False, "migration audit checkpoint belongs to a different run"
+
     previous = "GENESIS"
-    for index, line in enumerate(path.read_text(encoding="utf-8").splitlines()):
+    count = 0
+    for index, line in enumerate(raw.decode("utf-8", "replace").splitlines()):
         if not line.strip():
             continue
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
             return False, f"event {index} is not valid JSON"
+        if not isinstance(event, dict):
+            return False, f"event {index} is not a JSON object"
+        if event.get("run_id") != run_id:
+            return False, f"event {index} belongs to a different run"
         digest = event.pop("hash", None)
         if event.get("seq") != index:
             return False, f"event {index} has the wrong sequence"
@@ -168,7 +259,16 @@ def verify_migration_log(store, run_id: str) -> tuple[bool, str]:
         if _json_hash(event) != digest:
             return False, f"event {index} hash mismatch"
         previous = digest
-    return True, f"{index + 1 if 'index' in locals() else 0} events verified"
+        count += 1
+    if count == 0:
+        return False, "migration audit log is empty"
+    if checkpoint.get("count") != count:
+        return False, "migration audit log does not match its checkpoint (truncated or extended)"
+    if checkpoint.get("head") != previous:
+        return False, "migration audit log head does not match its checkpoint"
+    if checkpoint.get("log_size") != len(raw):
+        return False, "migration audit log size does not match its checkpoint"
+    return True, f"{count} events verified"
 
 
 def _initial_state(run_id: str, feature: dict[str, Any], feature_id: str) -> dict[str, Any]:
@@ -866,6 +966,22 @@ def _live_reasoning(
             "code": exc.code,
             "latency_ms": int((time.monotonic() - started) * 1000),
         })
+    except Exception:
+        # An optional annotation must never abort the deterministic migration.
+        # Do not persist exception text that may contain provider details.
+        state.setdefault("llm", {}).setdefault("warnings", []).append({
+            "agent": kind,
+            "code": "annotation_failed",
+            "message": "Live annotation failed; the deterministic result is retained.",
+            "latency_ms": int((time.monotonic() - started) * 1000),
+        })
+        state["llm"]["status"] = "degraded"
+        state["llm"].setdefault("calls", []).append({
+            "kind": kind,
+            "status": "failed",
+            "code": "annotation_failed",
+            "latency_ms": int((time.monotonic() - started) * 1000),
+        })
 
 
 
@@ -891,6 +1007,8 @@ def run_migration(store, run_id: str, *, feature_id: str | None = None,
             "PREFLIGHT_LLM_BASE_URL and PREFLIGHT_LLM_API_KEY, or run offline.",
             code="not_configured",
         )
+    if live and not config.allow_real_code and not is_synthetic_run(store, run_id):
+        raise LLMError(_REAL_CODE_BLOCKED_MESSAGE, code="real_code_blocked", status=409)
     live_model = config.resolve_model(model) if live else None
 
     features = _read(store, run_id, "features.json", {"features": []}).get("features", [])
@@ -1322,7 +1440,9 @@ def run_migration(store, run_id: str, *, feature_id: str | None = None,
         _write_bytes(migration_dir / "MIGRATION-REPORT.md", report.encode("utf-8"))
         bundle_files = []
         for path in sorted(migration_dir.rglob("*")):
-            if path.is_file() and path.name not in {"bundle-manifest.json"}:
+            if path.is_file() and path.name not in {
+                "bundle-manifest.json", "audit.checkpoint.json",
+            }:
                 relative = path.relative_to(migration_dir).as_posix()
                 data = path.read_bytes()
                 bundle_files.append({"path": f"{BUNDLE_ROOT}/{relative}",

@@ -629,7 +629,7 @@ def test_migration_stories_are_explainable(server) -> None:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 1440, "height": 900})
         page.goto(f"{base}/case-studies", wait_until="networkidle")
-        expect(page.locator("h1")).to_contain_text("Two completed migrations")
+        expect(page.locator("h1")).to_contain_text("Two completed migration rehearsals")
         expect(page.locator(".agent-explain")).to_contain_text("How to explore")
         expect(page.locator(".case-outcome").first).to_contain_text("blockers found")
         expect(page.locator(".case-outcome").first).to_contain_text("human gates")

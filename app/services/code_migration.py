@@ -745,6 +745,12 @@ def run_code_migration(case_id: str, settings: Settings, *,
     llm = llm_config or LLMConfig.from_env()
     live_model = llm.resolve_model(model) if live else None
     profile = get_case_study(case_id)
+    if live and not llm.allow_real_code and not profile.get("synthetic", True):
+        raise LLMError(
+            "Live reasoning is blocked for this non-synthetic case study.",
+            code="real_code_blocked",
+            status=409,
+        )
     root = case_source_root(settings, case_id)
     guarded = guarded_scan(root)
     if guarded.scan is None:
@@ -1118,6 +1124,20 @@ def run_code_migration(case_id: str, settings: Settings, *,
                         "kind": "critic",
                         "status": "failed",
                         "code": exc.code,
+                        "latency_ms": int((time.monotonic() - live_started) * 1000),
+                    })
+                except Exception:
+                    result["llm"]["status"] = "degraded"
+                    result["llm"]["warnings"].append({
+                        "agent": "critic",
+                        "code": "annotation_failed",
+                        "message": "Live annotation failed; the deterministic result is retained.",
+                        "latency_ms": int((time.monotonic() - live_started) * 1000),
+                    })
+                    result["llm"]["calls"].append({
+                        "kind": "critic",
+                        "status": "failed",
+                        "code": "annotation_failed",
                         "latency_ms": int((time.monotonic() - live_started) * 1000),
                     })
         return result

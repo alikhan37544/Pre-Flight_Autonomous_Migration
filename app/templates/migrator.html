@@ -11,10 +11,8 @@
   <div>
     <div class="eyebrow">Agent demo · five-agent loop · Multi-agent migrator</div>
     <h1>Watch the migration crew work</h1>
-    <p class="lede">Scout finds the evidence. Architect drafts the target. Guardian runs the
-    deterministic checks and opens human review gates. Critic runs independent machine checks and
-    tries to break the result. Scribe seals the plan, report, bundle manifest, and hash-chained
-    agent log. Nothing deploys; every change waits for a human.</p>
+    <p class="lede">Five agents draft a local migration bundle. Nothing deploys, and every change
+    waits for a human.</p>
   </div>
   <div class="head-meta">
     {% if m %}
@@ -32,12 +30,10 @@
   </div>
 </div>
 
-{{ reality_callout(boundary) }}
-
-<section class="banner banner-info" aria-label="Autonomy boundary">
-  <strong>Bounded autonomy.</strong> Agents may read the snapshot, generate drafts, verify their
-  own output, and seal a local bundle. They may not deploy, edit <code>_gen</code> files, approve a
-  change, resolve an assumption, or contact a tenant. Guardian is always deterministic.
+<section class="boundary-strip" aria-label="Reality boundary">
+  <strong>Synthetic rehearsal.</strong> No tenant contacted · no compile or deploy · no change
+  approved · no official Cloud Assurance. Agents draft and seal locally; humans decide.
+  <a class="text-link" href="#boundary-details">Full boundary</a>
 </section>
 
 {% if not m %}
@@ -85,80 +81,39 @@
 </section>
 
 {% else %}
-<section class="panel agent-explain" aria-labelledby="explain-heading">
-  <div class="panel-head">
-    <div>
-      <div class="eyebrow">What am I looking at?</div>
-      <h2 id="explain-heading">{{ m.explain.headline }}</h2>
-    </div>
-    <span class="badge badge-neutral">read this first</span>
+<section class="reader-strip" aria-labelledby="explain-heading">
+  <div class="reader-strip-copy">
+    <p id="explain-heading"><span class="eyebrow">How to read this page</span>
+    <strong>Five agents, one evidence chain.</strong> Scout finds evidence; Architect drafts;
+    Guardian opens human gates; Critic checks; Scribe seals. Nothing deploys and every change waits for a human.</p>
   </div>
-  <p class="agent-explain-lede">{{ m.explain.plain_language }}</p>
-  <details class="fold-body explain-fold" data-auto-details open>
-    <summary>Why it matters, what to look at, and the outcome</summary>
+  <details class="reader-more">
+    <summary>Why it matters &amp; what to look at</summary>
     <div class="explain-grid">
-    <div>
-      <h3>Why it matters</h3>
-      <p>{{ m.explain.why_it_matters }}</p>
+      <div>
+        <h3>Why it matters</h3>
+        <p>{{ m.explain.why_it_matters }}</p>
+      </div>
+      <div>
+        <h3>What to look at</h3>
+        <ol class="explain-list">
+          {% for item in m.explain.what_to_look_at %}<li>{{ item }}</li>{% endfor %}
+        </ol>
+      </div>
+      <div>
+        <h3>Outcome</h3>
+        <p><strong>{{ m.explain.outcome|replace('completed_with_gates', 'sealed · human gates open')|replace('green_with_human_gates', 'machine-green · human gates open')|replace('revalidation_required', 'revalidation required') }}</strong></p>
+        <p class="muted">{{ m.explain.caveat }}</p>
+      </div>
     </div>
-    <div>
-      <h3>What to look at</h3>
-      <ol class="explain-list">
-        {% for item in m.explain.what_to_look_at %}<li>{{ item }}</li>{% endfor %}
-      </ol>
-    </div>
-    <div>
-      <h3>Outcome</h3>
-      <p><strong>{{ m.explain.outcome|replace('completed_with_gates', 'sealed · human gates open')|replace('green_with_human_gates', 'machine-green · human gates open')|replace('revalidation_required', 'revalidation required') }}</strong></p>
-      <p class="muted">{{ m.explain.caveat }}</p>
-    </div>
-  </div>
   </details>
-  <details class="glossary-details">
-    <summary>Glossary for a first-time reader ({{ m.glossary|length }} terms)</summary>
-    <dl class="glossary-grid">
-      {% for item in m.glossary %}
-      <div><dt>{{ item.term }}</dt><dd>{{ item.definition }}</dd></div>
-      {% endfor %}
-    </dl>
-  </details>
-</section>
-
-<section class="panel next-actions-panel" aria-labelledby="migration-next-actions">
-  <div class="panel-head">
-    <div>
-      <div class="eyebrow">Human to-do</div>
-      <h2 id="migration-next-actions">What a human must do next</h2>
-    </div>
-    <span class="badge badge-warning">Nothing is approved</span>
-  </div>
-  <details class="fold-body next-actions-fold" data-auto-details open>
-    <summary>{{ m.next_actions|length }} actions · expand the full human to-do list</summary>
-    <ol class="next-actions-list">
-      {% for action in m.next_actions %}<li>{{ action }}</li>{% endfor %}
-    </ol>
-  </details>
-</section>
-
-<section class="approval-split" aria-label="Machine verification and human approval">
-  <div class="approval-card approval-machine">
-    <span class="approval-label">Machine verification</span>
-    <strong>{{ m.machine_checks.passed }}/{{ m.machine_checks.total }} deterministic checks passed</strong>
-    <p>Critic verdict: {{ m.machine_checks.verdict }}. Machine checks are not approval.</p>
-  </div>
-  <div class="approval-card approval-human">
-    <span class="approval-label">Human approval</span>
-    <strong>{{ m.human_gate_summary.total }} review gates open · {{ m.human_gate_summary.pending_changes }} changes pending</strong>
-    <p>{{ m.human_gate_summary.plain_language }}</p>
-  </div>
 </section>
 
 <section class="panel agent-loop-panel" data-migration-panel data-run-id="{{ run_id }}" data-migration-status="{{ 'running' if m.status == 'running' else 'settled' }}">
   <div class="panel-head">
     <div>
       <div class="eyebrow">Agent crew</div>
-      <h2>{{ m.feature_id }} · {{ m.feature_name }}</h2>
-      <p class="muted">{{ m.mode }} · {{ m.started_at }}{% if m.finished_at %} → {{ m.finished_at }}{% endif %}</p>
+      <h2 title="{{ m.mode }} · {{ m.started_at }}{% if m.finished_at %} → {{ m.finished_at }}{% endif %}">{{ m.feature_id }} · {{ m.feature_name }}</h2>
     </div>
     <div class="agent-loop-actions">
       <button class="btn btn-small" type="button" data-agent-replay>Replay loop</button>
@@ -173,7 +128,7 @@
   </div>
 
   <div class="migration-progress">
-    <progress class="progress" data-migration-bar max="100" value="{{ m.progress }}"></progress>
+    <progress class="progress" data-migration-bar max="100" value="{{ m.progress }}" aria-label="Five-agent migration progress"></progress>
     <div class="migration-progress-meta">
       <span data-migration-label>{% if m.current_agent %}Running {{ m.current_agent }}{% else %}{{ reader_status(m.status) }}{% endif %} · {{ m.progress }}%</span>
       <span class="muted">Agent log: <code>{{ m.audit.events }}</code> events
@@ -213,29 +168,19 @@
   <p class="machine-gate-note"><strong>Machine check vs human gate.</strong> Guardian opens human
   review gates. Critic runs independent machine checks; a Critic pass is not a gate.</p>
 
+  <div class="human-decision-strip">
+    <span class="label-inline">Human decision required</span>
+    <strong>{{ m.human_gate_summary.total }} gates open · {{ m.human_gate_summary.pending_changes }} changes pending.</strong>
+    <span>Machine checks {{ m.machine_checks.passed }}/{{ m.machine_checks.total }} pass but approve nothing.</span>
+    <a class="text-link" href="#migration-next-actions">What a human must do next</a>
+  </div>
+
   <div class="agent-summary-strip" aria-label="Migration summary">
     <div class="summary-stat"><span class="summary-value" data-migration-stat="packages">{{ m.summary.get('packages', 0) }}</span><span class="summary-label">work packages</span></div>
     <div class="summary-stat"><span class="summary-value" data-migration-stat="generated">{{ m.summary.get('generated', 0) }}</span><span class="summary-label">target drafts</span></div>
     <div class="summary-stat"><span class="summary-value" data-migration-stat="gates">{{ m.summary.get('gates', 0) }}</span><span class="summary-label">human review gates</span></div>
     <div class="summary-stat summary-signal"><span class="summary-value" data-migration-stat="high_gates">{{ m.summary.get('high_gates', 0) }}</span><span class="summary-label">high impact</span></div>
     <div class="summary-stat"><span class="summary-value" data-migration-stat="artifacts">{{ m.summary.get('artifacts', 0) }}</span><span class="summary-label">bundle files</span></div>
-  </div>
-</section>
-
-<section class="panel agent-narrative-panel" aria-labelledby="narrative-heading">
-  <div class="panel-head">
-    <h2 id="narrative-heading">What just happened</h2>
-    <span class="muted">the whole handoff in one paragraph</span>
-  </div>
-  <p class="agent-narrative">{{ m.narrative }}</p>
-  <div class="handoff-list">
-    {% for handoff in m.handoffs %}
-    <div class="handoff-item handoff-{{ handoff.kind }}">
-      <span class="handoff-seq">{{ handoff.seq }}</span>
-      <span class="handoff-route"><code>{{ handoff.from }}</code> → <code>{{ handoff.to }}</code></span>
-      <span class="handoff-message">{{ handoff.message }}</span>
-    </div>
-    {% endfor %}
   </div>
 </section>
 
@@ -377,7 +322,7 @@
               <td><code>{{ package.target_path }}</code></td>
               <td>{{ package.disposition or '—' }}</td>
               <td>{% if package.status == 'draft_ready' %}<span class="pill pill-status status-succeeded">draft ready</span>{% else %}<span class="pill pill-status status-failed">{{ package.status }}</span>{% endif %}</td>
-              <td>{% for evidence_id in package.evidence_ids %}<code>{{ evidence_id }}</code> {% endfor %}</td>
+              <td>{% for evidence_id in package.evidence_ids %}<a class="evidence-link" href="/api/runs/{{ run_id }}/evidence/{{ evidence_id }}" target="_blank" rel="noopener" title="Open evidence record {{ evidence_id }}"><code>{{ evidence_id }}</code></a> {% endfor %}</td>
               <td>{% for gate_id in package.gate_ids %}<code>{{ gate_id }}</code> {% else %}—{% endfor %}</td>
               <td><span class="badge badge-neutral">{{ package.approval }}</span></td>
             </tr>
@@ -406,10 +351,11 @@
           <div class="gate-list compact" role="region" aria-label="Guardian assumption gates" tabindex="0">
             {% for gate in m.gate_groups.assumptions %}
             <article class="gate-card gate-{{ gate.severity }}">
-              <div class="gate-head"><code>{{ gate.gate_id }}</code><span class="pill pill-{{ 'danger' if gate.severity == 'high' else 'warning' }}">{{ gate.severity }}</span></div>
+              <div class="gate-head"><code>{{ gate.gate_id }}</code><span class="pill pill-{{ 'danger' if gate.severity == 'high' else 'warning' }}">{{ gate.severity }}</span><span class="badge badge-warning">Human decision required</span></div>
               <p><strong>{{ gate.title }}</strong></p>
               <p class="muted">{{ gate.question }}</p>
               <p class="muted">Owner: {{ gate.owner }}</p>
+              <p class="gate-resolution"><a class="text-link" href="#migration-next-actions">What the human must do next</a></p>
             </article>
             {% endfor %}
           </div>
@@ -534,7 +480,7 @@
       <div class="panel-head"><h3>Live reasoning · {{ reasoning.model }}</h3><span class="badge badge-live">grounded</span></div>
       <p><strong>{{ reasoning.headline }}</strong></p>
       {% if reasoning.observations %}
-      <ul>{% for item in reasoning.observations %}<li>{{ item.text }} <span class="muted">{% for evidence_id in item.evidence_ids %}<code>{{ evidence_id }}</code> {% endfor %}</span></li>{% endfor %}</ul>
+      <ul>{% for item in reasoning.observations %}<li>{{ item.text }} <span class="muted">{% for evidence_id in item.evidence_ids %}<a class="evidence-link" href="/api/runs/{{ run_id }}/evidence/{{ evidence_id }}" target="_blank" rel="noopener" title="Open evidence record {{ evidence_id }}"><code>{{ evidence_id }}</code></a> {% endfor %}</span></li>{% endfor %}</ul>
       {% endif %}
       {% if reasoning.packages %}
       <ul>{% for item in reasoning.packages %}<li><code>{{ item.package_id }}</code> {{ item.rationale }} <span class="muted">risk {{ item.risk }} · test: {{ item.test }}</span></li>{% endfor %}</ul>
@@ -558,6 +504,102 @@
   </section>
   {% endfor %}
 </div>
+
+<section class="panel agent-narrative-panel" aria-labelledby="narrative-heading">
+  <div class="panel-head">
+    <h2 id="narrative-heading">What just happened</h2>
+    <span class="muted">the whole handoff in one paragraph</span>
+  </div>
+  <p class="agent-narrative">{{ m.narrative }}</p>
+  <div class="handoff-list">
+    {% for handoff in m.handoffs %}
+    <div class="handoff-item handoff-{{ handoff.kind }}">
+      <span class="handoff-seq">{{ handoff.seq }}</span>
+      <span class="handoff-route"><code>{{ handoff.from }}</code> → <code>{{ handoff.to }}</code></span>
+      <span class="handoff-message">{{ handoff.message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="approval-split" aria-label="Machine verification and human approval">
+  <div class="approval-card approval-machine">
+    <span class="approval-label">Machine verification</span>
+    <strong>{{ m.machine_checks.passed }}/{{ m.machine_checks.total }} deterministic checks passed</strong>
+    <p>Critic verdict: {{ m.machine_checks.verdict }}. Machine checks are not approval.</p>
+  </div>
+  <div class="approval-card approval-human">
+    <span class="approval-label">Human decision required</span>
+    <strong>{{ m.human_gate_summary.total }} review gates open · {{ m.human_gate_summary.pending_changes }} changes pending</strong>
+    <p>{{ m.human_gate_summary.plain_language }}</p>
+  </div>
+</section>
+
+<section class="panel next-actions-panel" aria-labelledby="migration-next-actions">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">Human to-do</div>
+      <h2 id="migration-next-actions">What a human must do next</h2>
+    </div>
+    <span class="badge badge-warning">Nothing is approved</span>
+  </div>
+  <details class="fold-body next-actions-fold" data-auto-details open>
+    <summary>{{ m.next_actions|length }} actions · expand the full human to-do list</summary>
+    <ol class="next-actions-list">
+      {% for action in m.next_actions %}<li>{{ action }}</li>{% endfor %}
+    </ol>
+  </details>
+  <p class="decision-gap-note">This demo page records no human decision. Use the review workflow
+  for the run (or the pilot decision log) to accept, reject, or defer; the page never changes a
+  patch or gate state by itself.</p>
+</section>
+
+<section class="panel agent-explain agent-explain-full" aria-labelledby="explain-full-heading">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow">What am I looking at?</div>
+      <h2 id="explain-full-heading">{{ m.explain.headline }}</h2>
+    </div>
+    <span class="badge badge-neutral">read this first</span>
+  </div>
+  <p class="agent-explain-lede">{{ m.explain.plain_language }}</p>
+  <details class="fold-body explain-fold" data-auto-details open>
+    <summary>Why it matters, what to look at, and the outcome</summary>
+    <div class="explain-grid">
+      <div>
+        <h3>Why it matters</h3>
+        <p>{{ m.explain.why_it_matters }}</p>
+      </div>
+      <div>
+        <h3>What to look at</h3>
+        <ol class="explain-list">
+          {% for item in m.explain.what_to_look_at %}<li>{{ item }}</li>{% endfor %}
+        </ol>
+      </div>
+      <div>
+        <h3>Outcome</h3>
+        <p><strong>{{ m.explain.outcome|replace('completed_with_gates', 'sealed · human gates open')|replace('green_with_human_gates', 'machine-green · human gates open')|replace('revalidation_required', 'revalidation required') }}</strong></p>
+        <p class="muted">{{ m.explain.caveat }}</p>
+      </div>
+    </div>
+  </details>
+  <details class="glossary-details">
+    <summary>Glossary for a first-time reader ({{ m.glossary|length }} terms)</summary>
+    <dl class="glossary-grid">
+      {% for item in m.glossary %}
+      <div><dt>{{ item.term }}</dt><dd>{{ item.definition }}</dd></div>
+      {% endfor %}
+    </dl>
+  </details>
+</section>
+
+<div id="boundary-details">{{ reality_callout(boundary) }}</div>
+
+<section class="banner banner-info" aria-label="Autonomy boundary">
+  <strong>Bounded autonomy.</strong> Agents may read the snapshot, generate drafts, verify their
+  own output, and seal a local bundle. They may not deploy, edit <code>_gen</code> files, approve a
+  change, resolve an assumption, or contact a tenant. Guardian is always deterministic.
+</section>
 
 <section class="panel agent-artifacts">
   <div class="panel-head">

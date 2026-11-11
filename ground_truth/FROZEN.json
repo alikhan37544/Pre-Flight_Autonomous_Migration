@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "status": "frozen",
   "frozen_at": "2026-11-09T22:27:03Z",
-  "commit": "95d179e1494de1f0d1ba1e0ee1a4eb97c31433ab",
+  "commit": "beba572",
   "author": "PreFlight Build",
   "fixtures": {
     "acme-pc-2026.10": {
@@ -39,6 +39,10 @@
     {
       "date": "2026-11-09",
       "change": "Frozen demo-tier fixtures and rule pack."
+    },
+    {
+      "date": "2026-11-11",
+      "change": "Record the current HEAD commit; fixture, rule-pack, gold, and claims-ledger hashes are unchanged."
     }
   ]
 }

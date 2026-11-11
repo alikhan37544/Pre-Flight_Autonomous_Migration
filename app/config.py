@@ -19,6 +19,14 @@ def _default_secret_key() -> str:
     return os.environ.get("PREFLIGHT_SECRET_KEY") or _FALLBACK_SECRET
 
 
+def _llm_timeout_from_env() -> float:
+    try:
+        value = float(os.environ.get("PREFLIGHT_LLM_TIMEOUT", "45"))
+    except (TypeError, ValueError):
+        return 45.0
+    return max(5.0, min(value, 120.0))
+
+
 @dataclass
 class Settings:
     data_dir: Path = field(default_factory=lambda: Path(os.environ.get("PREFLIGHT_DATA_DIR", REPO / "data")))
@@ -43,8 +51,9 @@ class Settings:
         repr=False,
     )
     llm_model: str = field(default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_MODEL") or "mimo-v2.6-flash").strip())
-    llm_timeout: float = field(default_factory=lambda: float(os.environ.get("PREFLIGHT_LLM_TIMEOUT", "45")))
+    llm_timeout: float = field(default_factory=lambda: _llm_timeout_from_env())
     llm_allow_real_code: bool = field(default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_ALLOW_REAL_CODE") or "").strip().lower() in {"1", "true", "yes", "on"})
+    llm_allow_local: bool = field(default_factory=lambda: (os.environ.get("PREFLIGHT_LLM_ALLOW_LOCAL") or "").strip().lower() in {"1", "true", "yes", "on"})
 
     allowed_hosts: tuple[str, ...] = ("127.0.0.1", "localhost", "testserver")
     allowed_origins: tuple[str, ...] = ()
@@ -73,4 +82,5 @@ class Settings:
             model=self.llm_model,
             timeout=self.llm_timeout,
             allow_real_code=self.llm_allow_real_code,
+            allow_local=self.llm_allow_local,
         )

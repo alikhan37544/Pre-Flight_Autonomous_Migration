@@ -51,9 +51,20 @@ packet audit head == audit log head       true
 Playwright golden path                    passes (accept/reject dialog, mobile layout, packet, evaluation)
 ```
 
+## Rule-pack hash scopes
+
+The packet and the freeze manifest bind different rule-pack scopes deliberately:
+
+| Artifact | Scope | Value at the 2026-11-11 check |
+|---|---|---|
+| Packet `hashes.rulepack` | Every `rules/*.yaml`, including `codebase_rules.yaml` | `f0733d19d4bb…` |
+| `ground_truth/FROZEN.json` `rulepack_sha256` | Review rule pack only; excludes `codebase_rules.yaml` | `d84a4b7e7446…` |
+
+`scripts/freeze.py` excludes the codebase pack so the pre-registered demo hashes stay reproducible after the additive codebase-lab feature. The packet binds the whole rule directory because it describes the current product surface. Neither hash is stale, and they are not expected to be equal. Recompute each with the same scope (`scripts/freeze.py:rulepack_hash` and `app/services/packet.py:_rulepack_hash`) and compare like with like.
+
 ## Final status
 
-**Internal gate at this 8 November build: PASS for the demo path.** 421 tests passed at that build; the current pytest suite is 481 passed (`pytest`, 2026-11-11). Packet HTML/JSON tamper checks fail closed; XML/CDATA, inline YAML block, and reviewer-entered values are redacted; freeze hashes recompute. Independent demo reviewers scored Loop 2 at 7/10; the presentation is still being hardened. The residual limitations below remain disclosed.
+**Internal gate at this 8 November build: PASS for the demo path.** 421 tests passed at that build; the current pytest suite is 481 passed (`pytest`, 2026-11-11). Packet HTML/JSON tamper checks fail closed; XML/CDATA, inline YAML block, and reviewer-entered values are redacted; freeze hashes recompute. The 10 November demo-readiness panel recorded Loop 4 final scores of 8.0–8.5 with no remaining demo blockers (see below). The residual limitations below remain disclosed.
 
 ## Residual limitations (disclosed, not hidden)
 

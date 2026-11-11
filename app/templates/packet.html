@@ -168,6 +168,63 @@
   <code>preflight verify-packet {{ run_id }}</code> checks the packet and its content digests;
   <code>preflight verify-audit {{ run_id }}</code> checks the audit chain only, not the packet.</p>
 </section>
+
+{% set all_evidence = (view.evidence or []) + (view.review_evidence or []) %}
+{% set audit_events = view.audit or [] %}
+<section class="panel packet-appendix" aria-labelledby="packet-appendix-heading">
+  <div class="panel-head">
+    <div>
+      <h2 id="packet-appendix-heading">Evidence and audit appendix</h2>
+      <p class="muted">The counts claimed by section 06, rendered as inspectable records rather than hashes alone.</p>
+    </div>
+    <a class="text-link" href="/api/runs/{{ run_id }}/audit" target="_blank" rel="noopener">Open audit JSON</a>
+  </div>
+
+  <details class="appendix-details packet-evidence-appendix">
+    <summary>Evidence appendix ({{ all_evidence|length }} items)</summary>
+    <p class="muted">Discovery evidence plus review evidence. Each ID opens the evidence record; excerpts are redacted at capture where required.</p>
+    <p class="scroll-hint" data-scroll-hint data-scroll-always>Scroll horizontally to see all columns. <span aria-hidden="true">&rarr;</span></p>
+    <div class="table-scroll" role="region" aria-label="Packet evidence appendix" tabindex="0" data-table-scroll>
+      <table class="data-table compact packet-evidence-table">
+        <caption>Complete evidence appendix from the packet inputs.</caption>
+        <thead><tr><th scope="col">Evidence</th><th scope="col">Source</th><th scope="col">Locator</th><th scope="col">Excerpt</th><th scope="col">Method</th></tr></thead>
+        <tbody>
+          {% for item in all_evidence %}
+          <tr>
+            <td><a class="evidence-link" href="/api/runs/{{ run_id }}/evidence/{{ item.evidence_id }}" target="_blank" rel="noopener"><code>{{ item.evidence_id }}</code></a></td>
+            <td><code>{{ item.path }}</code></td>
+            <td>{% if item.locator is mapping %}{% if item.locator.line %}line {{ item.locator.line }} · {% endif %}{{ item.locator.kind or '' }} {{ item.locator.value or '' }}{% else %}{{ item.locator or '—' }}{% endif %}</td>
+            <td><code class="packet-excerpt">{{ item.excerpt }}</code></td>
+            <td>{{ item.method or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <details class="appendix-details packet-audit-appendix" open>
+    <summary>Audit events ({{ audit_events|length }})</summary>
+    <div class="table-scroll" role="region" aria-label="Packet audit events" tabindex="0" data-table-scroll>
+      <table class="data-table compact packet-audit-table">
+        <caption>Hash-chained audit events included in this packet.</caption>
+        <thead><tr><th scope="col">Seq</th><th scope="col">Time</th><th scope="col">Agent</th><th scope="col">Action</th><th scope="col">Object</th><th scope="col">Hash</th></tr></thead>
+        <tbody>
+          {% for event in audit_events %}
+          <tr>
+            <td>{{ event.seq }}</td>
+            <td><code>{{ event.ts }}</code></td>
+            <td>{{ event.agent or event.actor or 'system' }}</td>
+            <td><code>{{ event.action }}</code></td>
+            <td><code>{{ event.object_id }}</code></td>
+            <td><code title="{{ event.hash }}">{{ event.hash[:16] }}</code></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>
 {% else %}
 <section class="panel empty-inline">
   <h2>Packet not generated</h2>

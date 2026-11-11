@@ -56,6 +56,7 @@ from app.services.packet import DISCLAIMER, build_packet, verify_packet_artifact
 from app.services.migrator import (
     MIGRATION_ARTIFACT,
     build_migration_view,
+    is_synthetic_run,
     run_migration,
     verify_migration_log,
 )
@@ -1037,6 +1038,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
         except LLMError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(
+                status_code=502,
+                detail="Live model check failed; the deterministic product is unaffected.",
+            ) from exc
         return {
             "ok": True,
             "model": result["model"],
@@ -1283,12 +1289,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 return {"run_id": run_id, "status": "running", "agents": existing.get("agents", []) if existing else []}
             if existing and existing.get("status") in {"completed", "completed_with_gates"} and not body.force:
                 return existing
-            if body.live and not settings.llm_config().configured:
-                raise HTTPException(
-                    status_code=409,
-                    detail=("Live reasoning is not configured. Set PREFLIGHT_LLM_BASE_URL and "
-                            "PREFLIGHT_LLM_API_KEY, or run the deterministic offline pass."),
-                )
+            if body.live:
+                config = settings.llm_config()
+                if not config.configured:
+                    raise HTTPException(
+                        status_code=409,
+                        detail=("Live reasoning is not configured. Set PREFLIGHT_LLM_BASE_URL and "
+                                "PREFLIGHT_LLM_API_KEY, or run the deterministic offline pass."),
+                    )
+                if not config.allow_real_code and not is_synthetic_run(store, run_id):
+                    raise HTTPException(
+                        status_code=409,
+                        detail=("Live reasoning is blocked for uploaded/non-synthetic runs. "
+                                "Only synthetic fixtures may be sent unless an operator sets "
+                                "PREFLIGHT_LLM_ALLOW_REAL_CODE=true after data-owner approval."),
+                    )
 
             def target() -> None:
                 try:
@@ -1347,6 +1362,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail="case fixture not found") from exc
+        except LLMError as exc:
+            raise HTTPException(status_code=exc.status or 409, detail=str(exc)) from exc
         except KeyError as exc:
             raise HTTPException(status_code=400, detail="unknown upgrade scenario") from exc
         with app.state.codebase_lock:

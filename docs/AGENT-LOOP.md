@@ -136,7 +136,7 @@ budget expires, the loop stops red rather than manufacturing a green signal.
 | **Determinism** | File inventory, order, and per-file hashes are deterministic for the same bytes. Plan/report bytes include timestamps and therefore differ between runs. |
 | **Boundary** | Sealing is tamper-evidence, not approval. Scribe does not resolve gates or deploy. |
 
-**Observed result:** plan `3c307f75205c…`, report `8770963bd2fd…`, **8** manifest entries, **12** audit events verified. A rerun appends to the same audit log; it does not truncate it. The migration directory is not pruned, so a target file from a previous run can remain on disk even when it is absent from the new manifest. Treat the manifest, not the directory listing, as the authoritative bundle inventory.
+**Observed result (seed generation):** plan `3c307f75205c…`, report `8770963bd2fd…`, **8** manifest entries, **12** audit events in the seed log. A rerun appends to the same audit log; it does not truncate it, and the new plan/report/bundle hashes are not expected to match the seed values. The migration directory is not pruned, so a target file from a previous run can remain on disk even when it is absent from the new manifest. Treat the manifest, not the directory listing, as the authoritative bundle inventory.
 
 ### 2.7 Observed feature-run totals
 
